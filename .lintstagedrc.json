@@ -8,8 +8,8 @@
     "prettier --write"
   ],
   "apps/demo/**/*.{ts,tsx}": [
-    "cd apps/demo && npm run lint",
-    "prettier --write"
+    "prettier --write",
+    "cd apps/demo && npm run lint -- --fix"
   ],
   "*.{json,md}": ["prettier --write"]
 }
