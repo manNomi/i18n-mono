@@ -141,6 +141,13 @@ jobs:
         run: npx turbo run lint --filter=i18nexus-demo
         continue-on-error: false
 
+      - name: 🧪 Test
+        run: npx turbo run test --filter=i18nexus-demo
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+        continue-on-error: false
+
       - name: 🏗️ Build
         run: npx turbo run build --filter=i18nexus-demo
         env:
