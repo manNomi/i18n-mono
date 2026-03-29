@@ -2,10 +2,10 @@
 // 데이터 변경(추가/삭제/수정) 시에만 재검증
 export const revalidate = false;
 
+import { getTranslation } from "i18nexus/server";
 import Link from "next/link";
 
 import { getProjects } from "@/entities/project/api/getProjects";
-import { getTranslation } from "i18nexus/server";
 import { ProjectCard } from "@/shared/ui";
 
 export default async function ShowcasePage() {

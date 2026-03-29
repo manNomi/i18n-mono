@@ -12,7 +12,10 @@
     "export": "next export",
     "i18n:pull": "i18nexus pull",
     "i18n:import": "i18nexus import ./lib/translations/ko.json",
-    "i18n:listen": "i18nexus listen"
+    "i18n:listen": "i18nexus listen",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
@@ -29,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -38,6 +42,7 @@
     "autoprefixer": "^10.4.16",
     "eslint": "^9",
     "eslint-config-next": "15.5.9",
+    "eslint-import-resolver-alias": "^1.1.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
@@ -46,6 +51,8 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.13.0",
     "i18nexus-tools": "file:../../packages/tools",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "null-loader": "^4.0.1",
     "postcss": "^8.4.32",
     "typescript": "^5",

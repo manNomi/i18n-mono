@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import DocsUseLanguageSwitcherPage from "@/page/docs-i18nexus-use-language-switcher";
 
 export const metadata: Metadata = {

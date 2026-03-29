@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import DocsI18nexusPage from "@/page/docs-i18nexus";
 
 export const metadata: Metadata = {

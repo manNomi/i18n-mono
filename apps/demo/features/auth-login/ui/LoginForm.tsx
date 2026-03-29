@@ -1,10 +1,10 @@
 "use client";
 
+import { useTranslation } from "i18nexus";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { signIn } from "@/features/auth-login/api/signIn";
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
 import { useError } from "@/shared/ui";
 
 export default function LoginForm() {
@@ -30,7 +30,7 @@ export default function LoginForm() {
       let errorMessage = t("로그인에 실패했습니다.");
 
       // Firebase 에러 코드별 메시지
-      const firebaseError = err as {code?: string;message?: string;};
+      const firebaseError = err as { code?: string; message?: string };
 
       if (firebaseError.code === "auth/invalid-credential") {
         errorMessage = t("이메일 또는 비밀번호가 올바르지 않습니다.");
@@ -47,9 +47,9 @@ export default function LoginForm() {
           "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요."
         );
       } else if (
-      firebaseError.code === "auth/configuration-not-found" ||
-      firebaseError.message?.includes("auth/invalid-api-key"))
-      {
+        firebaseError.code === "auth/configuration-not-found" ||
+        firebaseError.message?.includes("auth/invalid-api-key")
+      ) {
         errorMessage = t(
           "Firebase Authentication이 올바르게 설정되지 않았습니다. Firebase Console에서 Authentication을 활성화해주세요."
         );
@@ -82,8 +82,8 @@ export default function LoginForm() {
       {/* Form */}
       <form
         onSubmit={handleLogin}
-        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl sm:rounded-2xl border border-slate-700 p-4 sm:p-6 lg:p-8 shadow-2xl">
-
+        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl sm:rounded-2xl border border-slate-700 p-4 sm:p-6 lg:p-8 shadow-2xl"
+      >
         <div className="mb-6">
           <label className="block text-sm font-semibold text-slate-300 mb-2">
             {t("📧 이메일")}
@@ -94,8 +94,8 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@example.com"
             className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-            required />
-
+            required
+          />
         </div>
 
         <div className="mb-6">
@@ -108,21 +108,21 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-            required />
-
+            required
+          />
         </div>
 
-        {error &&
-        <div className="mb-6 p-4 bg-red-900/50 border border-red-700 text-red-100 rounded-xl text-sm">
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/50 border border-red-700 text-red-100 rounded-xl text-sm">
             ⚠️ {error}
           </div>
-        }
+        )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-lg shadow-purple-500/30">
-
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-lg shadow-purple-500/30"
+        >
           {loading ? t("⏳ 로그인 중...") : t("🚀 로그인")}
         </button>
       </form>
@@ -141,8 +141,8 @@ export default function LoginForm() {
                 href="https://console.firebase.google.com/u/0/project/i18nexus/authentication/users"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 underline">
-
+                className="text-purple-400 hover:text-purple-300 underline"
+              >
                 Firebase Console
               </a>
               {t("에서 Authentication 활성화")}
@@ -164,6 +164,6 @@ export default function LoginForm() {
           </li>
         </ol>
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useDisclosure } from "@chakra-ui/react";
-import { useTranslation } from "i18nexus";
-import type { ConstantKeys } from "i18nexus";
+import { type ConstantKeys, useTranslation } from "i18nexus";
 
 import { DropDown } from "@/app/components/ui/Dropdown";
 import { useHandleLngOptionClick } from "@/hooks/useHandleLngOptionClick";
@@ -42,4 +41,3 @@ const LanguageDropDown = () => {
 };
 
 export default LanguageDropDown;
-

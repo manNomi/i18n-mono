@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import DocsUseTranslationPage from "@/page/docs-i18nexus-use-translation";
 
 export const metadata: Metadata = {
