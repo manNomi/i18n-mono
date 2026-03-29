@@ -25,7 +25,7 @@ export default async function ServerExamplePage() {
         </h1>
         <p className="text-base sm:text-lg text-slate-300">
           {t(
-            "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!",
+            "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!"
           )}
         </p>
       </div>
@@ -89,7 +89,7 @@ export default async function ServerExamplePage() {
           <pre className="text-slate-300 text-xs sm:text-sm font-mono overflow-x-auto">
             <code>
               {t(
-                'import { useTranslation, useLanguageSwitcher } from "i18nexus";\n\n// \u2705 Server Component (\uAE30\uBCF8\uAC12)\nexport default async function Page() {\n  // \uC790\uB3D9\uC73C\uB85C \uC5B8\uC5B4 \uAC10\uC9C0 \uBC0F \uBC88\uC5ED \uD568\uC218 \uC0DD\uC131\n  const { t, language } = await i18n.getServerTranslation("common");\n  \n  // \uC0AC\uC6A9!\n  return <h1>{t("\uD658\uC601\uD569\uB2C8\uB2E4")}</h1>;\n}\n',
+                "import { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\n// \u2705 Server Component (\uAE30\uBCF8\uAC12)\nexport default async function Page() {\n  // \uC790\uB3D9\uC73C\uB85C \uC5B8\uC5B4 \uAC10\uC9C0 \uBC0F \uBC88\uC5ED \uD568\uC218 \uC0DD\uC131\n  const { t, language } = await i18n.getServerTranslation(\"common\");\n  \n  // \uC0AC\uC6A9!\n  return <h1>{t(\"\uD658\uC601\uD569\uB2C8\uB2E4\")}</h1>;\n}\n"
               )}
             </code>
           </pre>
@@ -188,7 +188,7 @@ export default async function ServerExamplePage() {
         </h3>
         <p className="text-slate-300 text-xs sm:text-sm">
           {t(
-            "이 페이지에서 언어를 변경하려면 헤더의 언어 전환기(클라이언트 컴포넌트)를 사용하세요. 쿠키에서 새 언어로 페이지가 다시 로드됩니다.",
+            "이 페이지에서 언어를 변경하려면 헤더의 언어 전환기(클라이언트 컴포넌트)를 사용하세요. 쿠키에서 새 언어로 페이지가 다시 로드됩니다."
           )}
         </p>
       </div>

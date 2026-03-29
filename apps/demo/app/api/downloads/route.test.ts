@@ -55,7 +55,7 @@ describe("GET /api/downloads", () => {
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("api.npmjs.org/downloads/point/2025-09-28"),
-      { next: { revalidate: 3600 } },
+      { next: { revalidate: 3600 } }
     );
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual(payload);

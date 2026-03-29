@@ -21,7 +21,7 @@ export default function ProviderPage() {
         <div className="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-4 mb-4">
           <p className="text-yellow-300 text-sm">
             {t(
-              "\u26A0\uFE0F I18nProvider\uB294 \uB354 \uC774\uC0C1 \uD544\uC694\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. createI18n()\uC744 \uC0AC\uC6A9\uD558\uBA74\n            Provider \uC5C6\uC774\uB3C4 i18n\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+              "\u26A0\uFE0F I18nProvider\uB294 \uB354 \uC774\uC0C1 \uD544\uC694\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. createI18n()\uC744 \uC0AC\uC6A9\uD558\uBA74\n            Provider \uC5C6\uC774\uB3C4 i18n\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
             )}
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function ProviderPage() {
             <div className="p-6">
               <CodeBlock language="tsx">
                 {t(
-                  '// \u274C \uC61B\uB0A0 \uBC29\uC2DD (Provider \uD544\uC694)\nimport { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "\uD55C\uAD6D\uC5B4", flag: "\uD83C\uDDF0\uD83C\uDDF7" },\n              { code: "en", name: "English", flag: "\uD83C\uDDFA\uD83C\uDDF8" },\n            ],\n          }}\n          translations={{\n            ko: { "\uD658\uC601\uD569\uB2C8\uB2E4": "\uD658\uC601\uD569\uB2C8\uB2E4" },\n            en: { "\uD658\uC601\uD569\uB2C8\uB2E4": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}\n\n// \u2705 \uC0C8\uB85C\uC6B4 \uBC29\uC2DD (Provider \uBD88\uD544\uC694)\n// locales/index.ts\uC5D0\uC11C createI18n\uC73C\uB85C \uC124\uC815\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="ko">\n      <body>{children}</body>\n    </html>\n  );\n}',
+                  "// \u274C \uC61B\uB0A0 \uBC29\uC2DD (Provider \uD544\uC694)\nimport { I18nProvider } from \"i18nexus\";\nimport { cookies } from \"next/headers\";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get(\"i18n-language\")?.value || \"ko\";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: \"ko\",\n            availableLanguages: [\n              { code: \"ko\", name: \"\uD55C\uAD6D\uC5B4\", flag: \"\uD83C\uDDF0\uD83C\uDDF7\" },\n              { code: \"en\", name: \"English\", flag: \"\uD83C\uDDFA\uD83C\uDDF8\" },\n            ],\n          }}\n          translations={{\n            ko: { \"\uD658\uC601\uD569\uB2C8\uB2E4\": \"\uD658\uC601\uD569\uB2C8\uB2E4\" },\n            en: { \"\uD658\uC601\uD569\uB2C8\uB2E4\": \"Welcome\" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}\n\n// \u2705 \uC0C8\uB85C\uC6B4 \uBC29\uC2DD (Provider \uBD88\uD544\uC694)\n// locales/index.ts\uC5D0\uC11C createI18n\uC73C\uB85C \uC124\uC815\nimport { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang=\"ko\">\n      <body>{children}</body>\n    </html>\n  );\n}"
                 )}
               </CodeBlock>
             </div>
@@ -121,7 +121,7 @@ export default function ProviderPage() {
             <div className="p-6">
               <CodeBlock language="tsx">
                 {t(
-                  '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function HomePage() {\n  const { t } = useTranslation("provider");\n\n  return (\n    <div>\n      <h1>{t("\uD658\uC601\uD569\uB2C8\uB2E4")}</h1>\n      <button onClick={() => changeLanguage("en")}>\n        English\n      </button>\n    </div>\n  );\n}',
+                  "\"use client\";\n\nimport { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default function HomePage() {\n  const { t } = useTranslation(\"provider\");\n\n  return (\n    <div>\n      <h1>{t(\"\uD658\uC601\uD569\uB2C8\uB2E4\")}</h1>\n      <button onClick={() => changeLanguage(\"en\")}>\n        English\n      </button>\n    </div>\n  );\n}"
                 )}
               </CodeBlock>
             </div>
@@ -222,7 +222,7 @@ export default function ProviderPage() {
             </h3>
             <CodeBlock language="typescript">
               {t(
-                'const { t } = useTranslation("provider");\n\n// Simple usage\nt("key")\nt("\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8")',
+                "const { t } = useTranslation(\"provider\");\n\n// Simple usage\nt(\"key\")\nt(\"\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8\")"
               )}
             </CodeBlock>
             <p className="text-slate-400 text-sm">
@@ -236,7 +236,7 @@ export default function ProviderPage() {
             </h3>
             <CodeBlock language="typescript">
               {t(
-                '// \uC5B4\uB514\uC11C\uB098 \uC9C1\uC811 \uD638\uCD9C \uAC00\uB2A5\nchangeLanguage("en");\n\n// \uAC00\uB2A5\uD55C \uC5B8\uC5B4 \uBAA9\uB85D\nconst languages = getAvailableLanguages();\n\n// \uD604\uC7AC \uC5B8\uC5B4\nconst current = getCurrentLanguage();',
+                "// \uC5B4\uB514\uC11C\uB098 \uC9C1\uC811 \uD638\uCD9C \uAC00\uB2A5\nchangeLanguage(\"en\");\n\n// \uAC00\uB2A5\uD55C \uC5B8\uC5B4 \uBAA9\uB85D\nconst languages = getAvailableLanguages();\n\n// \uD604\uC7AC \uC5B8\uC5B4\nconst current = getCurrentLanguage();"
               )}
             </CodeBlock>
             <p className="text-slate-400 text-sm">

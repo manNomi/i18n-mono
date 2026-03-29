@@ -10,7 +10,7 @@ export default function I18nexusToolsPage() {
     {
       title: t("i18n-wrapper"),
       description: t(
-        "Automatically wrap Korean/English text with t() function",
+        "Automatically wrap Korean/English text with t() function"
       ),
       icon: "🎁",
       href: "/docs/i18nexus-tools/wrapper",
@@ -119,7 +119,7 @@ export default function I18nexusToolsPage() {
         </h1>
         <p className="text-xl text-slate-400 max-w-2xl mx-auto">
           {t(
-            "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구",
+            "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구"
           )}
         </p>
       </div>
@@ -207,7 +207,7 @@ export default function I18nexusToolsPage() {
               <pre className="bg-slate-950 rounded-lg p-3 text-sm border border-slate-800 overflow-x-auto">
                 <code>
                   {t(
-                    '// locales/en.json\n{\n  "\uD658\uC601\uD569\uB2C8\uB2E4": "Welcome",\n  "\uC2DC\uC791\uD558\uAE30": "Get Started"\n}',
+                    "// locales/en.json\n{\n  \"\uD658\uC601\uD569\uB2C8\uB2E4\": \"Welcome\",\n  \"\uC2DC\uC791\uD558\uAE30\": \"Get Started\"\n}"
                   )}
                 </code>
               </pre>
