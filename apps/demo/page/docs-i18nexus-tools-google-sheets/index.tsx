@@ -1,8 +1,7 @@
 "use client";
 
+import { useTranslation } from "i18nexus";
 import Link from "next/link";
-
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
 
 export default function GoogleSheetsPage() {
   const { t } = useTranslation("docs-i18nexus-tools-google-sheets");

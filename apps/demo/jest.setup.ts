@@ -1,6 +1,12 @@
 // Polyfill for environments where AbortSignal.timeout is unavailable.
-if (typeof AbortSignal !== "undefined" && !(AbortSignal as any).timeout) {
-  (AbortSignal as any).timeout = () => {
+type AbortSignalWithTimeout = typeof AbortSignal & {
+  timeout?: (ms?: number) => AbortSignal;
+};
+
+const abortSignalWithTimeout = AbortSignal as AbortSignalWithTimeout;
+
+if (typeof AbortSignal !== "undefined" && !abortSignalWithTimeout.timeout) {
+  abortSignalWithTimeout.timeout = () => {
     const controller = new AbortController();
     return controller.signal;
   };

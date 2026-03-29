@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
 import { CodeBlock } from "@/shared/ui";
 
 export default function GettingStartedPage() {

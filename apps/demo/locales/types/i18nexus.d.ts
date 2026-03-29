@@ -1157,13 +1157,13 @@ declare type TranslationKeys = {
 // ============================================
 
 import type {
-  UseTranslationReturn,
-  UseLanguageSwitcherReturn,
   I18nProviderProps,
+  UseLanguageSwitcherReturn,
+  UseTranslationReturn,
 } from "i18nexus";
 import type {
-  GetTranslationReturn,
   GetTranslationOptions,
+  GetTranslationReturn,
 } from "i18nexus/server";
 
 declare module "i18nexus" {

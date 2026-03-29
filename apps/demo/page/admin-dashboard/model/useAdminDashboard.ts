@@ -1,12 +1,12 @@
 "use client";
 
 import { onAuthStateChanged } from "firebase/auth";
+import { useTranslation } from "i18nexus";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { signOut } from "@/features/auth-login";
 import { approveProject, deleteProject } from "@/features/project-manage";
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
 import { auth } from "@/shared/lib";
 import { useError } from "@/shared/ui";
 

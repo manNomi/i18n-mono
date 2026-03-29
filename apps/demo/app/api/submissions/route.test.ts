@@ -36,7 +36,9 @@ describe("/api/submissions (db not configured)", () => {
 
   it("GET returns 503", async () => {
     const { GET } = await import("./route");
-    const res = await GET(createRequest("http://localhost/api/submissions", "GET"));
+    const res = await GET(
+      createRequest("http://localhost/api/submissions", "GET"),
+    );
 
     expect(res.status).toBe(503);
     await expect(res.json()).resolves.toEqual(

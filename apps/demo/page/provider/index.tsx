@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
+import { useLanguageSwitcher, useTranslation } from "i18nexus";
+
 import { CodeBlock } from "@/shared/ui";
 
 export default function ProviderPage() {

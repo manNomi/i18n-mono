@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
 import { DownloadStats } from "@/entities/download";
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
 
 export default function HomePage() {
   const { t } = useTranslation("home");

@@ -1,13 +1,13 @@
 "use client";
 
+import { useTranslation } from "i18nexus";
 import Link from "next/link";
 import { useState } from "react";
 
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
-
 export default function UseTranslationPage() {
   const { t } = useTranslation("docs-i18nexus-use-translation");
-  const [demoKey, setDemoKey] = useState("Welcome");
+  type TranslationKey = Parameters<typeof t>[0];
+  const [demoKey, setDemoKey] = useState<TranslationKey>("Welcome");
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -51,7 +51,7 @@ export default function UseTranslationPage() {
             <input
               type="text"
               value={demoKey}
-              onChange={(e) => setDemoKey(e.target.value)}
+              onChange={(e) => setDemoKey(e.target.value as TranslationKey)}
               className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-blue-500 focus:outline-none"
               placeholder={t(
                 "\uBC88\uC5ED \uD0A4\uB97C \uC785\uB825\uD558\uC138\uC694",
@@ -60,9 +60,7 @@ export default function UseTranslationPage() {
           </div>
           <div className="bg-slate-950 rounded-lg p-6 border border-slate-700">
             <div className="text-sm text-slate-500 mb-2">{t("결과")}:</div>
-            <div className="text-2xl font-bold text-white">
-              {t(demoKey as any)}
-            </div>
+            <div className="text-2xl font-bold text-white">{t(demoKey)}</div>
           </div>
           <div className="mt-4 text-sm text-slate-400">
             <p>
