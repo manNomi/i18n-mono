@@ -1,3 +1,5 @@
+이 깃허브 URL을 복사해서 LLM 프롬프트로 붙여넣으세요.
+
 # i18nexus LLM Setup Prompt
 
 Copy and paste this entire file into your LLM (Codex/Claude).
