@@ -8,6 +8,7 @@ import {
   generateTypeDefinitions,
   ExtractedTranslations,
   TypeGeneratorConfig,
+  validateTranslationsForTypeGeneration,
 } from "./type-generator";
 import {
   createTempDir,
@@ -175,6 +176,57 @@ describe("Type Generator", () => {
       }).not.toThrow();
 
       // File should not be created
+      expect(fileExists(outputPath)).toBe(false);
+    });
+
+    it("should fail in strict mode when a key is missing in one language", () => {
+      const extractedData: ExtractedTranslations = {
+        common: {
+          en: {
+            "welcome.title": "Welcome",
+          },
+          ko: {
+            "welcome.title": "환영합니다",
+            "button.save": "저장",
+          },
+        },
+      };
+
+      const config: TypeGeneratorConfig = {
+        outputPath,
+        translationImportSource: "i18nexus",
+        strictValidation: true,
+      };
+
+      expect(() => {
+        generateTypeDefinitions(extractedData, config);
+      }).toThrow(/Missing key/);
+
+      expect(fileExists(outputPath)).toBe(false);
+    });
+
+    it("should fail in strict mode when translation value is empty", () => {
+      const extractedData: ExtractedTranslations = {
+        common: {
+          en: {
+            "welcome.title": "",
+          },
+          ko: {
+            "welcome.title": "환영합니다",
+          },
+        },
+      };
+
+      const config: TypeGeneratorConfig = {
+        outputPath,
+        translationImportSource: "i18nexus",
+        strictValidation: true,
+      };
+
+      expect(() => {
+        generateTypeDefinitions(extractedData, config);
+      }).toThrow(/value is empty/);
+
       expect(fileExists(outputPath)).toBe(false);
     });
 
@@ -419,6 +471,26 @@ describe("Type Generator", () => {
           namespaces.indexOf("zebra"),
         );
       }
+    });
+  });
+
+  describe("validateTranslationsForTypeGeneration", () => {
+    it("should return no issues when all languages have complete non-empty keys", () => {
+      const extractedData: ExtractedTranslations = {
+        common: {
+          en: {
+            "welcome.title": "Welcome",
+            "button.save": "Save",
+          },
+          ko: {
+            "welcome.title": "환영합니다",
+            "button.save": "저장",
+          },
+        },
+      };
+
+      const issues = validateTranslationsForTypeGeneration(extractedData);
+      expect(issues).toHaveLength(0);
     });
   });
 });

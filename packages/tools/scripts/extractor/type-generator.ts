@@ -32,6 +32,102 @@ export interface TypeGeneratorConfig {
   fallbackNamespace?: string;
   /** Translation import source (e.g., "i18nexus", "react-i18next") */
   translationImportSource?: string;
+  /**
+   * Strict validation mode for translation completeness.
+   * When enabled, type generation fails if any language is missing keys
+   * or if any translation value is empty.
+   */
+  strictValidation?: boolean;
+}
+
+export interface TranslationValidationIssue {
+  namespace: string;
+  language: string;
+  key: string;
+  type: "missing-key" | "empty-value" | "invalid-value";
+  message: string;
+}
+
+/**
+ * Validate translation completeness for strict type generation.
+ * - Every language in a namespace must include the same keys.
+ * - Every value must be a non-empty string.
+ */
+export function validateTranslationsForTypeGeneration(
+  extractedData: ExtractedTranslations,
+): TranslationValidationIssue[] {
+  const issues: TranslationValidationIssue[] = [];
+
+  for (const [namespace, languages] of Object.entries(extractedData)) {
+    const allKeys = new Set<string>();
+
+    for (const translationMap of Object.values(languages)) {
+      for (const key of Object.keys(translationMap)) {
+        allKeys.add(key);
+      }
+    }
+
+    for (const [language, translationMap] of Object.entries(languages)) {
+      for (const key of allKeys) {
+        if (!Object.prototype.hasOwnProperty.call(translationMap, key)) {
+          issues.push({
+            namespace,
+            language,
+            key,
+            type: "missing-key",
+            message: "Missing key in this language file",
+          });
+        }
+      }
+
+      for (const [key, value] of Object.entries(translationMap)) {
+        if (typeof value !== "string") {
+          issues.push({
+            namespace,
+            language,
+            key,
+            type: "invalid-value",
+            message: "Translation value must be a string",
+          });
+          continue;
+        }
+
+        if (value.trim().length === 0) {
+          issues.push({
+            namespace,
+            language,
+            key,
+            type: "empty-value",
+            message: "Translation value is empty",
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
+function formatValidationError(
+  issues: TranslationValidationIssue[],
+  limit: number = 20,
+): string {
+  const visibleIssues = issues.slice(0, limit);
+  const lines = visibleIssues.map(
+    (issue) =>
+      `  - [${issue.namespace}/${issue.language}] "${issue.key}": ${issue.message}`,
+  );
+  const remaining = issues.length - visibleIssues.length;
+
+  if (remaining > 0) {
+    lines.push(`  - ...and ${remaining} more issue(s)`);
+  }
+
+  return [
+    "Translation validation failed in strict type generation mode.",
+    "Fix missing keys and empty values, or disable strict mode with `strictTypeGeneration: false`.",
+    ...lines,
+  ].join("\n");
 }
 
 /**
@@ -55,6 +151,14 @@ export function generateTypeDefinitions(
   config: TypeGeneratorConfig,
 ): void {
   console.log("📝 Generating TypeScript type definitions...");
+
+  if (config.strictValidation) {
+    const validationIssues =
+      validateTranslationsForTypeGeneration(extractedData);
+    if (validationIssues.length > 0) {
+      throw new Error(formatValidationError(validationIssues));
+    }
+  }
 
   // Step 1: Extract all namespace keys
   const namespaceKeys = extractNamespaceKeys(extractedData);
