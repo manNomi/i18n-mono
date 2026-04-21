@@ -78,4 +78,22 @@ describe("config-loader", () => {
       expect(config.namespacing?.defaultNamespace).toBe("custom");
     });
   });
+
+  describe("strictTypeGeneration", () => {
+    it("strictTypeGeneration 설정을 로드해야 함", () => {
+      const testConfig = {
+        languages: ["en", "ko"],
+        defaultLanguage: "en",
+        localesDir: "./locales",
+        sourcePattern: "app/**/*.tsx",
+        translationImportSource: "i18nexus",
+        strictTypeGeneration: true,
+      };
+
+      fs.writeFileSync(testConfigPath, JSON.stringify(testConfig));
+
+      const config = loadConfig(testConfigPath, { silent: true });
+      expect(config.strictTypeGeneration).toBe(true);
+    });
+  });
 });

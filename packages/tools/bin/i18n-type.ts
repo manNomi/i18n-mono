@@ -43,7 +43,8 @@ Config (i18nexus.config.json):
   {
     "localesDir": "./locales",
     "fallbackNamespace": "common",  // Keys from fallback namespace are included in all namespaces
-    "translationImportSource": "i18nexus"
+    "translationImportSource": "i18nexus",
+    "strictTypeGeneration": false    // When true, fail if any key/value is missing
   }
 
 Output:
@@ -76,6 +77,7 @@ Note: Run this command after extracting translations or modifying JSON files.
       fallbackNamespace: config.fallbackNamespace,
       translationImportSource: config.translationImportSource || "i18nexus",
       includeJsDocs: true,
+      strictValidation: config.strictTypeGeneration,
     });
 
     console.log("\n✅ Type definitions generated successfully!");
@@ -84,6 +86,12 @@ Note: Run this command after extracting translations or modifying JSON files.
     if (config.fallbackNamespace) {
       console.log(
         `   Fallback namespace: "${config.fallbackNamespace}" (keys included in all namespaces)`,
+      );
+    }
+
+    if (config.strictTypeGeneration) {
+      console.log(
+        `   Strict validation: enabled (missing key/value will fail generation)`,
       );
     }
   } catch (error) {

@@ -185,6 +185,62 @@ describe("i18n-type CLI E2E", () => {
       expect(result.exitCode).toBe(1);
       expect(result.stderr || result.stdout).toContain("No translation files");
     });
+
+    it("strictTypeGeneration이 true일 때 key 누락이 있으면 실패해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        locales: {
+          common: {
+            "en.json": JSON.stringify({ "welcome.title": "Welcome" }, null, 2),
+            "ko.json": JSON.stringify(
+              { "welcome.title": "환영합니다", "button.save": "저장" },
+              null,
+              2,
+            ),
+          },
+        },
+      });
+
+      createTestConfig(projectDir, {
+        localesDir: "./locales",
+        strictTypeGeneration: true,
+      });
+
+      const result = await runCLICommand("i18n-type", [], projectDir);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr || result.stdout).toContain(
+        "Translation validation failed",
+      );
+      expect(result.stderr || result.stdout).toContain("Missing key");
+    });
+
+    it("strictTypeGeneration이 true일 때 빈 값이 있으면 실패해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        locales: {
+          common: {
+            "en.json": JSON.stringify({ "welcome.title": "" }, null, 2),
+            "ko.json": JSON.stringify(
+              { "welcome.title": "환영합니다" },
+              null,
+              2,
+            ),
+          },
+        },
+      });
+
+      createTestConfig(projectDir, {
+        localesDir: "./locales",
+        strictTypeGeneration: true,
+      });
+
+      const result = await runCLICommand("i18n-type", [], projectDir);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr || result.stdout).toContain(
+        "Translation validation failed",
+      );
+      expect(result.stderr || result.stdout).toContain("value is empty");
+    });
   });
 
   describe("타입 파일 내용 검증", () => {

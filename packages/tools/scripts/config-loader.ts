@@ -100,6 +100,12 @@ export interface I18nexusConfig {
    * @default "full"
    */
   namespaceStrategy?: "full" | "page-based" | "single";
+  /**
+   * i18n-type 실행 시 번역 완전성 엄격 검증 활성화 여부
+   * true일 경우 언어별 key 누락 또는 빈 문자열 value가 있으면 타입 생성을 실패시킵니다.
+   * @default false
+   */
+  strictTypeGeneration?: boolean;
 }
 
 const DEFAULT_CONFIG: I18nexusConfig = {
@@ -116,6 +122,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
     sheetName: GOOGLE_SHEETS_DEFAULTS.sheetName,
   },
   useNamespaceStructure: true,
+  strictTypeGeneration: false,
 };
 
 /**
@@ -124,14 +131,14 @@ const DEFAULT_CONFIG: I18nexusConfig = {
  */
 export function loadConfig(
   configPath: string = "i18nexus.config.json",
-  options?: { silent?: boolean }
+  options?: { silent?: boolean },
 ): I18nexusConfig {
   const absolutePath = pathLib.resolve(process.cwd(), configPath);
 
   if (!fs.existsSync(absolutePath)) {
     if (!options?.silent) {
       console.log(
-        "⚠️  i18nexus.config.json not found, using default configuration"
+        "⚠️  i18nexus.config.json not found, using default configuration",
       );
       console.log("💡 Run 'i18n-sheets init' to create a config file");
     }
@@ -169,7 +176,7 @@ export function loadConfig(
     if (!options?.silent) {
       console.warn(
         `⚠️  Failed to load ${configPath}, using default configuration:`,
-        error
+        error,
       );
     }
     return DEFAULT_CONFIG;
@@ -181,7 +188,7 @@ export function loadConfig(
  * 서버 환경에서 사용하기 적합합니다.
  */
 export function loadConfigSilently(
-  configPath: string = "i18nexus.config.json"
+  configPath: string = "i18nexus.config.json",
 ): I18nexusConfig {
   return loadConfig(configPath, { silent: true });
 }
