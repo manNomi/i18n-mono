@@ -62,7 +62,9 @@ Note: Run this command after extracting translations or modifying JSON files.
 
   try {
     // 1. locales 디렉토리에서 번역 데이터 읽기
-    const translations = readExtractedTranslations(config.localesDir);
+    const translations = readExtractedTranslations(config.localesDir, {
+      fallbackNamespace: config.fallbackNamespace || "common",
+    });
 
     if (Object.keys(translations).length === 0) {
       console.warn("⚠️  No translation files found in locales directory");

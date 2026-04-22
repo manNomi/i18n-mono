@@ -46,7 +46,27 @@ const interpolateWithStyles = (text, variables, styles) => {
 // 실제 구현
 export function useTranslation(namespace) {
     const context = useI18nContext();
-    const { currentLanguage, isLoading, loadedNamespaces, fallbackNamespace } = context;
+    const { currentLanguage, isLoading, loadedNamespaces, fallbackNamespace, namespaceTranslations, languageManager, } = context;
+    const getStaticNamespaceTranslations = (namespaceKey) => {
+        const namespaceData = namespaceTranslations?.[namespaceKey];
+        if (!namespaceData || typeof namespaceData !== "object") {
+            return {};
+        }
+        const current = namespaceData[currentLanguage];
+        if (current && typeof current === "object") {
+            return current;
+        }
+        const fallbackLanguage = languageManager.getDefaultLanguage();
+        const fallback = namespaceData[fallbackLanguage];
+        if (fallback && typeof fallback === "object") {
+            return fallback;
+        }
+        const first = Object.values(namespaceData)[0];
+        if (first && typeof first === "object") {
+            return first;
+        }
+        return {};
+    };
     // 번역 데이터 가져오기 (I18nProvider에서 로드된 데이터만 사용)
     const getCurrentTranslations = () => {
         let result = {};
@@ -64,6 +84,32 @@ export function useTranslation(namespace) {
                 result = { ...result, ...requestedNs };
             }
         }
+        // Static translations fallback (non-lazy mode compatibility)
+        if (Object.keys(result).length === 0) {
+            if (namespace) {
+                if (fallbackNamespace) {
+                    result = {
+                        ...result,
+                        ...getStaticNamespaceTranslations(String(fallbackNamespace)),
+                    };
+                }
+                const requested = getStaticNamespaceTranslations(namespace);
+                if (Object.keys(requested).length > 0) {
+                    result = { ...result, ...requested };
+                }
+                else {
+                    // Legacy behavior: if namespace is invalid, expose flattened keys.
+                    for (const nsKey of Object.keys(namespaceTranslations || {})) {
+                        result = { ...result, ...getStaticNamespaceTranslations(nsKey) };
+                    }
+                }
+            }
+            else {
+                for (const nsKey of Object.keys(namespaceTranslations || {})) {
+                    result = { ...result, ...getStaticNamespaceTranslations(nsKey) };
+                }
+            }
+        }
         return result;
     };
     const currentTranslations = getCurrentTranslations();
@@ -75,7 +121,12 @@ export function useTranslation(namespace) {
         return interpolate(translatedText, variables);
     });
     // 네임스페이스가 로드되었는지 확인
-    const isNamespaceReady = namespace ? loadedNamespaces.has(namespace) : true;
+    const hasStaticNamespace = namespace
+        ? Object.prototype.hasOwnProperty.call(namespaceTranslations || {}, namespace)
+        : true;
+    const isNamespaceReady = namespace
+        ? loadedNamespaces.has(namespace) || hasStaticNamespace
+        : true;
     return {
         t: translate,
         currentLanguage,

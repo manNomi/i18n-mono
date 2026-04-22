@@ -118,42 +118,94 @@ function interpolateServer(text, variables) {
         return value !== undefined ? String(value) : match;
     });
 }
-/** 서버 컴포넌트용 번역 함수 생성 */
-export function createServerTranslation(language, translations) {
-    // translations 구조: { [namespace]: { [key]: value } }
-    // 모든 namespace의 번역을 병합하여 사용 (fallback 지원)
-    const allTranslations = {};
-    for (const namespace of Object.keys(translations)) {
-        const namespaceTranslations = translations[namespace];
-        if (namespaceTranslations && typeof namespaceTranslations === "object") {
-            Object.assign(allTranslations, namespaceTranslations);
+function isStringRecord(value) {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    return Object.values(value).every((item) => typeof item === "string");
+}
+function isLanguageCodeKey(key) {
+    return /^[a-z]{2}(?:-[a-z0-9]{2,})?$/i.test(key);
+}
+function getFirstStringRecord(value) {
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+    for (const nested of Object.values(value)) {
+        if (isStringRecord(nested)) {
+            return nested;
         }
     }
+    return undefined;
+}
+/** 서버 컴포넌트용 번역 함수 생성 */
+export function createServerTranslation(language, translations) {
+    const dict = getServerTranslations(language, translations);
     return function translate(key, variables, fallback) {
         // 디버깅: 번역 키가 없을 때 경고
-        if (!allTranslations[key] && process.env.NODE_ENV === "development") {
-            console.warn(`[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(allTranslations).slice(0, 5).join(", ")}...`);
+        if (!dict[key] && process.env.NODE_ENV === "development") {
+            console.warn(`[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(dict).slice(0, 5).join(", ")}...`);
         }
         if (typeof variables === "string") {
             // 두 번째 인자가 문자열이면 fallback으로 사용
-            return allTranslations[key] || variables || key;
+            return dict[key] || variables || key;
         }
-        const translatedText = allTranslations[key] || fallback || key;
+        const translatedText = dict[key] || fallback || key;
         return interpolateServer(translatedText, variables);
     };
 }
 /** 타입 안전한 서버 번역 객체 반환 */
 export function getServerTranslations(language, translations) {
-    // translations 구조: { [namespace]: { [key]: value } }
-    // 모든 namespace의 번역을 병합하여 반환
-    const allTranslations = {};
-    for (const namespace of Object.keys(translations)) {
-        const namespaceTranslations = translations[namespace];
-        if (namespaceTranslations && typeof namespaceTranslations === "object") {
-            Object.assign(allTranslations, namespaceTranslations);
+    const entries = Object.entries(translations);
+    if (entries.length === 0) {
+        return {};
+    }
+    // 1) Legacy language map: { en: {...}, ko: {...} }
+    const directLanguage = translations[language];
+    if (isStringRecord(directLanguage)) {
+        return { ...directLanguage };
+    }
+    const flatStringEntries = entries.filter(([, value]) => isStringRecord(value));
+    const allKeysLookLikeLanguageCodes = flatStringEntries.length > 0 &&
+        flatStringEntries.every(([key]) => isLanguageCodeKey(key));
+    if (allKeysLookLikeLanguageCodes) {
+        const english = translations["en"];
+        if (isStringRecord(english)) {
+            return { ...english };
+        }
+        const firstLanguage = flatStringEntries[0]?.[1];
+        return isStringRecord(firstLanguage) ? { ...firstLanguage } : {};
+    }
+    // 2) Namespace + language map: { common: { en: {...}, ko: {...} }, ... }
+    const mergedByNamespace = {};
+    let hasNamespacedLanguageData = false;
+    for (const [, value] of entries) {
+        if (!value || typeof value !== "object") {
+            continue;
+        }
+        const namespaceLangMap = value;
+        const langDict = namespaceLangMap[language];
+        const fallbackDict = namespaceLangMap["en"];
+        const firstDict = getFirstStringRecord(namespaceLangMap);
+        const selected = isStringRecord(langDict)
+            ? langDict
+            : isStringRecord(fallbackDict)
+                ? fallbackDict
+                : firstDict;
+        if (selected) {
+            hasNamespacedLanguageData = true;
+            Object.assign(mergedByNamespace, selected);
         }
     }
-    return allTranslations;
+    if (hasNamespacedLanguageData) {
+        return mergedByNamespace;
+    }
+    // 3) Namespace flat map: { common: {...}, menu: {...} }
+    const mergedFlat = {};
+    for (const [, value] of flatStringEntries) {
+        Object.assign(mergedFlat, value);
+    }
+    return mergedFlat;
 }
 /** 디렉토리에서 번역 파일 동적 로드 */
 export async function loadTranslations(localesDir) {

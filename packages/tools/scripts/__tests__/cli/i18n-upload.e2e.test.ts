@@ -25,7 +25,10 @@ jest.mock("googleapis", () => ({
   },
 }));
 
-describe("i18n-upload CLI E2E", () => {
+const describeGoogleSheetsE2E =
+  process.env.RUN_GOOGLE_SHEETS_CLI_E2E === "true" ? describe : describe.skip;
+
+describeGoogleSheetsE2E("i18n-upload CLI E2E", () => {
   let tempDir: string;
   let mockSheets: any;
 

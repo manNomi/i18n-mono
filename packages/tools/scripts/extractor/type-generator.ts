@@ -635,23 +635,50 @@ function capitalize(str: string): string {
  */
 export function readExtractedTranslations(
   localesDir: string,
+  options: { fallbackNamespace?: string } = {},
 ): ExtractedTranslations {
   const translations: ExtractedTranslations = {};
+  const fallbackNamespace = options.fallbackNamespace || "common";
 
   if (!fs.existsSync(localesDir)) {
     console.warn(`⚠️  Locales directory not found: ${localesDir}`);
     return translations;
   }
 
-  // Read all namespace directories
-  const namespaces = fs.readdirSync(localesDir).filter((item) => {
-    const fullPath = path.join(localesDir, item);
-    return fs.statSync(fullPath).isDirectory();
-  });
+  const entries = fs.readdirSync(localesDir, { withFileTypes: true });
+
+  // Legacy mode support: locales/{lang}.json -> fallback namespace
+  const rootLanguageFiles = entries.filter(
+    (entry) =>
+      entry.isFile() &&
+      entry.name.endsWith(".json") &&
+      /^[A-Za-z0-9-]+\.json$/.test(entry.name),
+  );
+
+  if (rootLanguageFiles.length > 0) {
+    translations[fallbackNamespace] = translations[fallbackNamespace] || {};
+
+    for (const file of rootLanguageFiles) {
+      const language = file.name.replace(".json", "");
+      const filePath = path.join(localesDir, file.name);
+
+      try {
+        const content = fs.readFileSync(filePath, "utf-8");
+        translations[fallbackNamespace][language] = JSON.parse(content);
+      } catch (error) {
+        console.warn(`⚠️  Failed to read ${filePath}:`, error);
+      }
+    }
+  }
+
+  // Namespaced mode: locales/{namespace}/{lang}.json
+  const namespaces = entries
+    .filter((entry) => entry.isDirectory() && entry.name !== "types")
+    .map((entry) => entry.name);
 
   for (const namespace of namespaces) {
     const namespacePath = path.join(localesDir, namespace);
-    translations[namespace] = {};
+    translations[namespace] = translations[namespace] || {};
 
     // Read all language files in this namespace
     const files = fs
@@ -668,6 +695,13 @@ export function readExtractedTranslations(
       } catch (error) {
         console.warn(`⚠️  Failed to read ${filePath}:`, error);
       }
+    }
+  }
+
+  // Remove empty namespaces
+  for (const namespace of Object.keys(translations)) {
+    if (Object.keys(translations[namespace]).length === 0) {
+      delete translations[namespace];
     }
   }
 
