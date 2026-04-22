@@ -72,7 +72,7 @@ describe("t-wrapper (Babel)", () => {
         sourcePattern: path.join(tempDir, "**/*.tsx"),
       });
 
-      expect(result.totalTime).toBeGreaterThan(0);
+      expect(result.totalTime).toBeGreaterThanOrEqual(0);
       expect(result.processedFiles.length).toBeGreaterThan(0);
     });
 

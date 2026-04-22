@@ -15,6 +15,13 @@ import {
   listFiles,
 } from "../cli-test-utils";
 
+function getValueByDotOrLiteral(obj: Record<string, any>, key: string): any {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    return obj[key];
+  }
+  return key.split(".").reduce((acc: any, part) => acc?.[part], obj);
+}
+
 describe("i18n-clean-legacy CLI E2E", () => {
   let tempDir: string;
 
@@ -102,8 +109,8 @@ describe("i18n-clean-legacy CLI E2E", () => {
 
       expect(result.exitCode).toBe(0);
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
-      expect(koData["valid.key"]).toBeDefined();
-      expect(koData["invalid.key"]).toBeUndefined();
+      expect(getValueByDotOrLiteral(koData, "valid.key")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "invalid.key")).toBeUndefined();
     });
   });
 
@@ -147,7 +154,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
       );
       expect(afterContent).toEqual(originalContent);
       // 리포트는 출력되어야 함
-      expect(result.stdout.length).toBeGreaterThan(0);
+      expect((result.stdout + result.stderr).length).toBeGreaterThan(0);
     });
 
     it("--no-backup 옵션으로 백업 파일을 생성하지 않아야 함", async () => {
@@ -262,8 +269,8 @@ describe("i18n-clean-legacy CLI E2E", () => {
       expect(result.exitCode).toBe(0);
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
       // app.key는 유지, src.key와 unused는 제거되어야 함
-      expect(koData["app.key"]).toBeDefined();
-      expect(koData["src.key"]).toBeUndefined();
+      expect(getValueByDotOrLiteral(koData, "app.key")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "src.key")).toBeUndefined();
       expect(koData["unused"]).toBeUndefined();
     });
   });

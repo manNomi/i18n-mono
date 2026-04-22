@@ -15,6 +15,13 @@ import {
   readFileContent,
 } from "../cli-test-utils";
 
+function getValueByDotOrLiteral(obj: Record<string, any>, key: string): any {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    return obj[key];
+  }
+  return key.split(".").reduce((acc: any, part) => acc?.[part], obj);
+}
+
 describe("전체 워크플로우 통합 E2E", () => {
   let tempDir: string;
 
@@ -66,9 +73,9 @@ describe("전체 워크플로우 통합 E2E", () => {
     expect(fileExists(koFile)).toBe(true);
 
     let koData = readJsonFile(koFile);
-    expect(koData).toHaveProperty("welcome.title");
-    expect(koData).toHaveProperty("welcome.description");
-    expect(koData).toHaveProperty("button.save");
+    expect(getValueByDotOrLiteral(koData, "welcome.title")).toBeDefined();
+    expect(getValueByDotOrLiteral(koData, "welcome.description")).toBeDefined();
+    expect(getValueByDotOrLiteral(koData, "button.save")).toBeDefined();
 
     // 2. type 생성
     const typeResult = await runCLICommand("i18n-type", [], projectDir);
@@ -99,11 +106,11 @@ describe("전체 워크플로우 통합 E2E", () => {
 
     // 미사용 키가 제거되었는지 확인
     koData = readJsonFile(koFile);
-    expect(koData).not.toHaveProperty("unused.key");
+    expect(getValueByDotOrLiteral(koData, "unused.key")).toBeUndefined();
     // 사용 중인 키는 유지되어야 함
-    expect(koData).toHaveProperty("welcome.title");
-    expect(koData).toHaveProperty("welcome.description");
-    expect(koData).toHaveProperty("button.save");
+    expect(getValueByDotOrLiteral(koData, "welcome.title")).toBeDefined();
+    expect(getValueByDotOrLiteral(koData, "welcome.description")).toBeDefined();
+    expect(getValueByDotOrLiteral(koData, "button.save")).toBeDefined();
   });
 
   it("유효하지 않은 값(N/A)을 가진 키도 제거되어야 함", async () => {
@@ -153,9 +160,11 @@ describe("전체 워크플로우 통합 E2E", () => {
 
     // 유효하지 않은 키가 제거되었는지 확인
     const finalKoData = readJsonFile(koFile);
-    expect(finalKoData).not.toHaveProperty("invalid.key");
-    expect(finalKoData).not.toHaveProperty("another.invalid");
-    expect(finalKoData).toHaveProperty("valid.key");
+    expect(getValueByDotOrLiteral(finalKoData, "invalid.key")).toBeUndefined();
+    expect(
+      getValueByDotOrLiteral(finalKoData, "another.invalid"),
+    ).toBeUndefined();
+    expect(getValueByDotOrLiteral(finalKoData, "valid.key")).toBeDefined();
   });
 
   it("백업 파일이 생성되어야 함", async () => {

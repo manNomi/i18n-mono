@@ -57,7 +57,7 @@ function removeFrameworkPatterns(
         .replace(/\[\.\.\.[^\]]+\]/g, ""); // [...catchall]
       break;
 
-    case "tanstack-file":
+    case "tanstack-file": {
       // TanStack Router file-based: extract from filename (dot-separated)
       const fileName = pathLib.basename(cleaned, pathLib.extname(cleaned));
       const firstPart = fileName.split(".")[0];
@@ -65,6 +65,7 @@ function removeFrameworkPatterns(
         return firstPart;
       }
       break;
+    }
 
     case "tanstack-folder":
       // TanStack Router folder-based: remove _layout, _index, $ dynamic segments

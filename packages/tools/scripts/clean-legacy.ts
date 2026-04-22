@@ -153,12 +153,27 @@ export class LegacyCleaner {
       missingKeys: [],
     };
 
-    // 기준 언어 (첫 번째 언어, 보통 ko)
-    const primaryLang = this.config.languages[0];
+    // 기준 언어: 유효한 번역 값이 가장 많은 언어를 우선 사용
+    const primaryLang =
+      this.config.languages
+        .map((lang) => {
+          const data = localeData.get(lang) || {};
+          const validValueCount = Object.values(data).filter((value) =>
+            this.isValidValue(value as string),
+          ).length;
+
+          return { lang, validValueCount, totalKeys: Object.keys(data).length };
+        })
+        .sort((a, b) => {
+          if (b.validValueCount !== a.validValueCount) {
+            return b.validValueCount - a.validValueCount;
+          }
+          return b.totalKeys - a.totalKeys;
+        })[0]?.lang || this.config.languages[0];
     const primaryData = localeData.get(primaryLang) || {};
     stats.totalKeysPerLanguage.set(
       primaryLang,
-      Object.keys(primaryData).length
+      Object.keys(primaryData).length,
     );
 
     const cleanedData: Map<string, Record<string, string>> = new Map();
@@ -232,7 +247,7 @@ export class LegacyCleaner {
     console.log(`  • Keys kept: ${stats.keptKeys}`);
     console.log(`  • Keys removed (unused): ${stats.removedUnused}`);
     console.log(
-      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`
+      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`,
     );
     console.log(`  • Keys missing from locale: ${stats.missingKeys}`);
 
@@ -279,7 +294,7 @@ export class LegacyCleaner {
 }
 
 export async function runCleanLegacy(
-  config: Partial<CleanLegacyConfig> = {}
+  config: Partial<CleanLegacyConfig> = {},
 ): Promise<void> {
   const cleaner = new LegacyCleaner(config);
 

@@ -30,6 +30,10 @@ const testTranslations = {
   },
 };
 
+const providerTranslations = {
+  common: testTranslations,
+} as const;
+
 describe("Variable Interpolation", () => {
   describe("Client-side (useTranslation)", () => {
     // Test component
@@ -57,7 +61,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent
@@ -76,7 +80,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent
@@ -95,7 +99,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="ko"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "ko" }}
         >
           <TestComponent
@@ -114,7 +118,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent translationKey="Hello {{name}}" />
@@ -130,7 +134,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent
@@ -149,7 +153,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent translationKey="Welcome" />
@@ -163,7 +167,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent
@@ -186,7 +190,7 @@ describe("Variable Interpolation", () => {
       render(
         <I18nProvider
           initialLanguage="en"
-          translations={testTranslations}
+          translations={providerTranslations}
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent

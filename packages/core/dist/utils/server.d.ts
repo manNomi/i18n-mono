@@ -12,9 +12,9 @@ export declare function parseCookies(cookieHeader: string | null): Record<string
 /** 서버 번역에서 사용하는 변수 타입 */
 export type ServerTranslationVariables = Record<string, string | number>;
 /** 서버 컴포넌트용 번역 함수 생성 */
-export declare function createServerTranslation(language: string, translations: Record<string, Record<string, string>>): (key: string, variables?: ServerTranslationVariables | string, fallback?: string) => string;
+export declare function createServerTranslation(language: string, translations: Record<string, unknown>): (key: string, variables?: ServerTranslationVariables | string, fallback?: string) => string;
 /** 타입 안전한 서버 번역 객체 반환 */
-export declare function getServerTranslations<T extends Record<string, Record<string, string>>>(language: string, translations: T): Record<string, string>;
+export declare function getServerTranslations<T extends Record<string, unknown>>(language: string, translations: T): Record<string, string>;
 /** 디렉토리에서 번역 파일 동적 로드 */
 export declare function loadTranslations(localesDir: string): Promise<Record<string, Record<string, string>>>;
 /** 서버 번역 컨텍스트 생성 (설정 자동 로드, 헤더 자동 감지) */

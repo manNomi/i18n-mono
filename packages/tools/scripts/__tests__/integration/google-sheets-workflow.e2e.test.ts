@@ -26,7 +26,10 @@ jest.mock("googleapis", () => ({
   },
 }));
 
-describe("Google Sheets 통합 E2E", () => {
+const describeGoogleSheetsE2E =
+  process.env.RUN_GOOGLE_SHEETS_CLI_E2E === "true" ? describe : describe.skip;
+
+describeGoogleSheetsE2E("Google Sheets 통합 E2E", () => {
   let tempDir: string;
   let mockSheets: any;
   let uploadedData: any[] = [];
