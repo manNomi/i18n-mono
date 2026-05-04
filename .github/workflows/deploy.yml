@@ -77,16 +77,34 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: 🔐 Verify NPM auth and package permission
+        run: |
+          USERNAME=$(npm whoami)
+          echo "Authenticated npm user: $USERNAME"
+          npm view i18nexus maintainers --json > maintainers.json
+          NPM_USER="$USERNAME" node -e '
+            const fs = require("fs");
+            const user = process.env.NPM_USER;
+            const maintainers = JSON.parse(fs.readFileSync("maintainers.json", "utf8"));
+            const names = maintainers.map((entry) => entry.split(" <")[0]);
+            if (!names.includes(user)) {
+              console.error(`User "${user}" is not a maintainer of i18nexus.`);
+              process.exit(1);
+            }
+            console.log(`Maintainer check passed for ${user}`);
+          '
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: 🔍 Check if version exists
         id: check-version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if npm view i18nexus@$VERSION version 2>/dev/null; then
+          if npm view i18nexus@$VERSION version >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -146,16 +164,34 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: 🔐 Verify NPM auth and package permission
+        run: |
+          USERNAME=$(npm whoami)
+          echo "Authenticated npm user: $USERNAME"
+          npm view i18nexus-tools maintainers --json > maintainers.json
+          NPM_USER="$USERNAME" node -e '
+            const fs = require("fs");
+            const user = process.env.NPM_USER;
+            const maintainers = JSON.parse(fs.readFileSync("maintainers.json", "utf8"));
+            const names = maintainers.map((entry) => entry.split(" <")[0]);
+            if (!names.includes(user)) {
+              console.error(`User "${user}" is not a maintainer of i18nexus-tools.`);
+              process.exit(1);
+            }
+            console.log(`Maintainer check passed for ${user}`);
+          '
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: 🔍 Check if version exists
         id: check-version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if npm view i18nexus-tools@$VERSION version 2>/dev/null; then
+          if npm view i18nexus-tools@$VERSION version >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
