@@ -58,6 +58,10 @@ export interface I18nContextType<
   namespaceTranslations: TTranslations;
   /** 로드된 네임스페이스 (런타임 데이터) */
   loadedNamespaces: Map<string, Record<string, Record<string, string>>>;
+  /** 현재 로드 중인 네임스페이스 */
+  loadingNamespaces: Set<string>;
+  /** Lazy loading용 네임스페이스 로드 보장 함수 */
+  ensureNamespaceLoaded: (namespace: string) => Promise<void>;
   /** Lazy loading 활성화 여부 */
   lazy?: boolean;
   /** 네임스페이스 로더 함수 */
@@ -111,7 +115,7 @@ export function I18nProvider<
   initialLanguage,
   loadNamespace,
   fallbackNamespace,
-  preloadNamespaces = [],
+  preloadNamespaces,
 }: I18nProviderProps<TTranslations>) {
   // Lazy mode is automatically enabled if loadNamespace is provided
   const lazy = !!loadNamespace;
@@ -136,12 +140,134 @@ export function I18nProvider<
   const [loadedNamespaces, setLoadedNamespaces] = React.useState<
     Map<string, Record<string, Record<string, string>>>
   >(() => new Map());
+  const [loadingNamespaces, setLoadingNamespaces] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const loadedNamespacesRef = React.useRef(loadedNamespaces);
+  const namespaceLoadPromisesRef = React.useRef<Map<string, Promise<void>>>(
+    new Map(),
+  );
+
+  React.useEffect(() => {
+    loadedNamespacesRef.current = loadedNamespaces;
+  }, [loadedNamespaces]);
+
+  const loadNamespaceForAllLanguages = React.useCallback(
+    async (namespaceKey: string): Promise<void> => {
+      if (!loadNamespace) {
+        return;
+      }
+
+      const languages = languageManager.getAvailableLanguageCodes();
+      const results = await Promise.all(
+        languages.map(async (lang) => {
+          try {
+            const data = await loadNamespace(namespaceKey, lang);
+            return { lang, data };
+          } catch (error) {
+            console.warn(
+              `Failed to load namespace "${namespaceKey}" for language "${lang}":`,
+              error,
+            );
+            return { lang, data: {} };
+          }
+        }),
+      );
+
+      const namespaceData: Record<string, Record<string, string>> = {};
+      results.forEach(({ lang, data }) => {
+        namespaceData[lang] = data;
+      });
+
+      setLoadedNamespaces((prev) => {
+        if (prev.has(namespaceKey)) {
+          loadedNamespacesRef.current = prev;
+          return prev;
+        }
+
+        const next = new Map(prev);
+        next.set(namespaceKey, namespaceData);
+        loadedNamespacesRef.current = next;
+        return next;
+      });
+    },
+    [languageManager, loadNamespace],
+  );
+
+  const ensureNamespaceLoaded = React.useCallback(
+    (namespace: string): Promise<void> => {
+      const namespaceKey = String(namespace);
+
+      if (
+        !lazy ||
+        !loadNamespace ||
+        loadedNamespacesRef.current.has(namespaceKey)
+      ) {
+        return Promise.resolve();
+      }
+
+      const currentLoad = namespaceLoadPromisesRef.current.get(namespaceKey);
+      if (currentLoad) {
+        return currentLoad;
+      }
+
+      setLoadingNamespaces((prev) => {
+        if (prev.has(namespaceKey)) {
+          return prev;
+        }
+
+        const next = new Set(prev);
+        next.add(namespaceKey);
+        return next;
+      });
+
+      const loadPromise = loadNamespaceForAllLanguages(namespaceKey)
+        .catch((error) => {
+          console.warn(`Failed to load namespace "${namespaceKey}":`, error);
+
+          setLoadedNamespaces((prev) => {
+            if (prev.has(namespaceKey)) {
+              loadedNamespacesRef.current = prev;
+              return prev;
+            }
+
+            const emptyNamespaceData: Record<
+              string,
+              Record<string, string>
+            > = {};
+            languageManager.getAvailableLanguageCodes().forEach((lang) => {
+              emptyNamespaceData[lang] = {};
+            });
+
+            const next = new Map(prev);
+            next.set(namespaceKey, emptyNamespaceData);
+            loadedNamespacesRef.current = next;
+            return next;
+          });
+        })
+        .finally(() => {
+          namespaceLoadPromisesRef.current.delete(namespaceKey);
+          setLoadingNamespaces((prev) => {
+            if (!prev.has(namespaceKey)) {
+              return prev;
+            }
+
+            const next = new Set(prev);
+            next.delete(namespaceKey);
+            return next;
+          });
+        });
+
+      namespaceLoadPromisesRef.current.set(namespaceKey, loadPromise);
+      return loadPromise;
+    },
+    [languageManager, lazy, loadNamespace, loadNamespaceForAllLanguages],
+  );
 
   // Preload namespaces (fallback + additional preload namespaces)
   React.useEffect(() => {
     if (!lazy || !loadNamespace) return;
 
-    const languages = languageManager.getAvailableLanguageCodes();
     const namespacesToPreload = new Set<string>();
 
     // Always preload fallback namespace
@@ -150,54 +276,18 @@ export function I18nProvider<
     }
 
     // Add additional preload namespaces
-    preloadNamespaces.forEach((ns) => namespacesToPreload.add(String(ns)));
+    preloadNamespaces?.forEach((ns) => namespacesToPreload.add(String(ns)));
 
     // Preload all namespaces
     namespacesToPreload.forEach((nsKey) => {
-      // Check if already loaded to avoid duplicate loads
-      if (loadedNamespaces.has(nsKey)) {
-        return;
-      }
-
-      Promise.all(
-        languages.map(async (lang) => {
-          try {
-            const data = await loadNamespace(nsKey, lang);
-            return { lang, data };
-          } catch (error) {
-            console.warn(
-              `Failed to preload namespace "${nsKey}" for language "${lang}":`,
-              error,
-            );
-            return { lang, data: {} };
-          }
-        }),
-      ).then((results) => {
-        const nsData: Record<string, Record<string, string>> = {};
-        results.forEach(({ lang, data }) => {
-          nsData[lang] = data;
-        });
-
-        setLoadedNamespaces((prev) => {
-          // Double-check before setting to avoid race conditions
-          if (prev.has(nsKey)) {
-            return prev;
-          }
-          const newMap = new Map(prev);
-          newMap.set(nsKey, nsData);
-          console.log(
-            `✓ Preloaded namespace "${nsKey}" for languages: [${languages.join(", ")}]`,
-          );
-          return newMap;
-        });
-      });
+      ensureNamespaceLoaded(nsKey);
     });
   }, [
     lazy,
     loadNamespace,
     fallbackNamespace,
     preloadNamespaces,
-    languageManager,
+    ensureNamespaceLoaded,
   ]);
 
   const changeLanguage = async (lang: string): Promise<void> => {
@@ -255,6 +345,8 @@ export function I18nProvider<
     isLoading,
     namespaceTranslations: defaultTranslations,
     loadedNamespaces,
+    loadingNamespaces,
+    ensureNamespaceLoaded,
     lazy,
     loadNamespace,
     fallbackNamespace,

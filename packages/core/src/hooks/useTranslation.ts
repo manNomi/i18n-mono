@@ -131,9 +131,12 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
     currentLanguage,
     isLoading,
     loadedNamespaces,
+    loadingNamespaces,
+    ensureNamespaceLoaded,
     fallbackNamespace,
     namespaceTranslations,
     languageManager,
+    lazy,
   } = context;
 
   const getStaticNamespaceTranslations = (
@@ -168,6 +171,31 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
 
     return {};
   };
+
+  const hasStaticNamespace = namespace
+    ? Object.prototype.hasOwnProperty.call(
+        namespaceTranslations || {},
+        namespace,
+      )
+    : true;
+  const isNamespaceLoaded = namespace ? loadedNamespaces.has(namespace) : true;
+  const isNamespaceLoading = namespace
+    ? loadingNamespaces.has(namespace)
+    : false;
+
+  React.useEffect(() => {
+    if (!namespace || !lazy || hasStaticNamespace || isNamespaceLoaded) {
+      return;
+    }
+
+    void ensureNamespaceLoaded(namespace);
+  }, [
+    namespace,
+    lazy,
+    hasStaticNamespace,
+    isNamespaceLoaded,
+    ensureNamespaceLoaded,
+  ]);
 
   // 번역 데이터 가져오기 (I18nProvider에서 로드된 데이터만 사용)
   const getCurrentTranslations = (): Record<string, string> => {
@@ -237,21 +265,15 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
   }) as TranslationFunction<string>;
 
   // 네임스페이스가 로드되었는지 확인
-  const hasStaticNamespace = namespace
-    ? Object.prototype.hasOwnProperty.call(
-        namespaceTranslations || {},
-        namespace,
-      )
-    : true;
   const isNamespaceReady = namespace
-    ? loadedNamespaces.has(namespace) || hasStaticNamespace
+    ? isNamespaceLoaded || hasStaticNamespace
     : true;
 
   return {
     t: translate,
     currentLanguage,
     lng: currentLanguage, // Alias for react-i18next compatibility
-    isReady: !isLoading && isNamespaceReady,
+    isReady: !isLoading && !isNamespaceLoading && isNamespaceReady,
   };
 }
 
