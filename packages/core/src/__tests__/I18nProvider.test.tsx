@@ -91,6 +91,13 @@ const createDeferred = <T,>(): Deferred<T> => {
   return { promise, resolve, reject };
 };
 
+const staticTranslations = {
+  common: {
+    en: { title: "Title" },
+    ko: { title: "제목" },
+  },
+} as const;
+
 describe("I18nProvider", () => {
   beforeEach(() => {
     document.cookie = "";
@@ -188,6 +195,90 @@ describe("I18nProvider", () => {
     );
 
     expect(screen.getByTestId("current-language")).toHaveTextContent("ko");
+  });
+
+  it("should keep t identity stable across local rerenders", () => {
+    const seenT: unknown[] = [];
+
+    const StabilityComponent = () => {
+      const { t } = useTranslation("common");
+      const [count, setCount] = React.useState(0);
+      seenT.push(t);
+
+      return (
+        <button
+          data-testid="rerender"
+          onClick={() => setCount((value) => value + 1)}
+        >
+          {count}:{t("title")}
+        </button>
+      );
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        translations={staticTranslations}
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages,
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <StabilityComponent />
+      </I18nProvider>,
+    );
+
+    const firstT = seenT[0];
+    fireEvent.click(screen.getByTestId("rerender"));
+
+    expect(screen.getByTestId("rerender")).toHaveTextContent("1:Title");
+    expect(seenT[seenT.length - 1]).toBe(firstT);
+  });
+
+  it("should update t identity after language changes", async () => {
+    const seenT: unknown[] = [];
+
+    const LanguageComponent = () => {
+      const { t } = useTranslation("common");
+      const { changeLanguage } = useI18nContext();
+      seenT.push(t);
+
+      return (
+        <button
+          data-testid="change-language-with-translation"
+          onClick={() => void changeLanguage("ko")}
+        >
+          {t("title")}
+        </button>
+      );
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        translations={staticTranslations}
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages,
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <LanguageComponent />
+      </I18nProvider>,
+    );
+
+    const firstT = seenT[0];
+    fireEvent.click(screen.getByTestId("change-language-with-translation"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("change-language-with-translation"),
+      ).toHaveTextContent("제목");
+    });
+    expect(seenT[seenT.length - 1]).not.toBe(firstT);
   });
 
   describe("lazy namespace loading", () => {

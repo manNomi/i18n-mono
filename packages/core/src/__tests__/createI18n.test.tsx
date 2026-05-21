@@ -4,7 +4,14 @@
  */
 
 import React from "react";
-import { act, render, screen, cleanup, waitFor } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  cleanup,
+  waitFor,
+  fireEvent,
+} from "@testing-library/react";
 import { createI18n } from "../utils/createI18n";
 
 // Clean up after each test
@@ -235,6 +242,45 @@ describe("createI18n", () => {
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
       expect(screen.getByTestId("language")).toHaveTextContent("en");
       expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+    });
+
+    it("should keep t identity stable across local rerenders", () => {
+      const i18n = createI18n(testTranslations);
+      const seenT: unknown[] = [];
+
+      function TestComponent() {
+        const { t } = i18n.useTranslation("common");
+        const [count, setCount] = React.useState(0);
+        seenT.push(t);
+
+        return (
+          <button
+            data-testid="rerender"
+            onClick={() => setCount((value) => value + 1)}
+          >
+            {count}:{t("welcome")}
+          </button>
+        );
+      }
+
+      render(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            enableAutoDetection: false,
+            enableLocalStorage: false,
+          }}
+        >
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      const firstT = seenT[0];
+      fireEvent.click(screen.getByTestId("rerender"));
+
+      expect(screen.getByTestId("rerender")).toHaveTextContent("1:Welcome");
+      expect(seenT[seenT.length - 1]).toBe(firstT);
     });
 
     it("should translate based on namespace", () => {
@@ -625,6 +671,7 @@ describe("createI18n", () => {
   describe("Lazy namespace loading", () => {
     it("should load a requested namespace without preloading it", async () => {
       const i18n = createI18n(lazyTranslations);
+      const seenT: unknown[] = [];
       const loads = new Map<string, Deferred<Record<string, string>>>();
       const loadNamespace = jest.fn(
         (
@@ -639,6 +686,7 @@ describe("createI18n", () => {
 
       function TestComponent() {
         const { t, isReady } = i18n.useTranslation("home");
+        seenT.push(t);
 
         return (
           <div>
@@ -661,6 +709,7 @@ describe("createI18n", () => {
         </i18n.I18nProvider>,
       );
 
+      const firstT = seenT[0];
       expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
 
       await waitFor(() => {
@@ -682,6 +731,7 @@ describe("createI18n", () => {
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
+      expect(seenT[seenT.length - 1]).not.toBe(firstT);
       expect(loadNamespace).toHaveBeenCalledWith("home", "en");
       expect(loadNamespace).toHaveBeenCalledWith("home", "ko");
       expect(loadNamespace).toHaveBeenCalledTimes(2);

@@ -8,15 +8,22 @@ import {
   ExtractKeysWithFallback,
 } from "../components/I18nProvider";
 import type { LanguageConfig } from "../utils/languageManager";
+import {
+  getNamespaceReadiness,
+  resolveTranslationReady,
+  resolveTranslationSnapshot,
+  shouldLoadNamespace,
+  translateFromSnapshot,
+  type RuntimeNamespaceTranslations,
+  type TranslationStyles,
+  type TranslationVariables,
+} from "../utils/translation-runtime";
 
-/** 문자열 보간 변수 */
-export type TranslationVariables = Record<string, string | number>;
-
-/** 변수 스타일 설정 */
-export type VariableStyle = React.CSSProperties;
-
-/** 번역 변수 스타일 */
-export type TranslationStyles = Record<string, VariableStyle>;
+export type {
+  TranslationVariables,
+  TranslationStyles,
+  VariableStyle,
+} from "../utils/translation-runtime";
 
 /** 타입 안전한 번역 함수 오버로드 */
 export interface TranslationFunction<K extends string = string> {
@@ -42,68 +49,6 @@ export interface UseTranslationReturn<K extends string = string> {
   /** 번역 준비 여부 */
   isReady: boolean;
 }
-
-/** 번역 문자열의 변수 치환 */
-const interpolate = (
-  text: string,
-  variables?: TranslationVariables,
-): string => {
-  if (!variables) {
-    return text;
-  }
-
-  return text.replace(/\{\{(\w+)\}\}/g, (match, variableName) => {
-    const value = variables[variableName];
-    return value !== undefined ? String(value) : match;
-  });
-};
-
-/** 스타일이 적용된 React 요소로 변수 치환 */
-const interpolateWithStyles = (
-  text: string,
-  variables: TranslationVariables,
-  styles: TranslationStyles,
-): React.ReactElement => {
-  const parts: (string | React.ReactElement)[] = [];
-  let lastIndex = 0;
-  const regex = /\{\{(\w+)\}\}/g;
-  let match;
-  let key = 0;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.substring(lastIndex, match.index));
-    }
-
-    const variableName = match[1];
-    const value = variables[variableName];
-    const style = styles[variableName];
-
-    if (value !== undefined) {
-      if (style) {
-        parts.push(
-          React.createElement(
-            "span",
-            { key: `var-${key++}`, style: style },
-            String(value),
-          ),
-        );
-      } else {
-        parts.push(String(value));
-      }
-    } else {
-      parts.push(match[0]);
-    }
-
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex));
-  }
-
-  return React.createElement(React.Fragment, null, ...parts);
-};
 
 /** 번역 함수 및 현재 언어 접근 훅 (오버로드) */
 // 오버로드 1: 타입 명시 없이 사용 (기본 동작, 하위 호환성)
@@ -139,52 +84,35 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
     lazy,
   } = context;
 
-  const getStaticNamespaceTranslations = (
-    namespaceKey: string,
-  ): Record<string, string> => {
-    const namespaceData = (
-      namespaceTranslations as Record<
-        string,
-        Record<string, Record<string, string>>
-      >
-    )?.[namespaceKey];
-
-    if (!namespaceData || typeof namespaceData !== "object") {
-      return {};
-    }
-
-    const current = namespaceData[currentLanguage];
-    if (current && typeof current === "object") {
-      return current;
-    }
-
-    const fallbackLanguage = languageManager.getDefaultLanguage();
-    const fallback = namespaceData[fallbackLanguage];
-    if (fallback && typeof fallback === "object") {
-      return fallback;
-    }
-
-    const first = Object.values(namespaceData)[0];
-    if (first && typeof first === "object") {
-      return first;
-    }
-
-    return {};
-  };
-
-  const hasStaticNamespace = namespace
-    ? Object.prototype.hasOwnProperty.call(
-        namespaceTranslations || {},
+  const staticTranslations =
+    namespaceTranslations as RuntimeNamespaceTranslations;
+  const fallbackLanguage = languageManager.getDefaultLanguage();
+  const {
+    hasStaticNamespace,
+    isNamespaceLoaded,
+    isNamespaceLoading,
+    isNamespaceReady,
+  } = React.useMemo(
+    () =>
+      getNamespaceReadiness({
         namespace,
-      )
-    : true;
-  const isNamespaceLoaded = namespace ? loadedNamespaces.has(namespace) : true;
-  const isNamespaceLoading = namespace
-    ? loadingNamespaces.has(namespace)
-    : false;
+        staticTranslations,
+        loadedNamespaces,
+        loadingNamespaces,
+      }),
+    [namespace, staticTranslations, loadedNamespaces, loadingNamespaces],
+  );
 
   React.useEffect(() => {
-    if (!namespace || !lazy || hasStaticNamespace || isNamespaceLoaded) {
+    if (
+      !namespace ||
+      !shouldLoadNamespace({
+        namespace,
+        lazy,
+        hasStaticNamespace,
+        isNamespaceLoaded,
+      })
+    ) {
       return;
     }
 
@@ -197,83 +125,50 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
     ensureNamespaceLoaded,
   ]);
 
-  // 번역 데이터 가져오기 (I18nProvider에서 로드된 데이터만 사용)
-  const getCurrentTranslations = (): Record<string, string> => {
-    let result: Record<string, string> = {};
+  const currentTranslations = React.useMemo(
+    () =>
+      resolveTranslationSnapshot({
+        namespace,
+        staticTranslations,
+        currentLanguage,
+        fallbackLanguage,
+        fallbackNamespace: fallbackNamespace
+          ? String(fallbackNamespace)
+          : undefined,
+        loadedNamespaces,
+        staticResolutionMode: "namespace",
+        staticMergeMode: "when-empty",
+      }),
+    [
+      namespace,
+      staticTranslations,
+      currentLanguage,
+      fallbackLanguage,
+      fallbackNamespace,
+      loadedNamespaces,
+    ],
+  );
 
-    // Fallback namespace 먼저 로드
-    if (fallbackNamespace) {
-      const fallbackNs = loadedNamespaces.get(String(fallbackNamespace))?.[
-        currentLanguage
-      ];
-      if (fallbackNs) {
-        result = { ...fallbackNs };
-      }
-    }
-
-    // 요청된 namespace 로드 (fallback 덮어쓰기)
-    if (namespace) {
-      const requestedNs = loadedNamespaces.get(namespace)?.[currentLanguage];
-      if (requestedNs) {
-        result = { ...result, ...requestedNs };
-      }
-    }
-
-    // Static translations fallback (non-lazy mode compatibility)
-    if (Object.keys(result).length === 0) {
-      if (namespace) {
-        if (fallbackNamespace) {
-          result = {
-            ...result,
-            ...getStaticNamespaceTranslations(String(fallbackNamespace)),
-          };
-        }
-
-        const requested = getStaticNamespaceTranslations(namespace);
-        if (Object.keys(requested).length > 0) {
-          result = { ...result, ...requested };
-        } else {
-          // Legacy behavior: if namespace is invalid, expose flattened keys.
-          for (const nsKey of Object.keys(namespaceTranslations || {})) {
-            result = { ...result, ...getStaticNamespaceTranslations(nsKey) };
-          }
-        }
-      } else {
-        for (const nsKey of Object.keys(namespaceTranslations || {})) {
-          result = { ...result, ...getStaticNamespaceTranslations(nsKey) };
-        }
-      }
-    }
-
-    return result;
-  };
-
-  const currentTranslations = getCurrentTranslations();
-
-  const translate = ((
-    key: string,
-    variables?: TranslationVariables,
-    styles?: TranslationStyles,
-  ): string | React.ReactElement => {
-    const translatedText = currentTranslations[key] || key;
-
-    if (styles && variables) {
-      return interpolateWithStyles(translatedText, variables, styles);
-    }
-
-    return interpolate(translatedText, variables);
-  }) as TranslationFunction<string>;
-
-  // 네임스페이스가 로드되었는지 확인
-  const isNamespaceReady = namespace
-    ? isNamespaceLoaded || hasStaticNamespace
-    : true;
+  const translate = React.useCallback(
+    ((
+      key: string,
+      variables?: TranslationVariables,
+      styles?: TranslationStyles,
+    ): string | React.ReactElement => {
+      return translateFromSnapshot(currentTranslations, key, variables, styles);
+    }) as TranslationFunction<string>,
+    [currentTranslations],
+  );
 
   return {
     t: translate,
     currentLanguage,
     lng: currentLanguage, // Alias for react-i18next compatibility
-    isReady: !isLoading && !isNamespaceLoading && isNamespaceReady,
+    isReady: resolveTranslationReady({
+      isLoading,
+      isNamespaceLoading,
+      isNamespaceReady,
+    }),
   };
 }
 
