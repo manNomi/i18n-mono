@@ -231,7 +231,7 @@ export function createI18n<
     });
   };
 
-  const useTranslationImpl = () => {
+  const useTranslationImpl = (namespace?: string) => {
     const context = useI18nContext<TTranslations>();
     const fallbackLanguage = context.languageManager.getDefaultLanguage();
     const source = (
@@ -241,11 +241,65 @@ export function createI18n<
         : translations
     ) as LegacyNamespaceTranslations;
 
-    const currentTranslations = flattenTranslationsForLanguage(
+    const hasStaticNamespace = namespace
+      ? Object.prototype.hasOwnProperty.call(source, namespace)
+      : true;
+    const isNamespaceLoaded = namespace
+      ? context.loadedNamespaces.has(namespace)
+      : true;
+    const isNamespaceLoading = namespace
+      ? context.loadingNamespaces.has(namespace)
+      : false;
+
+    React.useEffect(() => {
+      if (
+        !namespace ||
+        !context.lazy ||
+        hasStaticNamespace ||
+        isNamespaceLoaded
+      ) {
+        return;
+      }
+
+      void context.ensureNamespaceLoaded(namespace);
+    }, [
+      context.ensureNamespaceLoaded,
+      context.lazy,
+      hasStaticNamespace,
+      isNamespaceLoaded,
+      namespace,
+    ]);
+
+    let currentTranslations = flattenTranslationsForLanguage(
       source,
       context.currentLanguage,
       fallbackLanguage,
     );
+
+    if (context.fallbackNamespace) {
+      const fallbackTranslations = context.loadedNamespaces.get(
+        String(context.fallbackNamespace),
+      )?.[context.currentLanguage];
+
+      if (fallbackTranslations) {
+        currentTranslations = {
+          ...currentTranslations,
+          ...fallbackTranslations,
+        };
+      }
+    }
+
+    if (namespace) {
+      const namespaceTranslations =
+        context.loadedNamespaces.get(namespace)?.[context.currentLanguage];
+
+      if (namespaceTranslations) {
+        currentTranslations = {
+          ...currentTranslations,
+          ...namespaceTranslations,
+        };
+      }
+    }
 
     const t = ((
       key: string,
@@ -264,15 +318,15 @@ export function createI18n<
     return {
       t,
       currentLanguage: context.currentLanguage,
-      isReady: !context.isLoading,
+      isReady:
+        !context.isLoading &&
+        !isNamespaceLoading &&
+        (!namespace || hasStaticNamespace || isNamespaceLoaded),
     };
   };
 
   const useTranslation = ((namespace?: string) => {
-    // Legacy compatibility: namespace argument is accepted for type narrowing
-    // while runtime lookup remains flattened across namespaces.
-    void namespace;
-    return useTranslationImpl();
+    return useTranslationImpl(namespace);
   }) as CreateI18nInstance<TTranslations, FallbackNamespace>["useTranslation"];
 
   return {

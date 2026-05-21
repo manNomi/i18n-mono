@@ -4,9 +4,8 @@
  */
 
 import React from "react";
-import { render, screen, cleanup } from "@testing-library/react";
+import { act, render, screen, cleanup, waitFor } from "@testing-library/react";
 import { createI18n } from "../utils/createI18n";
-import type { NamespaceTranslations } from "../components/I18nProvider";
 
 // Clean up after each test
 afterEach(() => {
@@ -58,6 +57,59 @@ const testTranslations = {
     },
   },
 } as const;
+
+const availableLanguages = [
+  { code: "en", name: "English" },
+  { code: "ko", name: "Korean" },
+];
+
+type Deferred<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+};
+
+const createDeferred = <T,>(): Deferred<T> => {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+
+  return { promise, resolve, reject };
+};
+
+type LazyTranslations = {
+  common: {
+    en: {
+      title: string;
+      shared: string;
+    };
+    ko: {
+      title: string;
+      shared: string;
+    };
+  };
+  home: {
+    en: {
+      title: string;
+    };
+    ko: {
+      title: string;
+    };
+  };
+  missing: {
+    en: {
+      title: string;
+    };
+    ko: {
+      title: string;
+    };
+  };
+};
+
+const lazyTranslations = {} as LazyTranslations;
 
 describe("createI18n", () => {
   describe("Basic Functionality", () => {
@@ -567,6 +619,277 @@ describe("createI18n", () => {
         "Value with special chars: !@#$%",
       );
       expect(screen.getByTestId("dots")).toHaveTextContent("Another value");
+    });
+  });
+
+  describe("Lazy namespace loading", () => {
+    it("should load a requested namespace without preloading it", async () => {
+      const i18n = createI18n(lazyTranslations);
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      function TestComponent() {
+        const { t, isReady } = i18n.useTranslation("home");
+
+        return (
+          <div>
+            <div data-testid="translation">{t("title")}</div>
+            <div data-testid="ready">{isReady ? "ready" : "not-ready"}</div>
+          </div>
+        );
+      }
+
+      render(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(2);
+      });
+
+      await act(async () => {
+        loads.get("home:en")?.resolve({ title: "Home title" });
+        loads.get("home:ko")?.resolve({ title: "홈 제목" });
+        await Promise.all([
+          loads.get("home:en")!.promise,
+          loads.get("home:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("translation")).toHaveTextContent(
+          "Home title",
+        );
+        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+      });
+      expect(loadNamespace).toHaveBeenCalledWith("home", "en");
+      expect(loadNamespace).toHaveBeenCalledWith("home", "ko");
+      expect(loadNamespace).toHaveBeenCalledTimes(2);
+    });
+
+    it("should dedupe simultaneous namespace load requests", async () => {
+      const i18n = createI18n(lazyTranslations);
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      function TestComponent() {
+        const { t, isReady } = i18n.useTranslation("home");
+
+        return (
+          <div>
+            <div data-testid="translation">{t("title")}</div>
+            <div data-testid="ready">{isReady ? "ready" : "not-ready"}</div>
+          </div>
+        );
+      }
+
+      render(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <TestComponent />
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(2);
+      });
+
+      await act(async () => {
+        loads.get("home:en")?.resolve({ title: "Home title" });
+        loads.get("home:ko")?.resolve({ title: "홈 제목" });
+        await Promise.all([
+          loads.get("home:en")!.promise,
+          loads.get("home:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        screen.getAllByTestId("translation").forEach((translationNode) => {
+          expect(translationNode).toHaveTextContent("Home title");
+        });
+        screen.getAllByTestId("ready").forEach((readyNode) => {
+          expect(readyNode).toHaveTextContent("ready");
+        });
+      });
+      expect(loadNamespace).toHaveBeenCalledTimes(2);
+    });
+
+    it("should merge fallback namespace with the requested namespace", async () => {
+      const i18n = createI18n(lazyTranslations, {
+        fallbackNamespace: "common",
+      });
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      function TestComponent() {
+        const { t, isReady } = i18n.useTranslation("home");
+
+        return (
+          <div>
+            <div data-testid="title">{t("title")}</div>
+            <div data-testid="shared">{t("shared")}</div>
+            <div data-testid="ready">{isReady ? "ready" : "not-ready"}</div>
+          </div>
+        );
+      }
+
+      render(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(4);
+      });
+
+      await act(async () => {
+        loads.get("common:en")?.resolve({
+          title: "Fallback title",
+          shared: "Shared label",
+        });
+        loads.get("common:ko")?.resolve({});
+        loads.get("home:en")?.resolve({ title: "Home title" });
+        loads.get("home:ko")?.resolve({});
+        await Promise.all([
+          loads.get("common:en")!.promise,
+          loads.get("common:ko")!.promise,
+          loads.get("home:en")!.promise,
+          loads.get("home:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("title")).toHaveTextContent("Home title");
+        expect(screen.getByTestId("shared")).toHaveTextContent("Shared label");
+        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+      });
+    });
+
+    it("should avoid retry loops after a namespace load failure", async () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const i18n = createI18n(lazyTranslations);
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      function TestComponent() {
+        const { t, isReady } = i18n.useTranslation("missing");
+
+        return (
+          <div>
+            <div data-testid="translation">{t("title")}</div>
+            <div data-testid="ready">{isReady ? "ready" : "not-ready"}</div>
+          </div>
+        );
+      }
+
+      const { rerender } = render(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(2);
+      });
+
+      await act(async () => {
+        loads.get("missing:en")?.reject(new Error("missing namespace"));
+        loads.get("missing:ko")?.reject(new Error("missing namespace"));
+        await Promise.allSettled([
+          loads.get("missing:en")!.promise,
+          loads.get("missing:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+      });
+      expect(screen.getByTestId("translation")).toHaveTextContent("title");
+
+      rerender(
+        <i18n.I18nProvider
+          initialLanguage="en"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <TestComponent />
+        </i18n.I18nProvider>,
+      );
+
+      expect(loadNamespace).toHaveBeenCalledTimes(2);
+      warnSpy.mockRestore();
     });
   });
 
