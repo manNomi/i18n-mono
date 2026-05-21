@@ -126,6 +126,129 @@ export default function ClientComponent() {
 }
 ```
 
+위 빠른 시작은 가장 단순한 초보자 경로인 `I18nProvider`와
+`useTranslation` API를 사용합니다. 네임스페이스별 key 자동완성과 더 강한
+타입 추론이 필요하다면 아래
+[createI18n으로 고급 타입 안전성 사용하기](#createi18n으로-고급-타입-안전성-사용하기)를
+확인하세요.
+
+### createI18n으로 고급 타입 안전성 사용하기
+
+`createI18n`은 번역 객체의 모양에서 네임스페이스와 key 타입을 추론하는
+고급 API입니다. 기본 사용자는 `I18nProvider/useTranslation`으로 시작하고,
+앱 전역에서 typed hook을 만들고 싶을 때 `createI18n`을 사용하는 흐름을
+권장합니다.
+
+```tsx
+import { createI18n, type I18nTranslations } from "i18nexus";
+
+const translations = {
+  common: {
+    en: {
+      save: "Save",
+      cancel: "Cancel",
+    },
+    ko: {
+      save: "저장",
+      cancel: "취소",
+    },
+  },
+  home: {
+    en: {
+      title: "Home",
+      greeting: "Hello, {{name}}",
+    },
+    ko: {
+      title: "홈",
+      greeting: "안녕하세요, {{name}}님",
+    },
+  },
+} as const satisfies I18nTranslations;
+
+export const i18n = createI18n(translations, {
+  fallbackNamespace: "common",
+});
+
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
+```
+
+```tsx
+function HomeTitle() {
+  const { t } = useAppTranslation("home");
+
+  t("title"); // OK: home 네임스페이스 key
+  t("save"); // OK: fallback common 네임스페이스 key
+  t("missing"); // TypeScript error
+
+  return <h1>{t("greeting", { name: "Alice" })}</h1>;
+}
+```
+
+중요한 런타임 참고사항: 현재 static `createI18n`은 기존 사용자 호환성을
+위해 flatten된 lookup 동작을 유지합니다. TypeScript는 요청한 네임스페이스와
+fallback 네임스페이스 기준으로 key를 좁혀주지만, 런타임에서는 과거 호환성
+때문에 다른 static 네임스페이스의 key도 resolve될 수 있습니다.
+
+#### createI18n과 lazy namespace
+
+lazy 방식에서는 빈 typed translation shape를 넘기고 Provider에
+`loadNamespace(namespace, language)`를 제공합니다. 요청한 네임스페이스가
+로드되는 동안 `isReady`는 `false`가 됩니다.
+
+```tsx
+import { createI18n } from "i18nexus";
+
+type AppTranslations = {
+  common: {
+    en: { loading: string };
+    ko: { loading: string };
+  };
+  home: {
+    en: { title: string };
+    ko: { title: string };
+  };
+};
+
+const i18n = createI18n({} as AppTranslations, {
+  fallbackNamespace: "common",
+});
+
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
+
+export function AppI18nProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      languageManagerOptions={{
+        defaultLanguage: "en",
+        availableLanguages: [
+          { code: "en", name: "English" },
+          { code: "ko", name: "한국어" },
+        ],
+      }}
+      loadNamespace={async (namespace, language) => {
+        const module = await import(`../locales/${namespace}/${language}.json`);
+        return module.default;
+      }}
+    >
+      {children}
+    </I18nProvider>
+  );
+}
+
+function HomePage() {
+  const { t, isReady } = useAppTranslation("home");
+
+  if (!isReady) {
+    return <p>Loading...</p>;
+  }
+
+  return <h1>{t("title")}</h1>;
+}
+```
+
 ---
 
 ## 📚 문서
@@ -190,7 +313,7 @@ t("{{count}}/{{total}} 완료", { count: 7, total: 10 });
 t(
   "가격: {{amount}}",
   { amount: 100 },
-  { amount: { color: "red", fontWeight: "bold" } }
+  { amount: { color: "red", fontWeight: "bold" } },
 );
 ```
 
