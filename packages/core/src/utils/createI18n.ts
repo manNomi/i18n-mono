@@ -23,6 +23,8 @@ export type LegacyNamespaceTranslations = {
   };
 };
 
+export type I18nTranslations = LegacyNamespaceTranslations;
+
 type KeysOfNamespace<
   TTranslations extends LegacyNamespaceTranslations,
   NS extends keyof TTranslations,
@@ -46,7 +48,7 @@ type FallbackKeys<
     : never;
 
 export interface CreateI18nOptions<
-  TTranslations extends LegacyNamespaceTranslations,
+  TTranslations extends I18nTranslations = I18nTranslations,
   FallbackNamespace extends keyof TTranslations & string = never,
 > {
   fallbackNamespace?: FallbackNamespace;
@@ -66,8 +68,11 @@ export interface LegacyUseTranslationReturn<K extends string = string> {
   isReady: boolean;
 }
 
+export type CreateI18nUseTranslationReturn<K extends string = string> =
+  LegacyUseTranslationReturn<K>;
+
 export interface CreateI18nInstance<
-  TTranslations extends LegacyNamespaceTranslations,
+  TTranslations extends I18nTranslations = I18nTranslations,
   FallbackNamespace extends keyof TTranslations & string = never,
 > {
   I18nProvider: React.ComponentType<
@@ -79,10 +84,10 @@ export interface CreateI18nInstance<
     }
   >;
   useTranslation: {
-    (): LegacyUseTranslationReturn<AllTranslationKeys<TTranslations>>;
+    (): CreateI18nUseTranslationReturn<AllTranslationKeys<TTranslations>>;
     <NS extends keyof TTranslations & string>(
       namespace: NS,
-    ): LegacyUseTranslationReturn<
+    ): CreateI18nUseTranslationReturn<
       | KeysOfNamespace<TTranslations, NS>
       | FallbackKeys<TTranslations, FallbackNamespace>
     >;

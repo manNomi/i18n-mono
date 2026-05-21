@@ -113,6 +113,11 @@ export default function RootLayout({
 
 ### 3. Use in Components
 
+This Quick Start uses the beginner-friendly `I18nProvider` and
+`useTranslation` API. If you want namespace and key autocomplete from a typed
+translation object, see
+[Advanced Type Safety with createI18n](#advanced-type-safety-with-createi18n).
+
 #### Client Component
 
 ```tsx
@@ -170,13 +175,132 @@ Hook for using translations in Client Components.
 const { t, currentLanguage, isReady } = useTranslation("home");
 
 // Basic usage
-t("title"); // ✅ Type-safe
+t("title"); // Looks up "title" in the home namespace
 
 // With variables
-t("greeting", { name: "Alice" }); // ✅ Type-safe
+t("greeting", { name: "Alice" });
 
 // With styles (returns ReactElement)
 t("styled", {}, { bold: { fontWeight: "bold" } });
+```
+
+### `createI18n(translations, options)`
+
+Advanced typed API for apps that want namespace and key inference from a
+translation shape.
+
+Use this when you want TypeScript to autocomplete keys for each namespace while
+keeping the simple provider/hook runtime model.
+
+```tsx
+import { createI18n, type I18nTranslations } from "i18nexus";
+
+const translations = {
+  common: {
+    en: {
+      save: "Save",
+      cancel: "Cancel",
+    },
+    ko: {
+      save: "저장",
+      cancel: "취소",
+    },
+  },
+  home: {
+    en: {
+      title: "Home",
+      greeting: "Hello, {{name}}",
+    },
+    ko: {
+      title: "홈",
+      greeting: "안녕하세요, {{name}}님",
+    },
+  },
+} as const satisfies I18nTranslations;
+
+export const i18n = createI18n(translations, {
+  fallbackNamespace: "common",
+});
+
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
+```
+
+```tsx
+function HomeTitle() {
+  const { t } = useAppTranslation("home");
+
+  t("title"); // OK: home namespace key
+  t("save"); // OK: fallback common namespace key
+  t("missing"); // TypeScript error
+
+  return <h1>{t("greeting", { name: "Alice" })}</h1>;
+}
+```
+
+Important runtime note: static `createI18n` currently keeps a legacy flattened
+lookup for backward compatibility. TypeScript narrows keys to the requested
+namespace plus fallback namespace, but old static runtime keys from other
+namespaces may still resolve until strict namespace behavior is introduced in a
+future cleanup.
+
+#### Lazy Namespaces with `createI18n`
+
+For lazy apps, pass an empty typed translation shape and provide
+`loadNamespace(namespace, language)` to the provider. `isReady` is `false` while
+the requested namespace is loading.
+
+```tsx
+import { createI18n } from "i18nexus";
+
+type AppTranslations = {
+  common: {
+    en: { loading: string };
+    ko: { loading: string };
+  };
+  home: {
+    en: { title: string };
+    ko: { title: string };
+  };
+};
+
+const i18n = createI18n({} as AppTranslations, {
+  fallbackNamespace: "common",
+});
+
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
+
+export function AppI18nProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      languageManagerOptions={{
+        defaultLanguage: "en",
+        availableLanguages: [
+          { code: "en", name: "English" },
+          { code: "ko", name: "한국어" },
+        ],
+      }}
+      loadNamespace={async (namespace, language) => {
+        const module = await import(`../locales/${namespace}/${language}.json`);
+        return module.default;
+      }}
+    >
+      {children}
+    </I18nProvider>
+  );
+}
+
+function HomePage() {
+  const { t, isReady } = useAppTranslation("home");
+
+  if (!isReady) {
+    return <p>Loading...</p>;
+  }
+
+  return <h1>{t("title")}</h1>;
+}
 ```
 
 ### `getTranslation(namespace)`
