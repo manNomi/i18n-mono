@@ -12,7 +12,7 @@ export default function I18nexusToolsPage() {
     {
       title: t("i18n-wrapper"),
       description: t(
-        "Automatically wrap Korean/English text with t() function",
+        "Automatically wrap Korean/English text with t() function"
       ),
       href: "/docs/i18nexus-tools/wrapper",
     },
@@ -50,7 +50,7 @@ export default function I18nexusToolsPage() {
       eyebrow={t("i18nexus-tools 문서")}
       title={t("i18nexus-tools")}
       description={t(
-        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구",
+        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구"
       )}
     >
       <Section title={t("설치")}>

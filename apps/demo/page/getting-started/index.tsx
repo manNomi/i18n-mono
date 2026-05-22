@@ -72,11 +72,11 @@ export default function GettingStartedPage() {
       backLabel={t("홈으로 돌아가기")}
       title={t("시작하기")}
       description={t("프로젝트에 i18nexus를 설정하는 완벽한 단계별 가이드")}
-      actions={
+      actions={(
         <Link href="/cli" className="demo-button">
           {t("CLI 도구 살펴보기")}
         </Link>
-      }
+      )}
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <StepCard

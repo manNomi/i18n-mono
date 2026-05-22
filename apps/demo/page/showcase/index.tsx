@@ -19,11 +19,11 @@ export default async function ShowcasePage() {
     <PageShell
       title={t("i18nexus 쇼케이스")}
       description={t("i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들")}
-      actions={
+      actions={(
         <Link href="/showcase/submit" className="demo-button-primary">
           {t("내 프로젝트 등록하기")}
         </Link>
-      }
+      )}
     >
       {projects.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">

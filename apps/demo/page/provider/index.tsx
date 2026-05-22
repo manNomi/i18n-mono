@@ -91,7 +91,7 @@ export default function ProviderPage() {
     <PageShell
       title="I18nProvider"
       description={t(
-        "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider",
+        "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider"
       )}
       size="narrow"
     >

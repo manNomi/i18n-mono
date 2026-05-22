@@ -27,7 +27,7 @@ export default async function ServerExamplePage() {
       backLabel={t("홈으로 돌아가기")}
       title={t("서버 컴포넌트 예제")}
       description={t(
-        "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!",
+        "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!"
       )}
       size="narrow"
     >

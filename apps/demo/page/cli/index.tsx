@@ -13,9 +13,9 @@ export default function CLIPage() {
       name: "i18n-wrapper",
       title: t("자동 텍스트 래핑"),
       description: t(
-        "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다",
+        "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다"
       ),
-      command: 'npx i18n-wrapper --pattern "app/**/*.tsx"',
+      command: "npx i18n-wrapper --pattern \"app/**/*.tsx\"",
       href: "/docs/i18nexus-tools/wrapper",
     },
     {
@@ -45,11 +45,11 @@ export default function CLIPage() {
     <PageShell
       title={t("CLI Tools")}
       description={t("텍스트 래핑 및 번역 관리를 위한 강력한 자동화 도구")}
-      actions={
+      actions={(
         <Link href="/docs/i18nexus-tools" className="demo-button">
           i18nexus-tools
         </Link>
-      }
+      )}
     >
       <Section title={t("설치")}>
         <CodeBlock language="bash">npm install -D i18nexus-tools</CodeBlock>

@@ -69,7 +69,7 @@ export default function I18nexusDocsPage() {
       eyebrow={t("i18nexus 문서")}
       title={t("i18nexus 라이브러리")}
       description={t(
-        "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷",
+        "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷"
       )}
     >
       <Section title={t("설치")}>
