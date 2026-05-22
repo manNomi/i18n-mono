@@ -29,10 +29,10 @@ export default function ProjectCard({
 
   return (
     <>
-      <div className="group bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 hover:border-blue-500 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1">
+      <div className="group overflow-hidden rounded-lg border border-slate-200 bg-white hover:border-blue-200">
         {/* Thumbnail - 클릭 시 모달 열기 */}
         <div
-          className="relative w-full h-48 bg-slate-950 overflow-hidden cursor-pointer group/image"
+          className="group/image relative h-48 w-full cursor-pointer overflow-hidden bg-slate-100"
           onClick={(e) => {
             e.preventDefault();
             setIsModalOpen(true);
@@ -41,16 +41,14 @@ export default function ProjectCard({
           <img
             src={thumbnailUrl}
             alt={displayTitle}
-            className="w-full h-full object-contain bg-slate-950 group-hover/image:scale-105 transition-transform duration-300"
+            className="h-full w-full bg-slate-100 object-contain"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/default-thumbnail.svg";
             }}
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent pointer-events-none" />
-
           {/* 확대 아이콘 힌트 */}
-          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-medium opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center gap-1.5">
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 opacity-0 group-hover/image:opacity-100">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -69,11 +67,11 @@ export default function ProjectCard({
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+        <div className="p-5">
+          <h3 className="mb-2 line-clamp-2 text-lg font-semibold text-slate-950">
             {displayTitle}
           </h3>
-          <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">
+          <p className="mb-4 line-clamp-3 text-sm leading-6 text-slate-600">
             {autoDescription}
           </p>
 
@@ -81,13 +79,11 @@ export default function ProjectCard({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors group/link"
+            className="group/link inline-flex items-center text-sm font-semibold text-blue-700 hover:text-blue-900"
           >
             {t("바로가기")}
 
-            <span className="ml-1 group-hover/link:translate-x-1 transition-transform">
-              →
-            </span>
+            <span className="ml-1">→</span>
           </a>
         </div>
       </div>
@@ -95,7 +91,7 @@ export default function ProjectCard({
       {/* 이미지 상세보기 모달 */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4"
           onClick={() => setIsModalOpen(false)}
         >
           <div
@@ -105,7 +101,7 @@ export default function ProjectCard({
             {/* 닫기 버튼 */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-blue-400 transition-colors flex items-center gap-2 text-sm font-medium z-10"
+              className="absolute -top-12 right-0 z-10 flex items-center gap-2 text-sm font-medium text-white hover:text-blue-100"
             >
               <span>{t("닫기")}</span>
               <svg
@@ -124,12 +120,12 @@ export default function ProjectCard({
             </button>
 
             {/* 이미지 컨테이너 - 스크롤 가능 */}
-            <div className="bg-slate-900 rounded-2xl border-2 border-slate-700 shadow-2xl overflow-y-auto overflow-x-hidden">
+            <div className="overflow-x-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white">
               <div className="relative">
                 <img
                   src={screenshotUrl || thumbnailUrl}
                   alt={displayTitle}
-                  className="w-full h-auto object-contain bg-slate-950"
+                  className="h-auto w-full bg-slate-100 object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = thumbnailUrl;
                   }}
@@ -137,17 +133,17 @@ export default function ProjectCard({
               </div>
 
               {/* 이미지 정보 */}
-              <div className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border-t border-slate-700">
-                <h3 className="text-xl font-bold text-white mb-2">
+              <div className="border-t border-slate-200 bg-white p-6">
+                <h3 className="mb-2 text-xl font-semibold text-slate-950">
                   {displayTitle}
                 </h3>
-                <p className="text-slate-400 text-sm mb-4">{autoDescription}</p>
+                <p className="mb-4 text-sm text-slate-600">{autoDescription}</p>
                 <div className="flex gap-3">
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg font-semibold transition-all hover:scale-105 shadow-lg shadow-blue-500/30"
+                    className="inline-flex items-center rounded-md bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-700"
                   >
                     {t("사이트 방문하기")}
 
@@ -174,7 +170,7 @@ export default function ProjectCard({
                         link.target = "_blank";
                         link.click();
                       }}
-                      className="inline-flex items-center bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold transition-all hover:scale-105"
+                      className="inline-flex items-center rounded-md border border-slate-300 bg-white px-5 py-2.5 font-semibold text-slate-700 hover:bg-slate-50"
                     >
                       <svg
                         className="w-4 h-4 mr-2"

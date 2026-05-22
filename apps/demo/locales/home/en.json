@@ -6,7 +6,7 @@
   "3줄의 코드만으로 즉시 시작. 복잡한 설정은 필요 없습니다.": "Start immediately with just 3 lines of code. No complex setup required.",
   "5분 설치": "5-minute setup",
   "개발자를 위해 설계된 완전한 i18n 도구 모음": "Complete i18n toolkit designed for developers",
-  "글로벌 앱, 번역 혼돈 끝": "Global apps, translation chaos ends",
+  "글로벌 앱을 위한 다국어 타입안전 라이브러리": "A type-safe i18n library for global apps",
   "기본값으로 간단한 설정": "Simple setup with defaults",
   "기존 방식의 문제": "Problems with traditional approaches",
   "더 알아보기": "Learn more",
@@ -67,5 +67,9 @@
   "SSR 최적화": "SSR optimization",
   "SSR 환경에서 서버와 클라이언트 언어가 달라 발생하는 hydration mismatch 에러.": "Hydration mismatch errors caused by different server and client languages in SSR environments.",
   "TypeScript 완벽 지원으로 컴파일 타임 오류 방지": "Prevent compile-time errors with full TypeScript support",
-  "TypeScript 지원": "TypeScript support"
+  "TypeScript 지원": "TypeScript support",
+  "i18nexus 쇼케이스": "",
+  "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": "",
+  "바로가기": "",
+  "시작하기": ""
 }

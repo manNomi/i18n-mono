@@ -3,59 +3,192 @@
 @tailwind utilities;
 
 :root {
-  --background: #020617;
-  --foreground: #f1f5f9;
-  --blue-primary: #3b82f6;
-  --indigo-primary: #6366f1;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --blue-primary: #2563eb;
+  --indigo-primary: #4f46e5;
 }
 
 html {
-  background: #000000;
+  background: var(--background);
 }
 
 body {
-  background: linear-gradient(to bottom, #020617, #0f172a);
+  min-height: 100vh;
+  background: var(--background);
   color: var(--foreground);
   font-family:
-    var(--font-bmhanna-pro),
     var(--font-noto-sans-kr),
     var(--font-geist-sans),
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  min-height: 100vh;
-  transition: padding-left 300ms ease-in-out;
 }
 
-/* Custom Scrollbar */
+::selection {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 5px;
+  background: #cbd5e1;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #94a3b8;
 }
 
-/* Code blocks */
 pre {
-  font-family: "Fira Code", "Monaco", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
 }
 
-/* Smooth transitions */
-* {
-  transition-property:
-    color, background-color, border-color, transform, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+@layer components {
+  .demo-shell {
+    @apply mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8;
+  }
+
+  .demo-narrow-shell {
+    @apply mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8;
+  }
+
+  .demo-section {
+    @apply rounded-lg border border-slate-200 bg-white p-5 sm:p-6;
+  }
+
+  .demo-muted-section {
+    @apply rounded-lg border border-slate-200 bg-slate-50 p-5 sm:p-6;
+  }
+
+  .demo-button {
+    @apply inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:border-slate-400 hover:bg-slate-50;
+  }
+
+  .demo-button-primary {
+    @apply inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:border-blue-700 hover:bg-blue-700;
+  }
+}
+
+/* Backstop for the older demo pages while they are being simplified. */
+main [class*="bg-gradient-to-"] {
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+main .bg-slate-950,
+main .bg-slate-900,
+main .bg-slate-800,
+main .bg-slate-950\/50,
+main .bg-slate-950\/30,
+main .bg-slate-900\/95,
+main .bg-slate-900\/80,
+main .bg-slate-900\/50,
+main .bg-slate-800\/80,
+main .bg-slate-800\/50,
+main .bg-blue-950\/50,
+main .bg-blue-900\/50,
+main .bg-blue-900\/30,
+main .bg-indigo-950\/50,
+main .bg-indigo-900\/50,
+main .bg-indigo-900\/30,
+main .bg-purple-950\/50,
+main .bg-purple-900\/50,
+main .bg-purple-900\/30,
+main .bg-pink-950\/50,
+main .bg-pink-900\/30,
+main .bg-green-950\/50,
+main .bg-green-900\/30,
+main .bg-emerald-950\/50,
+main .bg-emerald-900\/30,
+main .bg-cyan-950\/50,
+main .bg-cyan-900\/30,
+main .bg-orange-950\/50,
+main .bg-orange-900\/30,
+main .bg-red-950\/50,
+main .bg-red-900\/50,
+main .bg-red-900\/30,
+main .bg-yellow-950\/50,
+main .bg-yellow-950\/30,
+main .bg-yellow-900\/30,
+main .bg-violet-950\/50 {
+  background-color: #ffffff !important;
+}
+
+main .text-white,
+main .text-slate-100,
+main .text-slate-200 {
+  color: #0f172a !important;
+}
+
+main .text-slate-300,
+main .text-slate-400,
+main .text-slate-500 {
+  color: #64748b !important;
+}
+
+main .border-slate-800,
+main .border-slate-700,
+main .border-blue-800\/50,
+main .border-blue-700\/50,
+main .border-indigo-800\/50,
+main .border-purple-800\/50,
+main .border-purple-700\/50,
+main .border-pink-800\/50,
+main .border-green-800\/50,
+main .border-green-700\/50,
+main .border-emerald-800\/50,
+main .border-cyan-800\/50,
+main .border-orange-800\/50,
+main .border-red-900\/30,
+main .border-red-800\/50,
+main .border-red-700\/50,
+main .border-yellow-800\/50,
+main .border-yellow-700\/50,
+main .border-violet-800\/50 {
+  border-color: #e2e8f0 !important;
+}
+
+main [class*="shadow-"],
+nav [class*="shadow-"],
+aside [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+main .rounded-xl,
+main .rounded-2xl,
+main .rounded-3xl,
+main .rounded-full {
+  border-radius: 0.5rem !important;
+}
+
+main .backdrop-blur,
+main .backdrop-blur-sm {
+  backdrop-filter: none !important;
+}
+
+main a.bg-blue-600.text-white,
+main button.bg-blue-600.text-white,
+main a.bg-indigo-600.text-white,
+main button.bg-indigo-600.text-white,
+main a.bg-green-600.text-white,
+main button.bg-green-600.text-white,
+main a.bg-red-600.text-white,
+main button.bg-red-600.text-white {
+  color: #ffffff !important;
 }

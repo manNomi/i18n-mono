@@ -14,7 +14,7 @@ export default function LanguageSwitcher() {
   const handleLanguageChange = async (langCode: string) => {
     // 서버 컴포넌트 페이지인 경우 새로고침
     const shouldReload = serverComponentPages.some((path) =>
-      pathname?.startsWith(path)
+      pathname?.startsWith(path),
     );
     await changeLanguage(langCode);
     if (shouldReload) {
@@ -23,19 +23,20 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <div className="hidden sm:flex items-center space-x-3">
+    <div className="flex items-center rounded-md border border-slate-200 bg-slate-50 p-1">
       {availableLanguages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => handleLanguageChange(lang.code)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+          className={`rounded px-2.5 py-1.5 text-xs font-semibold sm:px-3 sm:text-sm ${
             currentLanguage === lang.code
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-              : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700"
+              ? "bg-white text-blue-700"
+              : "text-slate-500 hover:text-slate-900"
           }`}
+          aria-pressed={currentLanguage === lang.code}
         >
-          <span className="mr-1.5">{lang.flag}</span>
-          {lang.name}
+          <span className="hidden sm:inline">{lang.name}</span>
+          <span className="sm:hidden">{lang.code.toUpperCase()}</span>
         </button>
       ))}
     </div>

@@ -21,32 +21,25 @@ export default function Error({
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-2xl w-full">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-red-900/50 p-8 md:p-12 shadow-2xl">
-          {/* Error Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/50 animate-pulse">
-              <span className="text-white text-4xl">⚠️</span>
-            </div>
-          </div>
-
+        <div className="rounded-lg border border-red-200 bg-white p-8 md:p-10">
           {/* Error Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
+          <h1 className="text-center text-3xl font-bold text-slate-950 md:text-4xl">
             {t("오류가 발생했습니다")}
           </h1>
 
           {/* Error Message */}
-          <p className="text-slate-400 text-center mb-6">
+          <p className="mb-6 mt-4 text-center text-slate-600">
             {t("예상치 못한 문제가 발생했습니다. 잠시 후 다시 시도해주세요.")}
           </p>
 
           {/* Error Details (개발 환경에서만) */}
           {process.env.NODE_ENV === "development" && (
-            <div className="bg-slate-950 rounded-lg p-4 mb-6 border border-slate-800">
-              <p className="text-xs text-red-400 font-mono break-all">
+            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="break-all font-mono text-xs text-red-700">
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="mt-2 text-xs text-slate-500">
                   Digest: {error.digest}
                 </p>
               )}
@@ -57,27 +50,28 @@ export default function Error({
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={reset}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all hover:scale-105">
-              <span className="mr-2">🔄</span>
+              className="rounded-md border border-blue-600 bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+            >
               {t("다시 시도")}
             </button>
             <Link
               href="/"
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 transition-all hover:scale-105 text-center">
-              <span className="mr-2">🏠</span>
+              className="rounded-md border border-slate-300 bg-white px-6 py-3 text-center font-semibold text-slate-700 hover:bg-slate-50"
+            >
               {t("홈으로 돌아가기")}
             </Link>
           </div>
 
           {/* Additional Help */}
-          <div className="mt-8 pt-6 border-t border-slate-700">
-            <p className="text-sm text-slate-500 text-center">
+          <div className="mt-8 border-t border-slate-200 pt-6">
+            <p className="text-center text-sm text-slate-500">
               {t("문제가 계속되면")}{" "}
               <Link
                 href="https://github.com/your-repo/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 underline">
+                className="text-blue-700 underline hover:text-blue-900"
+              >
                 {t("이슈를 제보")}
               </Link>
               {t("해주세요.")}

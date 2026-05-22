@@ -17,7 +17,6 @@
   "수동으로 수정": "Manual modification",
   "시작하기": "Get Started",
   "앱이 완전히 국제화되었으며 배포할 준비가 되었습니다": "Your app is fully internationalized and ready to deploy",
-  "에러를 확인하고 use client를 추가할지 getServerTranslation()을 사용할지 결정하세요": "Check errors and decide whether to add 'use client' or use getServerTranslation()",
   "영어 번역 (수동 번역 필요)": "English translation (manual translation required)",
   "영어 번역 추가": "Add English Translation",
   "완료!": "Done!",
@@ -40,7 +39,6 @@
   "i18n 설정": "i18n Setup",
   "locales/index.ts 파일 생성": "Create locales/index.ts File",
   "Root Layout": "Root Layout",
-  "Provider 없이 간단하게": "Simple Setup Without Provider",
   "I18nProvider 자세히 알아보기": "Learn More About I18nProvider",
   "import { headers } from \"next/headers\";\nimport { getServerLanguage, \n  createServerTranslation } from \"i18nexus/server\";\n\nexport default async function Page() {\n  const lang = getServerLanguage(await headers());\n  const t = createServerTranslation(lang, translations);\n  return <div>{t(\"안녕하세요\")}</div>;\n}": "import { headers } from \"next/headers\";\nimport { getServerLanguage, \n  createServerTranslation } from \"i18nexus/server\";\n\nexport default async function Page() {\n  const lang = getServerLanguage(await headers());\n  const t = createServerTranslation(lang, translations);\n  return <div>{t(\"Hello\")}</div>;\n}",
   "lib/i18n.ts 생성": "Create lib/i18n.ts",
@@ -49,7 +47,5 @@
   "Next.js App Router의 경우": "For Next.js App Router",
   "React 컴포넌트와 CLI 도구를 모두 설치합니다": "Installs both React components and CLI tools",
   "root layout.tsx에 추가하세요": "Add to root layout.tsx",
-  "\"use client\";\nimport { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default function Page() {\n  const { t } = useTranslation(\"getting-started\");\n  return <div>{t(\"안녕하세요\")}</div>;\n}": "",
-  "// locales/index.ts\nimport { createI18n } from \"i18nexus\";\n\nexport const translations = {} as const;\n\nasync function loadNamespace(namespace: string, lang: string) {\n  const module = await import(\\`./\\${namespace}/\\${lang}.json\\`);\n  return module.default;\n}\n\nexport const i18n = createI18n(translations, {\n  fallbackNamespace: \"common\",\n  lazy: true,\n  loadNamespace,\n  preloadNamespaces: [\"common\"],\n  languageManager: {\n    defaultLanguage: \"ko\",\n    availableLanguages: [\n      { code: \"ko\", name: \"한국어\", flag: \"🇰🇷\" },\n      { code: \"en\", name: \"English\", flag: \"🇺🇸\" },\n    ],\n  },\n});": "",
-  "import { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default async function Page() {\n  const { t } = await i18n.getServerTranslation();\n  return <div>{t(\"안녕하세요\")}</div>;\n}": ""
+  "\"use client\";\nimport { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default function Page() {\n  const { t } = useTranslation(\"getting-started\");\n  return <div>{t(\"안녕하세요\")}</div>;\n}": ""
 }
