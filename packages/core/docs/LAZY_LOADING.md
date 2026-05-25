@@ -1,313 +1,201 @@
-# Lazy Loading을 통한 코드 스플리팅
+# Lazy Namespace Loading
 
-## 개요
+## Overview
 
-i18nexus는 이제 lazy loading을 지원하여 네임스페이스별 코드 스플리팅이 가능합니다. 이를 통해 초기 번들 크기를 대폭 줄이고 페이지 로딩 속도를 향상시킬 수 있습니다.
+i18nexus supports namespace-level lazy loading. This lets an app ship a small initial translation shape and load page or feature namespaces only when a component asks for them.
 
-## 문제점
+Lazy loading is configured on `I18nProvider` through `loadNamespace(namespace, language)`. It is not configured on `createI18n` options.
 
-### Before: Eager Loading (기존 방식)
+## Beginner API Example
 
-```typescript
-// locales/index.ts
-import enHome from "./home/en.json"; // ❌ 모든 네임스페이스를 한 번에 import
-import koHome from "./home/ko.json";
-import enCli from "./cli/en.json";
-import koCli from "./cli/ko.json";
-// ... 20개 이상의 네임스페이스
+```tsx
+import { I18nProvider, useTranslation } from "i18nexus";
 
-export const translations = {
-  home: { en: enHome, ko: koHome },
-  cli: { en: enCli, ko: koCli },
-  // ...
+type AppTranslations = {
+  common: {
+    en: { loading: string };
+    ko: { loading: string };
+  };
+  home: {
+    en: { title: string };
+    ko: { title: string };
+  };
 };
-```
 
-**문제점:**
+const translations = {} as AppTranslations;
 
-- 사용자가 홈 페이지만 방문해도 모든 네임스페이스가 번들에 포함됨
-- 초기 로딩 시간 증가
-- 번들 크기 증가
-- 메모리 낭비
-
-### After: Lazy Loading (새로운 방식)
-
-```typescript
-// locales/index.ts
-import { createI18n } from "i18nexus";
-
-// 동적 namespace 로더
-async function loadNamespace(namespace: string, lang: string) {
-  const module = await import(`./${namespace}/${lang}.json`); // ✅ 필요할 때만 로드
+async function loadNamespace(namespace: string, language: string) {
+  const module = await import(`./locales/${namespace}/${language}.json`);
   return module.default;
 }
 
-export const i18n = createI18n(
-  {},
-  {
-    fallbackNamespace: "common",
-    lazy: true,
-    loadNamespace,
-    preloadNamespaces: ["common"], // common만 미리 로드
-  },
-);
+export function AppI18nProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      translations={translations}
+      loadNamespace={loadNamespace}
+      fallbackNamespace="common"
+      preloadNamespaces={["common"]}
+      languageManagerOptions={{
+        defaultLanguage: "en",
+        availableLanguages: [
+          { code: "en", name: "English" },
+          { code: "ko", name: "한국어" },
+        ],
+      }}
+    >
+      {children}
+    </I18nProvider>
+  );
+}
+
+function HomePage() {
+  const { t, isReady } = useTranslation("home");
+
+  if (!isReady) {
+    return <p>Loading...</p>;
+  }
+
+  return <h1>{t("title")}</h1>;
+}
 ```
 
-**장점:**
+## Advanced Typed API Example
 
-- ✅ 필요한 네임스페이스만 동적으로 로드
-- ✅ 초기 번들 크기 감소
-- ✅ 페이지별 코드 스플리팅
-- ✅ 메모리 효율성 향상
-
-## 사용법
-
-### 1. Extractor로 Lazy Loading용 index.ts 생성
-
-```bash
-npx i18n-extractor
-```
-
-extractor는 기본적으로 lazy loading 모드로 `locales/index.ts`를 생성합니다:
-
-```typescript
+```tsx
 import { createI18n } from "i18nexus";
 
-export const translations = {} as const;
+type AppTranslations = {
+  common: {
+    en: { loading: string };
+    ko: { loading: string };
+  };
+  home: {
+    en: { title: string };
+    ko: { title: string };
+  };
+};
 
-async function loadNamespace(namespace: string, lang: string) {
-  const module = await import(`./${namespace}/${lang}.json`);
-  return module.default;
-}
-
-export const i18n = createI18n(translations, {
+const i18n = createI18n({} as AppTranslations, {
   fallbackNamespace: "common",
-  lazy: true,
-  loadNamespace,
-  preloadNamespaces: ["common"],
 });
 
-export type AvailableNamespaces = "home" | "cli" | "common" | ...;
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
 
-export async function preloadNamespace(namespace: AvailableNamespaces) {
-  await i18n.loadNamespace(namespace);
+export function AppI18nProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      loadNamespace={async (namespace, language) => {
+        const module = await import(`./locales/${namespace}/${language}.json`);
+        return module.default;
+      }}
+      preloadNamespaces={["common"]}
+      languageManagerOptions={{
+        defaultLanguage: "en",
+        availableLanguages: [
+          { code: "en", name: "English" },
+          { code: "ko", name: "한국어" },
+        ],
+      }}
+    >
+      {children}
+    </I18nProvider>
+  );
 }
 ```
 
-### 2. 컴포넌트에서 사용
+## Behavior
+
+- Passing `loadNamespace` enables lazy mode automatically.
+- `useTranslation("home")` requests `home` when it is neither statically available nor already loaded.
+- The provider loads all configured languages for a namespace so language switching works after the namespace is loaded.
+- Duplicate in-flight loads for the same namespace are deduped.
+- `fallbackNamespace` is merged before the requested namespace, so requested keys override fallback keys.
+- Missing keys continue to return the key itself.
+- Failed namespace loads are marked as resolved for readiness and do not retry infinitely on every render.
+
+## Provider Props
 
 ```typescript
-// pages/home/index.tsx
-import { i18n } from "@/locales";
+type NamespaceLoader = (
+  namespace: string,
+  language: string,
+) => Promise<Record<string, string>>;
 
-export default function HomePage() {
-  const { t } = i18n.useTranslation("home");
-
-  return <h1>{t("welcome")}</h1>;
+interface I18nProviderProps<TTranslations extends NamespaceTranslations> {
+  translations?: TTranslations;
+  loadNamespace?: NamespaceLoader;
+  fallbackNamespace?: keyof TTranslations;
+  preloadNamespaces?: Array<keyof TTranslations>;
+  initialLanguage?: string;
+  languageManagerOptions?: LanguageManagerOptions;
 }
 ```
 
-네임스페이스는 자동으로 로드됩니다. 추가 코드가 필요 없습니다!
+## `createI18n` Options
 
-### 3. (선택) 성능 최적화: Preloading
-
-중요한 페이지의 네임스페이스를 미리 로드하여 사용자 경험을 향상시킬 수 있습니다:
+`createI18n` options intentionally stay small:
 
 ```typescript
-// app/layout.tsx
-import { preloadNamespace } from "@/locales";
-import { useEffect } from "react";
-
-export default function RootLayout({ children }) {
-  useEffect(() => {
-    // 다음 페이지에서 사용할 네임스페이스 미리 로드
-    preloadNamespace("getting-started");
-    preloadNamespace("cli");
-  }, []);
-
-  return <html>{children}</html>;
+interface CreateI18nOptions<
+  TTranslations extends I18nTranslations = I18nTranslations,
+  FallbackNamespace extends keyof TTranslations & string = never,
+> {
+  fallbackNamespace?: FallbackNamespace;
+  enableFallback?: boolean;
 }
 ```
 
-## 번들 크기 비교
+Do not pass `lazy`, `loadNamespace`, or `preloadNamespaces` to `createI18n`. Pass those loading props to `i18n.I18nProvider` instead.
 
-### Eager Loading
+## Bundle Size Guidance
 
-```
-Initial Bundle: 250 KB
-├─ locales/index.ts: 180 KB (모든 네임스페이스)
-├─ home page: 50 KB
-└─ framework: 20 KB
-```
+### Small projects, fewer than 5 namespaces
 
-### Lazy Loading
+Static translations are usually simplest. Lazy loading may not save enough bundle size to justify the extra moving parts.
 
-```
-Initial Bundle: 90 KB
-├─ locales/index.ts: 2 KB (loader 코드만)
-├─ locales/common: 18 KB (preloaded)
-├─ home page: 50 KB
-└─ framework: 20 KB
+### Medium projects, 5 to 20 namespaces
 
-Home Page Load: +12 KB (home namespace만)
-CLI Page Load: +15 KB (cli namespace만)
-```
+Lazy loading with `fallbackNamespace` and a small `preloadNamespaces` list gives a good balance of performance and UX.
 
-**개선:**
+### Large projects, 20 or more namespaces
 
-- 초기 번들: 250 KB → 90 KB (64% 감소)
-- 각 페이지는 필요한 네임스페이스만 로드
+Lazy loading page and feature namespaces keeps the initial bundle smaller. Prefer preloading only shared namespaces such as `common`.
 
-## 설정 옵션
+## Common Mistakes
 
-### CreateI18nOptions
+### Passing lazy options to `createI18n`
 
 ```typescript
-interface CreateI18nOptions {
-  /**
-   * Lazy loading 활성화
-   * @default false
-   */
-  lazy?: boolean;
-
-  /**
-   * Namespace 로더 함수
-   * lazy: true일 때 필수
-   */
-  loadNamespace?: (
-    namespace: string,
-    language: string,
-  ) => Promise<Record<string, string>>;
-
-  /**
-   * 미리 로드할 네임스페이스 목록
-   * lazy: true일 때만 사용
-   * @default []
-   */
-  preloadNamespaces?: string[];
-
-  /**
-   * Fallback 네임스페이스
-   */
-  fallbackNamespace?: string;
-}
-```
-
-### 예제
-
-```typescript
-const i18n = createI18n(translations, {
-  lazy: true,
-  loadNamespace: async (ns, lang) => {
-    const data = await import(`./locales/${ns}/${lang}.json`);
-    return data.default;
-  },
-  preloadNamespaces: ["common", "home"], // 자주 사용되는 것만 미리 로드
+createI18n(translations, {
+  // Not supported here
+  // lazy: true,
+  // loadNamespace,
   fallbackNamespace: "common",
 });
 ```
 
-## Eager Loading으로 전환
+Use provider props instead:
 
-필요하다면 eager loading으로 전환할 수 있습니다:
-
-```bash
-npx i18n-extractor --eager
+```tsx
+<i18n.I18nProvider loadNamespace={loadNamespace} preloadNamespaces={["common"]}>
+  <App />
+</i18n.I18nProvider>
 ```
 
-또는 수동으로 `locales/index.ts`를 생성:
+### Forgetting `isReady`
 
-```typescript
-import { createI18n } from "i18nexus";
-import enCommon from "./common/en.json";
-import koCommon from "./common/ko.json";
-// ... 모든 imports
+Lazy translations are async. Read `isReady` before rendering UI that must not show fallback keys.
 
-export const translations = {
-  common: { en: enCommon, ko: koCommon },
-  // ...
-} as const;
+```tsx
+const { t, isReady } = useAppTranslation("home");
 
-export const i18n = createI18n(translations, {
-  lazy: false, // 또는 생략
-  fallbackNamespace: "common",
-});
+if (!isReady) {
+  return <p>Loading...</p>;
+}
+
+return <h1>{t("title")}</h1>;
 ```
-
-## 주의사항
-
-1. **SSR 환경**: 서버 사이드 렌더링에서는 dynamic import가 다르게 동작할 수 있습니다.
-2. **Preloading**: 자주 사용되는 네임스페이스는 `preloadNamespaces`에 포함시켜 UX를 개선하세요.
-3. **Fallback**: `fallbackNamespace`는 항상 미리 로드되어야 합니다.
-
-## 성능 권장사항
-
-### 소규모 프로젝트 (< 5개 네임스페이스)
-
-- Eager loading 사용 (기본값)
-- 번들 크기가 크지 않아 lazy loading의 이점이 적음
-
-### 중규모 프로젝트 (5-20개 네임스페이스)
-
-- Lazy loading + 주요 네임스페이스 preload
-- 균형 잡힌 성능과 UX
-
-### 대규모 프로젝트 (20개+ 네임스페이스)
-
-- Lazy loading + common만 preload
-- 최대 번들 크기 절감
-
-## 마이그레이션 가이드
-
-### 1. i18nexus 업데이트
-
-```bash
-npm install i18nexus@latest i18nexus-tools@latest
-```
-
-### 2. Extractor 재실행
-
-```bash
-npx i18n-extractor
-```
-
-### 3. 기존 코드 변경 없음
-
-컴포넌트 코드는 변경할 필요가 없습니다. `i18n.useTranslation()`은 동일하게 작동합니다.
-
-### 4. (선택) Preloading 추가
-
-성능 최적화를 위해 자주 사용되는 네임스페이스를 preload합니다.
-
-## TypeScript 지원
-
-```typescript
-// 타입 안전하게 namespace 로드
-import { preloadNamespace, type AvailableNamespaces } from "@/locales";
-
-const ns: AvailableNamespaces = "home"; // ✅ 자동완성
-await preloadNamespace(ns);
-
-await preloadNamespace("invalid"); // ❌ TypeScript error
-```
-
-## 문제 해결
-
-### "loadNamespace function is required when lazy mode is enabled"
-
-Lazy mode를 사용하려면 `loadNamespace` 함수가 필요합니다:
-
-```typescript
-export const i18n = createI18n(translations, {
-  lazy: true,
-  loadNamespace: async (ns, lang) => {
-    // 필수!
-    const data = await import(`./${ns}/${lang}.json`);
-    return data.default;
-  },
-});
-```
-
-### Dynamic import 에러
-
-Webpack/Next.js 설정에서 dynamic import를 지원하는지 확인하세요. 최신 버전에서는 기본적으로 지원됩니다.

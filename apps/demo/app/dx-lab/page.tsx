@@ -5,7 +5,7 @@ import DxLabPage from "@/page/dx-lab";
 export const metadata: Metadata = {
   title: "DX Lab - i18nexus",
   description:
-    "A hands-on i18nexus demo page that exercises lazy namespace loading, fallback translations, and language switching.",
+    "A hands-on i18nexus demo page that exercises lazy namespace loading, fallback translations, language switching, and devtools subpath usage.",
 };
 
 export default function Page() {

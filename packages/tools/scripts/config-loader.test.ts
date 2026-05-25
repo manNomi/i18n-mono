@@ -4,11 +4,14 @@ import { loadConfig, I18nexusConfig } from "./config-loader";
 
 describe("config-loader", () => {
   const testConfigPath = pathLib.join(__dirname, "test-config.json");
+  const originalArgv = process.argv;
 
   afterEach(() => {
     if (fs.existsSync(testConfigPath)) {
       fs.unlinkSync(testConfigPath);
     }
+    process.argv = originalArgv;
+    jest.restoreAllMocks();
   });
 
   describe("namespaceLocation 변환", () => {
@@ -94,6 +97,27 @@ describe("config-loader", () => {
 
       const config = loadConfig(testConfigPath, { silent: true });
       expect(config.strictTypeGeneration).toBe(true);
+    });
+  });
+
+  describe("CLI help output", () => {
+    it("설정 파일이 없어도 일반 실행에서는 안내 로그를 출력", () => {
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+      loadConfig(testConfigPath);
+
+      expect(logSpy).toHaveBeenCalledWith(
+        "⚠️  i18nexus.config.json not found, using default configuration",
+      );
+    });
+
+    it("--help 실행에서는 설정 파일 없음 안내 로그를 숨김", () => {
+      process.argv = ["node", "i18n-wrapper", "--help"];
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+      loadConfig(testConfigPath);
+
+      expect(logSpy).not.toHaveBeenCalled();
     });
   });
 });

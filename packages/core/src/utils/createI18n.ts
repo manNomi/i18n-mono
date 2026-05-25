@@ -3,7 +3,7 @@ import {
   I18nProvider as BaseI18nProvider,
   useI18nContext,
   type I18nProviderProps,
-} from "../components/I18nProvider";
+} from "../components/I18nProvider.js";
 import {
   getNamespaceReadiness,
   resolveTranslationReady,
@@ -13,7 +13,7 @@ import {
   type RuntimeNamespaceTranslations,
   TranslationStyles,
   TranslationVariables,
-} from "./translation-runtime";
+} from "./translation-runtime.js";
 
 export type LegacyNamespaceTranslations = {
   readonly [namespace: string]: {

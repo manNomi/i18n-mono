@@ -519,6 +519,9 @@ npm install -D i18nexus-tools
 # Extract translation keys from code
 npx i18n-extractor
 
+# Regenerate namespace/key TypeScript definitions
+npx i18n-type
+
 # Upload translations to Google Sheets
 npx i18n-upload
 
@@ -530,6 +533,10 @@ npx i18n-wrapper
 ```
 
 Learn more in the [i18nexus-tools documentation](../tools/README.md).
+
+When you add a namespace manually, create the locale JSON files first, then run
+`npx i18n-type` so generated namespace/key types stay in sync with runtime
+translations.
 
 ## 🔗 Links
 
@@ -579,7 +586,13 @@ This project was inspired by excellent i18n libraries:
 
 ## 📈 Version History
 
-### v3.3.0 (Latest)
+### v3.4.2 (Latest)
+
+- 🔄 Lazy namespace loading stability improvements
+- 🎯 `createI18n` repositioned as the advanced typed API
+- 📚 Public API and documentation alignment
+
+### v3.3.0
 
 - ✨ Type inference improvements - no explicit generics needed
 - 🔄 Wrapper removes redundant generic types

@@ -1,4 +1,4 @@
-import { getCookie, setCookie, CookieOptions } from "../utils/cookie";
+import { getCookie, setCookie, CookieOptions } from "../utils/cookie.js";
 
 export interface LanguageConfig {
   code: string;

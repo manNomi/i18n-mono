@@ -125,6 +125,12 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   strictTypeGeneration: false,
 };
 
+function isHelpOrVersionCommand(): boolean {
+  return process.argv.some((arg) =>
+    ["--help", "-h", "--version", "-v", "-V"].includes(arg),
+  );
+}
+
 /**
  * i18nexus.config.json 파일을 로드합니다.
  * 파일이 없으면 기본 설정을 반환합니다.
@@ -134,9 +140,10 @@ export function loadConfig(
   options?: { silent?: boolean },
 ): I18nexusConfig {
   const absolutePath = pathLib.resolve(process.cwd(), configPath);
+  const shouldLog = !options?.silent && !isHelpOrVersionCommand();
 
   if (!fs.existsSync(absolutePath)) {
-    if (!options?.silent) {
+    if (shouldLog) {
       console.log(
         "⚠️  i18nexus.config.json not found, using default configuration",
       );
@@ -173,7 +180,7 @@ export function loadConfig(
       },
     };
   } catch (error) {
-    if (!options?.silent) {
+    if (shouldLog) {
       console.warn(
         `⚠️  Failed to load ${configPath}, using default configuration:`,
         error,

@@ -1,6 +1,6 @@
 {
   "name": "i18nexus",
-  "version": "3.4.2",
+  "version": "4.0.0",
   "description": "Type-safe React i18n toolkit with intelligent automation and SSR support",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -16,6 +16,11 @@
       "types": "./dist/utils/server.d.ts",
       "import": "./dist/utils/server.js",
       "default": "./dist/utils/server.js"
+    },
+    "./devtools": {
+      "types": "./dist/components/I18NexusDevtools.d.ts",
+      "import": "./dist/components/I18NexusDevtools.js",
+      "default": "./dist/components/I18NexusDevtools.js"
     }
   },
   "scripts": {
@@ -26,9 +31,7 @@
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.{ts,tsx} --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
-    "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "prepack": "npm run build",
     "version": "(npm run format || true) && git add -A src || true",
     "postversion": "echo '✅ Version updated successfully'",
     "validate": "npm run build && npm run test",
@@ -51,29 +54,21 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/manNomi/i18nexus.git",
-    "directory": "packages/i18nexus"
+    "directory": "packages/core"
   },
   "bugs": {
     "url": "https://github.com/manNomi/i18nexus/issues"
   },
-  "homepage": "https://github.com/manNomi/i18nexus/tree/main/packages/i18nexus#readme",
+  "homepage": "https://github.com/manNomi/i18nexus/tree/main/packages/core#readme",
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
-  },
-  "dependencies": {
-    "@babel/generator": "^7.23.0",
-    "@babel/parser": "^7.23.0",
-    "@babel/traverse": "^7.23.0",
-    "@babel/types": "^7.23.0",
-    "commander": "^11.0.0",
-    "glob": "^10.3.0",
-    "googleapis": "^128.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

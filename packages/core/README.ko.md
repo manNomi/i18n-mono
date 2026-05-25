@@ -272,7 +272,7 @@ function HomePage() {
 
 ### 📋 릴리즈 노트
 
-- [v2.7.0](./docs/releases/v2.7.0.md) - Accept-Language 자동 감지 (최신)
+- [v2.7.0](./docs/releases/v2.7.0.md) - Accept-Language 자동 감지 (과거 릴리즈 노트)
 - [v2.6.0](./docs/releases/v2.6.0.md) - 변수 삽입 & CI/CD
 - [v2.5.2](./docs/releases/v2.5.2.md) - 개발자 도구
 - [v2.1.0](./docs/releases/v2.1.0.md) - Server Components 지원
@@ -323,29 +323,46 @@ t(
 // 언어 타입 정의
 type AppLanguages = "en" | "ko" | "ja";
 
-const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
+const { changeLanguage } = useLanguageSwitcher();
 
-changeLanguage("ko"); // ✅ 자동완성!
-changeLanguage("fr"); // ❌ 컴파일 에러!
+changeLanguage("ko");
 ```
 
 ### 🛠️ 개발자 도구
 
 ```tsx
-import { I18NexusDevtools } from "i18nexus";
+import { I18nProvider } from "i18nexus";
+import dynamic from "next/dynamic";
 
-<I18nProvider>
-  <App />
-  <I18NexusDevtools /> {/* Dev 모드에서만 */}
-</I18nProvider>;
+const I18NexusDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : dynamic(
+        () =>
+          import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
+        { ssr: false },
+      );
+
+export function ClientProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider>
+      {children}
+      <I18NexusDevtools position="bottom-right" /> {/* Dev 모드에서만 */}
+    </I18nProvider>
+  );
+}
 ```
+
+Devtools는 페이지마다 넣기보다 Provider가 있는 client boundary 안에 한 번만
+mount하는 것을 권장합니다. production bundle에 디버깅 UI가 정적으로 들어가지
+않도록 dev-only dynamic import 패턴을 사용하세요.
 
 ---
 
 ## 📦 패키지 정보
 
 - **이름:** i18nexus
-- **버전:** 2.7.0
+- **버전:** 3.4.2
 - **라이센스:** MIT
 - **TypeScript:** ✅ 완벽 지원
 - **번들 크기:** ~15KB (gzipped)

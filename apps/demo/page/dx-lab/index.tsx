@@ -35,7 +35,7 @@ const observations = [
   {
     tone: "warning",
     title: "마찰 2",
-    body: "현재 패키지 export에는 devtools subpath가 없어 이 데모는 Provider, hook, fallback 흐름만 검증합니다.",
+    body: "Devtools는 페이지가 아니라 Provider 근처에 한 번만 mount하는 패턴이 가장 이해하기 쉬웠습니다.",
   },
 ] as const;
 
@@ -132,7 +132,7 @@ export default function DxLabPage() {
 
       <Callout title={t("Devtools 상태")} tone="info">
         {t(
-          "현재 구현 기준으로 i18nexus/devtools는 export되지 않으므로 페이지에서는 렌더링하지 않습니다."
+          "Devtools는 Provider 근처에 한 번만 mount되어 페이지 코드는 번역 흐름에 집중할 수 있습니다."
         )}
       </Callout>
     </PageShell>

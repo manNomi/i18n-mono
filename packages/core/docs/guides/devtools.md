@@ -14,16 +14,34 @@ React Query 스타일의 개발자 도구로, 개발 모드에서만 렌더링�
 
 ## 사용법
 
+### 권장 위치
+
+`I18NexusDevtools`는 페이지마다 렌더링하지 말고, 앱의 client boundary 안에서
+`I18nProvider` 바로 아래에 한 번만 배치하는 것을 권장합니다. production
+bundle에 devtools subpath가 정적으로 들어가지 않도록 dev-only dynamic import를
+사용하세요. 이렇게 하면 모든 페이지에서 동일한 언어 상태와 lazy namespace 상태를
+확인할 수 있습니다.
+
 ### 기본 사용
 
 ```tsx
-import { I18nProvider, I18NexusDevtools } from "i18nexus";
+import { I18nProvider } from "i18nexus";
+import dynamic from "next/dynamic";
+
+const I18NexusDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : dynamic(
+        () =>
+          import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
+        { ssr: false },
+      );
 
 function App() {
   return (
     <I18nProvider
       languageManagerOptions={{
-        supportedLanguages: [
+        availableLanguages: [
           { code: "en", name: "English" },
           { code: "ko", name: "한국어" },
           { code: "ja", name: "日本語" },
@@ -31,13 +49,16 @@ function App() {
         defaultLanguage: "en",
       }}
       translations={{
-        en: { greeting: "Hello" },
-        ko: { greeting: "안녕하세요" },
-        ja: { greeting: "こんにちは" },
-      }}>
+        common: {
+          en: { greeting: "Hello" },
+          ko: { greeting: "안녕하세요" },
+          ja: { greeting: "こんにちは" },
+        },
+      }}
+    >
       <YourApp />
 
-      {/* 개발자 도구 추가 */}
+      {/* Provider 안쪽에 앱 전체용으로 한 번만 mount */}
       <I18NexusDevtools />
     </I18nProvider>
   );

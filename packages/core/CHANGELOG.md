@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-05-25
+
+### Breaking Changes
+
+- Slimmed the package root to the core runtime API:
+  - Kept `I18nProvider`, `useTranslation`, `useLanguageSwitcher`, `createI18n`, `defineConfig`, and core public types.
+  - Removed standalone typed/dynamic utility exports from the root, including `createTypedTranslation*`, `validateTranslationKeys`, `getTranslationKeyList`, `createDynamicTranslation`, `buildTranslationParams`, `buildConditionalTranslation`, and `mapToTranslationParams`.
+  - Removed public cookie helper exports from the root: `setCookie`, `getCookie`, `deleteCookie`, and `getAllCookies`.
+  - Removed public `LanguageManager` and `defaultLanguageManager` runtime exports from the root. Provider-related language configuration types remain available as type-only exports.
+  - Removed `createI18nWithConfig` from the supported public API.
+- Moved `I18NexusDevtools` out of the package root. Import it from `i18nexus/devtools`.
+- Removed legacy source files and tests that only supported the deleted standalone utilities.
+
+### Migration
+
+- Use `I18nProvider` and `useTranslation` for the beginner runtime path.
+- Use `createI18n` for advanced typed namespace/key inference.
+- Replace `import { I18NexusDevtools } from "i18nexus"` with `import { I18NexusDevtools } from "i18nexus/devtools"`.
+- Keep server imports on the existing `i18nexus/server` subpath.
+- See [MIGRATION_V4.md](./docs/MIGRATION_V4.md) for the full migration guide.
+
+### Fixed
+
+- Prevented `i18nexus/server` imports from keeping Node processes alive by unref'ing the translation cache cleanup interval when supported.
+- Removed unused heavy runtime dependencies from the core package.
+- Corrected core package metadata so the npm repository directory points to `packages/core`.
+- Updated server and client API docs to match the actual runtime types.
+
+### Tooling
+
+- `i18nexus-tools` now builds before running tests so CLI E2E tests work from a clean checkout.
+- CLI help/version commands no longer print config-missing warnings before showing help output.
+
 ### 🗑️ Removed
 
 - **Deprecated `createServerI18n()` function removed**: Use `getTranslation()` instead

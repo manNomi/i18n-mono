@@ -6,8 +6,8 @@ import {
   NamespaceTranslations,
   ExtractNamespaceKeys,
   ExtractKeysWithFallback,
-} from "../components/I18nProvider";
-import type { LanguageConfig } from "../utils/languageManager";
+} from "../components/I18nProvider.js";
+import type { LanguageConfig } from "../utils/languageManager.js";
 import {
   getNamespaceReadiness,
   resolveTranslationReady,
@@ -17,13 +17,13 @@ import {
   type RuntimeNamespaceTranslations,
   type TranslationStyles,
   type TranslationVariables,
-} from "../utils/translation-runtime";
+} from "../utils/translation-runtime.js";
 
 export type {
   TranslationVariables,
   TranslationStyles,
   VariableStyle,
-} from "../utils/translation-runtime";
+} from "../utils/translation-runtime.js";
 
 /** 타입 안전한 번역 함수 오버로드 */
 export interface TranslationFunction<K extends string = string> {

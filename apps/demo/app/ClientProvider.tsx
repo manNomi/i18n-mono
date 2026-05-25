@@ -1,6 +1,7 @@
 "use client";
 
 import { I18nProvider } from "i18nexus";
+import dynamic from "next/dynamic";
 
 import { loadNamespace } from "@/locales";
 import {
@@ -10,6 +11,18 @@ import {
   ScrollRestorer,
 } from "@/shared/ui";
 import Navigation from "@/widgets/Navigation";
+
+type DevtoolsProps = {
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+};
+
+const DisabledI18NexusDevtools = () => null;
+const loadI18NexusDevtools = () =>
+  import("i18nexus/devtools").then((module) => module.I18NexusDevtools);
+const I18NexusDevtools =
+  process.env.NODE_ENV === "production"
+    ? DisabledI18NexusDevtools
+    : dynamic<DevtoolsProps>(loadI18NexusDevtools, { ssr: false });
 
 export function ClientProvider({
   children,
@@ -32,13 +45,15 @@ export function ClientProvider({
         ],
         cookieName: "i18n-language",
         enableAutoDetection: true,
-      }}>
+      }}
+    >
       <GlobalErrorProvider>
         <ScrollRestorer />
         <Navigation />
         {children}
         <Analytics />
         <FirebaseStatus />
+        <I18NexusDevtools position="bottom-right" />
       </GlobalErrorProvider>
     </I18nProvider>
   );

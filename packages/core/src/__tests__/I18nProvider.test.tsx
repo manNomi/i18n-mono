@@ -451,6 +451,134 @@ describe("I18nProvider", () => {
       });
     });
 
+    it("should keep static fallback keys after a lazy namespace loads", async () => {
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      const HomeComponent = () => {
+        const { t, isReady } = useTranslation("home");
+
+        return (
+          <div>
+            <div data-testid="title">{t("title")}</div>
+            <div data-testid="shared">{t("shared")}</div>
+            <div data-testid="ready">{isReady ? "ready" : "not-ready"}</div>
+          </div>
+        );
+      };
+
+      render(
+        <I18nProvider
+          initialLanguage="en"
+          translations={{
+            common: {
+              en: {
+                title: "Static fallback title",
+                shared: "Static shared label",
+              },
+              ko: {
+                title: "정적 fallback 제목",
+                shared: "정적 공통 라벨",
+              },
+            },
+          }}
+          loadNamespace={loadNamespace}
+          fallbackNamespace="common"
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <HomeComponent />
+        </I18nProvider>,
+      );
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(4);
+      });
+
+      await act(async () => {
+        loads.get("common:en")?.resolve({});
+        loads.get("common:ko")?.resolve({});
+        loads.get("home:en")?.resolve({ title: "Lazy home title" });
+        loads.get("home:ko")?.resolve({});
+        await Promise.all([
+          loads.get("common:en")!.promise,
+          loads.get("common:ko")!.promise,
+          loads.get("home:en")!.promise,
+          loads.get("home:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("title")).toHaveTextContent(
+          "Lazy home title",
+        );
+        expect(screen.getByTestId("shared")).toHaveTextContent(
+          "Static shared label",
+        );
+        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+      });
+    });
+
+    it("should fall back to default language data when a lazy language load fails", async () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const loads = new Map<string, Deferred<Record<string, string>>>();
+      const loadNamespace = jest.fn(
+        (
+          namespace: string,
+          language: string,
+        ): Promise<Record<string, string>> => {
+          const load = createDeferred<Record<string, string>>();
+          loads.set(`${namespace}:${language}`, load);
+          return load.promise;
+        },
+      );
+
+      render(
+        <I18nProvider
+          initialLanguage="ko"
+          loadNamespace={loadNamespace}
+          languageManagerOptions={{
+            defaultLanguage: "en",
+            availableLanguages,
+          }}
+        >
+          <LazyTranslationComponent namespace="home" translationKey="title" />
+        </I18nProvider>,
+      );
+
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(2);
+      });
+
+      await act(async () => {
+        loads.get("home:en")?.resolve({ title: "Home title" });
+        loads.get("home:ko")?.reject(new Error("missing ko namespace"));
+        await Promise.allSettled([
+          loads.get("home:en")!.promise,
+          loads.get("home:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("translation")).toHaveTextContent(
+          "Home title",
+        );
+        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+      });
+      warnSpy.mockRestore();
+    });
+
     it("should avoid retry loops after a namespace load failure", async () => {
       const warnSpy = jest.spyOn(console, "warn").mockImplementation();
       const loads = new Map<string, Deferred<Record<string, string>>>();

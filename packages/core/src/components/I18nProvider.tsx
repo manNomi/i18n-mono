@@ -5,7 +5,7 @@ import {
   LanguageManager,
   LanguageConfig,
   LanguageManagerOptions,
-} from "../utils/languageManager";
+} from "../utils/languageManager.js";
 
 /** 번역 객체에서 키 추출 */
 export type ExtractI18nKeys<T extends Record<string, Record<string, string>>> =
@@ -169,14 +169,16 @@ export function I18nProvider<
               `Failed to load namespace "${namespaceKey}" for language "${lang}":`,
               error,
             );
-            return { lang, data: {} };
+            return { lang, data: undefined };
           }
         }),
       );
 
       const namespaceData: Record<string, Record<string, string>> = {};
       results.forEach(({ lang, data }) => {
-        namespaceData[lang] = data;
+        if (data) {
+          namespaceData[lang] = data;
+        }
       });
 
       setLoadedNamespaces((prev) => {

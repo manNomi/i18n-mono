@@ -116,6 +116,32 @@ describe("getServerLanguage with Accept-Language", () => {
     expect(result).toBe("ko");
   });
 
+  it("should ignore unsupported cookie language and use Accept-Language", () => {
+    const headers = new Headers();
+    headers.set("cookie", "i18n-language=fr");
+    headers.set("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8");
+
+    const result = getServerLanguage(headers, {
+      availableLanguages: ["en", "ko", "ja"],
+      defaultLanguage: "en",
+    });
+
+    expect(result).toBe("ko");
+  });
+
+  it("should ignore unsupported cookie language and fallback to default", () => {
+    const headers = new Headers();
+    headers.set("cookie", "i18n-language=fr");
+    headers.set("accept-language", "de-DE,de;q=0.9");
+
+    const result = getServerLanguage(headers, {
+      availableLanguages: ["en", "ko", "ja"],
+      defaultLanguage: "en",
+    });
+
+    expect(result).toBe("en");
+  });
+
   it("should fallback to default when Accept-Language does not match", () => {
     const headers = new Headers();
     headers.set("accept-language", "fr-FR,fr;q=0.9");

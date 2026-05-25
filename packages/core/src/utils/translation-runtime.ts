@@ -178,32 +178,70 @@ export const flattenTranslationsForLanguage = (
 const resolveLoadedTranslations = ({
   namespace,
   currentLanguage,
+  fallbackLanguage,
   fallbackNamespace,
   loadedNamespaces,
 }: Pick<
   TranslationSnapshotOptions,
-  "namespace" | "currentLanguage" | "fallbackNamespace" | "loadedNamespaces"
+  | "namespace"
+  | "currentLanguage"
+  | "fallbackLanguage"
+  | "fallbackNamespace"
+  | "loadedNamespaces"
 >): Record<string, string> => {
   let result: Record<string, string> = {};
 
   if (fallbackNamespace) {
-    const fallbackTranslations = loadedNamespaces.get(
+    result = resolveLoadedNamespaceForLanguage(
+      loadedNamespaces,
       String(fallbackNamespace),
-    )?.[currentLanguage];
-    if (fallbackTranslations) {
-      result = { ...fallbackTranslations };
-    }
+      currentLanguage,
+      fallbackLanguage,
+    );
   }
 
   if (namespace) {
-    const namespaceTranslations =
-      loadedNamespaces.get(namespace)?.[currentLanguage];
-    if (namespaceTranslations) {
-      result = { ...result, ...namespaceTranslations };
-    }
+    result = {
+      ...result,
+      ...resolveLoadedNamespaceForLanguage(
+        loadedNamespaces,
+        namespace,
+        currentLanguage,
+        fallbackLanguage,
+      ),
+    };
   }
 
   return result;
+};
+
+const resolveLoadedNamespaceForLanguage = (
+  loadedNamespaces: LoadedNamespaces,
+  namespace: string,
+  language: string,
+  fallbackLanguage: string,
+): Record<string, string> => {
+  const namespaceData = loadedNamespaces.get(namespace);
+  if (!namespaceData || typeof namespaceData !== "object") {
+    return {};
+  }
+
+  const current = namespaceData[language];
+  if (current && typeof current === "object") {
+    return current;
+  }
+
+  const fallback = namespaceData[fallbackLanguage];
+  if (fallback && typeof fallback === "object") {
+    return fallback;
+  }
+
+  const first = Object.values(namespaceData)[0];
+  if (first && typeof first === "object") {
+    return first;
+  }
+
+  return {};
 };
 
 const resolveNamespaceStaticTranslations = ({
@@ -279,6 +317,13 @@ const resolveStaticTranslations = (
 export const resolveTranslationSnapshot = (
   options: TranslationSnapshotOptions,
 ): Record<string, string> => {
+  if (
+    options.staticResolutionMode === "namespace" &&
+    options.staticMergeMode === "when-empty"
+  ) {
+    return resolveNamespaceTranslationSnapshot(options);
+  }
+
   const loadedTranslations = resolveLoadedTranslations(options);
   const hasLoadedTranslations = Object.keys(loadedTranslations).length > 0;
 
@@ -291,6 +336,66 @@ export const resolveTranslationSnapshot = (
   return {
     ...resolveStaticTranslations(options),
     ...loadedTranslations,
+  };
+};
+
+const resolveNamespaceTranslationSnapshot = (
+  options: TranslationSnapshotOptions,
+): Record<string, string> => {
+  const staticFallback = options.fallbackNamespace
+    ? resolveNamespaceForLanguage(
+        options.staticTranslations,
+        String(options.fallbackNamespace),
+        options.currentLanguage,
+        options.fallbackLanguage,
+      )
+    : {};
+  const loadedFallback = options.fallbackNamespace
+    ? resolveLoadedNamespaceForLanguage(
+        options.loadedNamespaces,
+        String(options.fallbackNamespace),
+        options.currentLanguage,
+        options.fallbackLanguage,
+      )
+    : {};
+
+  if (!options.namespace) {
+    return {
+      ...flattenTranslationsForLanguage(
+        options.staticTranslations,
+        options.currentLanguage,
+        options.fallbackLanguage,
+      ),
+      ...loadedFallback,
+    };
+  }
+
+  const staticRequested = resolveNamespaceForLanguage(
+    options.staticTranslations,
+    options.namespace,
+    options.currentLanguage,
+    options.fallbackLanguage,
+  );
+  const loadedRequested = resolveLoadedNamespaceForLanguage(
+    options.loadedNamespaces,
+    options.namespace,
+    options.currentLanguage,
+    options.fallbackLanguage,
+  );
+  const staticRequestedLayer =
+    Object.keys(staticRequested).length > 0
+      ? staticRequested
+      : flattenTranslationsForLanguage(
+          options.staticTranslations,
+          options.currentLanguage,
+          options.fallbackLanguage,
+        );
+
+  return {
+    ...staticFallback,
+    ...loadedFallback,
+    ...staticRequestedLayer,
+    ...loadedRequested,
   };
 };
 

@@ -1,664 +1,229 @@
 # Namespace-based Translations
 
-Organize your translations into logical namespaces for better structure and maintainability.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Basic Usage](#basic-usage)
-- [Automatic Type Inference](#automatic-type-inference)
-- [Dynamic Translations](#dynamic-translations)
-- [Styled Variables](#styled-variables)
-- [Server-Side Usage](#server-side-usage)
-- [Best Practices](#best-practices)
-
----
+Organize translations by feature, page, or domain.
 
 ## Overview
 
-Namespace-based translations allow you to organize translation keys by feature, page, or domain:
-
 ```typescript
-{
-  common: { en: { welcome: "Welcome" } },
-  menu: { en: { home: "Home" } },
-  error: { en: { notfound: "404 - Not Found" } }
-}
-```
-
-### Benefits
-
-✅ **Better Organization** - Group related translations together
-✅ **Type Safety** - Each namespace has its own typed keys
-✅ **Lazy Loading** - Load only needed namespaces
-✅ **No Key Conflicts** - Same key in different namespaces
-✅ **Team Collaboration** - Different teams own different namespaces
-
----
-
-## Basic Usage
-
-### 1. Define Translations
-
-```typescript
-import type { NamespaceTranslations } from 'i18nexus';
-
-const translations: NamespaceTranslations = {
+const translations = {
   common: {
-    en: {
-      welcome: 'Welcome',
-      goodbye: 'Goodbye',
-    },
-    ko: {
-      welcome: '환영합니다',
-      goodbye: '안녕히 가세요',
-    },
+    en: { save: "Save", cancel: "Cancel" },
+    ko: { save: "저장", cancel: "취소" },
   },
-  menu: {
-    en: {
-      home: 'Home',
-      about: 'About',
-    },
-    ko: {
-      home: '홈',
-      about: '소개',
-    },
+  home: {
+    en: { title: "Home" },
+    ko: { title: "홈" },
   },
-};
+} as const;
 ```
 
-### 2. Setup Provider
+Benefits:
+
+- Better organization by page or feature.
+- Same key names can exist in different namespaces.
+- Fallback namespaces can share common strings.
+- Lazy loading can load only the namespace a component asks for.
+- `createI18n` can infer namespace and key types from the translation shape.
+
+## Beginner API
 
 ```tsx
-import { I18nProvider } from 'i18nexus';
-
-function App() {
-  return (
-    <I18nProvider
-      translations={translations}
-      languageManagerOptions={{
-        defaultLanguage: 'en',
-      }}
-    >
-      <YourApp />
-    </I18nProvider>
-  );
-}
-```
-
-### 3. Use Translations
-
-```tsx
-import { useTranslation } from 'i18nexus';
-
-function WelcomeComponent() {
-  const { t } = useTranslation('common');
-
-  return <h1>{t('welcome')}</h1>;
-}
-
-function MenuComponent() {
-  const { t } = useTranslation('menu');
-
-  return <nav>{t('home')}</nav>;
-}
-```
-
----
-
-## Automatic Type Inference
-
-Use `createI18n` to automatically infer types from your translation object:
-
-### Basic Example
-
-```typescript
-import { createI18n } from 'i18nexus';
+import { I18nProvider, useTranslation } from "i18nexus";
 
 const translations = {
   common: {
-    en: { welcome: 'Welcome', goodbye: 'Goodbye' },
-    ko: { welcome: '환영합니다', goodbye: '안녕히 가세요' },
+    en: { save: "Save" },
+    ko: { save: "저장" },
   },
-  menu: {
-    en: { home: 'Home', about: 'About' },
-    ko: { home: '홈', about: '소개' },
-  },
-} as const; // ⚠️ Important: 'as const' for type inference
-
-const i18n = createI18n(translations);
-
-// Now use the typed versions
-function App() {
-  return (
-    <i18n.I18nProvider
-      languageManagerOptions={{ defaultLanguage: 'en' }}
-    >
-      <YourApp />
-    </i18n.I18nProvider>
-  );
-}
-
-function Component() {
-  // ✅ TypeScript knows available namespaces
-  const { t } = i18n.useTranslation('common');
-
-  // ✅ TypeScript knows available keys
-  t('welcome');  // ✅ OK
-  t('invalid');  // ❌ TypeScript Error
-}
-```
-
-### Advanced Example
-
-```typescript
-const translations = {
-  auth: {
-    en: {
-      login: 'Log In',
-      signup: 'Sign Up',
-      forgot: 'Forgot Password?',
-    },
-    ko: {
-      login: '로그인',
-      signup: '회원가입',
-      forgot: '비밀번호를 잊으셨나요?',
-    },
-  },
-  dashboard: {
-    en: {
-      overview: 'Overview',
-      stats: 'Statistics',
-      settings: 'Settings',
-    },
-    ko: {
-      overview: '개요',
-      stats: '통계',
-      settings: '설정',
-    },
+  home: {
+    en: { title: "Home" },
+    ko: { title: "홈" },
   },
 } as const;
 
-const i18n = createI18n(translations);
-
-// ✅ Full type inference
-function AuthPage() {
-  const { t } = i18n.useTranslation('auth');
-  // t() has autocomplete for: 'login' | 'signup' | 'forgot'
-
-  return (
-    <div>
-      <button>{t('login')}</button>
-      <button>{t('signup')}</button>
-      <a>{t('forgot')}</a>
-    </div>
-  );
-}
-```
-
-### Type Benefits
-
-```typescript
-const i18n = createI18n(translations);
-
-// ❌ Invalid namespace
-i18n.useTranslation('invalid');  // TypeScript Error
-
-// ❌ Invalid key
-const { t } = i18n.useTranslation('auth');
-t('nonexistent');  // TypeScript Error
-
-// ✅ Full IDE autocomplete
-const { t } = i18n.useTranslation('auth');
-t('lo...')  // IDE suggests: login
-```
-
----
-
-## Dynamic Translations
-
-For runtime-generated keys (e.g., from API, user input, arrays):
-
-### When to Use
-
-Use `useDynamicTranslation` when:
-- Keys come from API responses
-- Keys are generated at runtime
-- Keys come from array indices
-- Keys are user-provided
-
-### Basic Usage
-
-```typescript
-import { useDynamicTranslation } from 'i18nexus';
-
-function DynamicComponent() {
-  const { t } = useDynamicTranslation();
-
-  // ✅ Runtime keys work
-  const items = ['item.type.0', 'item.type.1', 'item.type.2'];
-
-  return (
-    <div>
-      {items.map(key => (
-        <div key={key}>{t(key)}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-### Setup Dynamic Translations
-
-```tsx
-const dynamicTranslations = {
-  en: {
-    'item.type.0': 'League',
-    'item.type.1': 'Cup',
-    'error.404': 'Not Found',
-    'error.500': 'Server Error',
-  },
-  ko: {
-    'item.type.0': '리그',
-    'item.type.1': '컵',
-    'error.404': '찾을 수 없음',
-    'error.500': '서버 오류',
-  },
-};
-
-<I18nProvider
-  translations={namespaceTranslations}
-  dynamicTranslations={dynamicTranslations}
-  languageManagerOptions={{ defaultLanguage: 'en' }}
->
-  <App />
-</I18nProvider>
-```
-
-### Real-World Example
-
-```tsx
-// API response with dynamic types
-const items = [
-  { id: 1, type: 0, label: 'item.type.0' },
-  { id: 2, type: 1, label: 'item.type.1' },
-];
-
-function ItemList() {
-  const { t } = useDynamicTranslation();
-
-  return (
-    <ul>
-      {items.map(item => (
-        <li key={item.id}>
-          {t(item.label)}  {/* ✅ Dynamic key */}
-        </li>
-      ))}
-    </ul>
-  );
-}
-```
-
-### Mixed Usage
-
-```tsx
-function MixedComponent() {
-  const { t: tCommon } = useTranslation('common');
-  const { t: tDynamic } = useDynamicTranslation();
-
-  return (
-    <div>
-      <h1>{tCommon('welcome')}</h1>  {/* Static, type-safe */}
-      <p>{tDynamic(errorCode)}</p>    {/* Dynamic, runtime */}
-    </div>
-  );
-}
-```
-
----
-
-## Styled Variables
-
-Style specific parts of translated text:
-
-### Basic Styling
-
-```tsx
-const { t } = useTranslation('common');
-
-// Translation: "Hello {{name}}!"
-t(
-  'greeting',
-  { name: 'John' },
-  { name: { color: 'blue' } }
-)
-// Result: Hello <span style="color: blue;">John</span>!
-```
-
-### Multiple Styles
-
-```tsx
-t(
-  'greeting',
-  { name: 'John' },
-  {
-    name: {
-      color: 'red',
-      fontWeight: 'bold',
-      fontSize: '20px',
-      textDecoration: 'underline',
-    }
-  }
-)
-```
-
-### Badge Style
-
-```tsx
-// Translation: "You have {{count}} items"
-t(
-  'cartStatus',
-  { count: '5' },
-  {
-    count: {
-      backgroundColor: '#4caf50',
-      color: 'white',
-      padding: '2px 8px',
-      borderRadius: '12px',
-      fontWeight: 'bold',
-    }
-  }
-)
-```
-
-### Multiple Variables
-
-```tsx
-// Translation: "{{first}} and {{second}}"
-t(
-  'multi',
-  { first: 'React', second: 'TypeScript' },
-  {
-    first: { color: '#61dafb', fontWeight: 'bold' },
-    second: { color: '#3178c6', fontWeight: 'bold' },
-  }
-)
-```
-
-### Highlight Box
-
-```tsx
-t(
-  'warning',
-  { text: 'Important' },
-  {
-    text: {
-      backgroundColor: '#fff3cd',
-      color: '#856404',
-      padding: '4px 8px',
-      borderRadius: '4px',
-      fontWeight: 'bold',
-      border: '1px solid #ffc107',
-    }
-  }
-)
-```
-
-### Advanced: Gradient
-
-```tsx
-t(
-  'premium',
-  { user: 'Premium User' },
-  {
-    user: {
-      background: 'linear-gradient(45deg, #f093fb 0%, #f5576c 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      fontWeight: 'bold',
-      fontSize: '20px',
-    }
-  }
-)
-```
-
-### Type Definition
-
-```typescript
-type TranslationStyles = {
-  [variableName: string]: React.CSSProperties;
-};
-
-function t(
-  key: string,
-  variables?: { [key: string]: string | number },
-  styles?: TranslationStyles
-): string | React.ReactElement;
-```
-
----
-
-## Server-Side Usage
-
-### Next.js App Router
-
-```tsx
-// app/[locale]/layout.tsx
-import { I18nProvider } from 'i18nexus';
-import { translations } from '@/i18n/translations';
-
-export default function Layout({ children, params }) {
+function AppI18nProvider({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider
+      initialLanguage="en"
       translations={translations}
-      languageManagerOptions={{
-        defaultLanguage: params.locale,
-      }}
+      fallbackNamespace="common"
+      languageManagerOptions={{ defaultLanguage: "en" }}
     >
       {children}
     </I18nProvider>
   );
 }
+
+function HomeTitle() {
+  const { t } = useTranslation("home");
+
+  return <h1>{t("title")}</h1>;
+}
 ```
 
-### Server Component with Namespaces
+## Advanced Typed API
+
+Use `createI18n` when you want namespace and key autocomplete.
 
 ```tsx
-import { getTranslation } from 'i18nexus/server';
+import { createI18n, type I18nTranslations } from "i18nexus";
 
-export default async function ServerPage() {
-  const { t } = await getTranslation('common', 'en');
-
-  return <h1>{t('welcome')}</h1>;
-}
-```
-
-### Dynamic Translations on Server
-
-```tsx
-import { getDynamicTranslation } from 'i18nexus/server';
-
-export default async function ServerPage() {
-  const dynamicTranslations = {
-    en: { 'error.404': 'Not Found' },
-    ko: { 'error.404': '찾을 수 없음' },
-  };
-
-  const t = getDynamicTranslation('en', dynamicTranslations);
-
-  return <p>{t('error.404')}</p>;
-}
-```
-
----
-
-## Best Practices
-
-### 1. Namespace Organization
-
-```
-✅ Good - By feature/domain
-├── auth: { login, signup, forgot }
-├── dashboard: { overview, stats, settings }
-├── profile: { edit, view, delete }
-
-❌ Avoid - By page
-├── page1: { title, button1, button2 }
-├── page2: { title, button1, button2 }
-```
-
-### 2. Namespace Naming
-
-```typescript
-// ✅ Good - Clear, semantic names
 const translations = {
-  authentication: { ... },
-  navigation: { ... },
-  validation: { ... },
-}
-
-// ❌ Avoid - Generic names
-const translations = {
-  misc: { ... },
-  other: { ... },
-  stuff: { ... },
-}
-```
-
-### 3. Use as const
-
-```typescript
-// ✅ Always use 'as const' with createI18n
-const translations = {
-  common: { en: { welcome: 'Welcome' } },
-} as const;
-
-const i18n = createI18n(translations);
-
-// ❌ Missing 'as const' - no type inference
-const translations = {
-  common: { en: { welcome: 'Welcome' } },
-};
-```
-
-### 4. Separate Static and Dynamic
-
-```tsx
-// ✅ Good - Clear separation
-function Component() {
-  const { t } = useTranslation('common');  // Static keys
-  const { t: tDynamic } = useDynamicTranslation();  // Runtime keys
-
-  return (
-    <div>
-      <h1>{t('title')}</h1>
-      <p>{tDynamic(apiKey)}</p>
-    </div>
-  );
-}
-
-// ❌ Avoid - Mixing concerns
-function Component() {
-  const { t } = useTranslation('common');
-  return <p>{t(runtimeKey as any)}</p>;  // Type unsafe
-}
-```
-
-### 5. Template Literal Fallback
-
-```tsx
-// ✅ Good - Inline fallback with interpolation
-t('{{user}}님 환영합니다', { user: name })
-
-// ❌ Avoid - No fallback
-t(unknownKey, { user: name })
-```
-
-### 6. Keep Namespaces Focused
-
-```typescript
-// ✅ Good - Single responsibility
-const translations = {
-  userAuth: {
-    en: { login: '...', signup: '...', logout: '...' }
+  common: {
+    en: { save: "Save", cancel: "Cancel" },
+    ko: { save: "저장", cancel: "취소" },
   },
-  userProfile: {
-    en: { view: '...', edit: '...', delete: '...' }
+  home: {
+    en: { title: "Home", greeting: "Hello, {{name}}" },
+    ko: { title: "홈", greeting: "안녕하세요, {{name}}님" },
   },
-}
+} as const satisfies I18nTranslations;
 
-// ❌ Avoid - Too broad
-const translations = {
-  user: {
-    en: {
-      login: '...', signup: '...', logout: '...',
-      view: '...', edit: '...', delete: '...',
-      // ... 100 more keys
-    }
-  },
+export const i18n = createI18n(translations, {
+  fallbackNamespace: "common",
+});
+
+export const I18nProvider = i18n.I18nProvider;
+export const useAppTranslation = i18n.useTranslation;
+```
+
+```tsx
+function HomeTitle() {
+  const { t } = useAppTranslation("home");
+
+  t("title");
+  t("save");
+  // t("missing"); // TypeScript error
+
+  return <h1>{t("greeting", { name: "Alice" })}</h1>;
 }
 ```
 
----
+Runtime compatibility note: static `createI18n` currently keeps legacy flattened lookup behavior. TypeScript narrows keys to the requested namespace plus fallback namespace, but old static runtime keys from other namespaces may still resolve until strict namespace behavior is introduced in a future cleanup.
 
-## Migration Guide
+## Fallback Namespace
 
-### From Old Structure
+`fallbackNamespace` merges shared keys before the requested namespace. Requested namespace keys win.
 
-**Before:**
-```typescript
-const translations = {
-  en: { welcome: 'Welcome', goodbye: 'Goodbye' },
-  ko: { welcome: '환영합니다', goodbye: '안녕히 가세요' },
-};
-
-const { t } = useTranslation();
-t('welcome');
-```
-
-**After:**
 ```typescript
 const translations = {
   common: {
-    en: { welcome: 'Welcome', goodbye: 'Goodbye' },
-    ko: { welcome: '환영합니다', goodbye: '안녕히 가세요' },
+    en: { title: "Default title", save: "Save" },
+  },
+  home: {
+    en: { title: "Home" },
   },
 } as const;
 
-const i18n = createI18n(translations);
+const i18n = createI18n(translations, {
+  fallbackNamespace: "common",
+});
 
-const { t } = i18n.useTranslation('common');
-t('welcome');  // ✅ Type-safe
+function HomePage() {
+  const { t } = i18n.useTranslation("home");
+
+  t("title"); // "Home"
+  t("save"); // "Save"
+}
 ```
 
-### Gradual Migration
+## Lazy Namespace Loading
 
-You can use both old and new patterns during migration:
+Lazy loading is configured on the provider by passing `loadNamespace`.
 
-```typescript
-// Keep old translations
-const oldTranslations = {
-  en: { ... },
-  ko: { ... },
+```tsx
+import { I18nProvider, useTranslation } from "i18nexus";
+
+type AppTranslations = {
+  common: {
+    en: { loading: string };
+    ko: { loading: string };
+  };
+  home: {
+    en: { title: string };
+    ko: { title: string };
+  };
 };
 
-// Add new namespace translations
-const namespaceTranslations = {
-  common: { en: { ... }, ko: { ... } },
-};
+async function loadNamespace(namespace: string, language: string) {
+  const module = await import(`./locales/${namespace}/${language}.json`);
+  return module.default;
+}
 
-// Use both in provider
-<I18nProvider
-  translations={namespaceTranslations}
-  // oldTranslations can be used as dynamicTranslations
-  dynamicTranslations={oldTranslations}
->
+function AppI18nProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      translations={{} as AppTranslations}
+      loadNamespace={loadNamespace}
+      fallbackNamespace="common"
+      preloadNamespaces={["common"]}
+    >
+      {children}
+    </I18nProvider>
+  );
+}
+
+function HomePage() {
+  const { t, isReady } = useTranslation("home");
+
+  if (!isReady) {
+    return <p>Loading...</p>;
+  }
+
+  return <h1>{t("title")}</h1>;
+}
 ```
 
----
+## Dynamic Runtime Values
+
+For dynamic values inside a known key, use interpolation.
+
+```tsx
+const { t } = useTranslation("home");
+
+return <p>{t("greeting", { name: user.name })}</p>;
+```
+
+For runtime-generated keys from an API, keep the key typed at the boundary when possible.
+
+```tsx
+type HomeKeys = "title" | "greeting";
+
+function DynamicLabel({ labelKey }: { labelKey: string }) {
+  const { t } = useTranslation<HomeKeys>("home");
+
+  return <span>{t(labelKey as HomeKeys)}</span>;
+}
+```
+
+## Styled Variables
+
+```tsx
+const { t } = useTranslation("checkout");
+
+return (
+  <p>
+    {t(
+      "total",
+      { amount: "$120" },
+      { amount: { fontWeight: "bold", color: "green" } },
+    )}
+  </p>
+);
+```
+
+## Best Practices
+
+- Use `common` for cross-page strings such as buttons and loading states.
+- Use page or feature names for specific namespaces, such as `home`, `checkout`, or `settings`.
+- Keep fallback namespaces small so they do not hide missing page-specific keys.
+- In lazy mode, render a loading state when `isReady` is `false`.
+- Prefer `createI18n` only when its typed instance improves project DX.
 
 ## See Also
 
-- [Styled Text Examples](../examples/styled-text-example.tsx)
 - [API Reference](./API_REFERENCE.md)
+- [Lazy Loading](./LAZY_LOADING.md)
 - [TypeScript Guide](./TYPESCRIPT_GUIDE.md)
+- [createI18n DX Audit](./create-i18n-dx-audit.md)

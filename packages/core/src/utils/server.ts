@@ -2,12 +2,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { inferNamespaceFromCallSite } from "./callsite-inference";
+import { inferNamespaceFromCallSite } from "./callsite-inference.js";
 import {
   getCachedTranslations,
   cacheTranslations,
   invalidateCache as invalidateTranslationCache,
-} from "./translation-cache";
+} from "./translation-cache.js";
 
 type LocalConfig = {
   localesDir?: string;
@@ -115,7 +115,13 @@ export function getServerLanguage(
     for (const cookie of cookies) {
       const [name, value] = cookie.trim().split("=");
       if (decodeURIComponent(name) === cookieName) {
-        return decodeURIComponent(value);
+        const cookieLanguage = decodeURIComponent(value);
+        if (
+          availableLanguages.length === 0 ||
+          availableLanguages.includes(cookieLanguage)
+        ) {
+          return cookieLanguage;
+        }
       }
     }
   }

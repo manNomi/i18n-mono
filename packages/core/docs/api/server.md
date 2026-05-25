@@ -35,11 +35,15 @@ async function getTranslation<NS extends string = string>(
     defaultLanguage?: string;
     availableLanguages?: string[];
     language?: string;
-    translations?: Record<string, Record<string, string>>;
+    disableAutoInference?: boolean;
+    useFallbackOnError?: boolean;
+    disableCache?: boolean;
   },
 ): Promise<{
   t: TranslationFunction;
   language: string;
+  lng: string;
+  namespace: NS;
   translations: Record<string, Record<string, string>>;
   dict: Record<string, string>;
 }>;
@@ -53,12 +57,16 @@ async function getTranslation<NS extends string = string>(
 - `options.defaultLanguage` - Fallback language (default: `"en"`)
 - `options.availableLanguages` - List of supported languages for Accept-Language detection
 - `options.language` - Explicit language code (bypasses cookie/header detection)
-- `options.translations` - Pre-loaded translations object
+- `options.disableAutoInference` - Disable namespace inference from the call site
+- `options.useFallbackOnError` - Try the configured fallback namespace when the requested namespace fails
+- `options.disableCache` - Disable translation cache reads and writes
 
 **Returns:**
 
 - `t` - Translation function with variable interpolation
 - `language` - Detected current language
+- `lng` - Alias of `language` for compatibility with client hook naming
+- `namespace` - Resolved namespace
 - `translations` - Full translations object
 - `dict` - Current language translations
 

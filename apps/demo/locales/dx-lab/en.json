@@ -1,5 +1,7 @@
 {
   "Devtools 상태": "Devtools status",
+  "Devtools는 페이지가 아니라 Provider 근처에 한 번만 mount하는 패턴이 가장 이해하기 쉬웠습니다.": "The devtools pattern was easiest to understand when mounted once near the Provider instead of per page.",
+  "Devtools는 Provider 근처에 한 번만 mount되어 페이지 코드는 번역 흐름에 집중할 수 있습니다.": "Devtools are mounted once near the Provider, so page code can stay focused on the translation flow.",
   "Fallback lookup": "Fallback lookup",
   "Lazy namespace": "Lazy namespace",
   "Loading...": "Loading...",
@@ -25,8 +27,6 @@
   "언어 변경 후 새 번역 snapshot을 렌더링": "Renders a fresh translation snapshot after language changes",
   "언어 전환": "Language switching",
   "이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation(\"dx-lab\") 호출만으로 불러옵니다.": "This page loads the non-preloaded dx-lab namespace only by calling useTranslation(\"dx-lab\").",
-  "현재 구현 기준으로 i18nexus/devtools는 export되지 않으므로 페이지에서는 렌더링하지 않습니다.": "The current implementation does not export i18nexus/devtools, so this page does not render it.",
   "현재 언어": "Current language",
-  "준비됨": "Ready",
-  "현재 패키지 export에는 devtools subpath가 없어 이 데모는 Provider, hook, fallback 흐름만 검증합니다.": "The current package exports do not include a devtools subpath, so this demo only verifies the Provider, hook, and fallback flows."
+  "준비됨": "Ready"
 }
