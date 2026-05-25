@@ -272,7 +272,7 @@ function HomePage() {
 
 ### 📋 릴리즈 노트
 
-- [v2.7.0](./docs/releases/v2.7.0.md) - Accept-Language 자동 감지 (최신)
+- [v2.7.0](./docs/releases/v2.7.0.md) - Accept-Language 자동 감지 (과거 릴리즈 노트)
 - [v2.6.0](./docs/releases/v2.6.0.md) - 변수 삽입 & CI/CD
 - [v2.5.2](./docs/releases/v2.5.2.md) - 개발자 도구
 - [v2.1.0](./docs/releases/v2.1.0.md) - Server Components 지원
@@ -323,16 +323,15 @@ t(
 // 언어 타입 정의
 type AppLanguages = "en" | "ko" | "ja";
 
-const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
+const { changeLanguage } = useLanguageSwitcher();
 
-changeLanguage("ko"); // ✅ 자동완성!
-changeLanguage("fr"); // ❌ 컴파일 에러!
+changeLanguage("ko");
 ```
 
 ### 🛠️ 개발자 도구
 
 ```tsx
-import { I18NexusDevtools } from "i18nexus";
+import { I18NexusDevtools } from "i18nexus/devtools";
 
 <I18nProvider>
   <App />
@@ -345,7 +344,7 @@ import { I18NexusDevtools } from "i18nexus";
 ## 📦 패키지 정보
 
 - **이름:** i18nexus
-- **버전:** 2.7.0
+- **버전:** 3.4.2
 - **라이센스:** MIT
 - **TypeScript:** ✅ 완벽 지원
 - **번들 크기:** ~15KB (gzipped)

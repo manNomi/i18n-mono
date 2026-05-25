@@ -151,7 +151,7 @@ interface TranslationFunction {
   (
     key: string,
     variables: TranslationVariables,
-    styles: TranslationStyles
+    styles: TranslationStyles,
   ): React.ReactElement;
 
   // Without styles - returns string
@@ -171,7 +171,7 @@ const text: string = t("Hello {{name}}", { name: "World" });
 const element: React.ReactElement = t(
   "Price: {{amount}}",
   { amount: 100 },
-  { amount: { color: "red" } }
+  { amount: { color: "red" } },
 );
 ```
 
@@ -187,6 +187,7 @@ Return type of `useTranslation()` hook.
 interface UseTranslationReturn {
   t: TranslationFunction;
   currentLanguage: string;
+  lng: string;
   isReady: boolean;
 }
 ```
@@ -224,25 +225,138 @@ interface UseLanguageSwitcherReturn {
 
 ## Component Props Types
 
-### `I18nProviderProps<TLanguage>`
+### `NamespaceTranslations`
+
+Namespace-based translation object.
+
+```typescript
+type NamespaceTranslations = Record<
+  string,
+  Record<string, Record<string, string>>
+>;
+```
+
+---
+
+### `NamespaceLoader`
+
+Lazy namespace loader function.
+
+```typescript
+type NamespaceLoader = (
+  namespace: string,
+  language: string,
+) => Promise<Record<string, string>>;
+```
+
+---
+
+### `I18nProviderProps<TTranslations>`
 
 Props for `I18nProvider` component.
 
 ```typescript
-interface I18nProviderProps<TLanguage extends string = string> {
+interface I18nProviderProps<
+  TTranslations extends NamespaceTranslations = NamespaceTranslations,
+> {
   children: ReactNode;
-  initialLanguage?: TLanguage;
   languageManagerOptions?: LanguageManagerOptions;
-  translations?: Record<string, Record<string, string>>;
-  onLanguageChange?: (language: TLanguage) => void;
+  translations?: TTranslations;
+  onLanguageChange?: (language: string) => void;
+  initialLanguage?: string;
+  loadNamespace?: NamespaceLoader;
+  fallbackNamespace?: keyof TTranslations;
+  preloadNamespaces?: Array<keyof TTranslations>;
 }
+```
+
+---
+
+### `I18nTranslations`
+
+Translation shape accepted by `createI18n`.
+
+```typescript
+type I18nTranslations = {
+  readonly [namespace: string]: {
+    readonly [language: string]: {
+      readonly [key: string]: string;
+    };
+  };
+};
+```
+
+---
+
+### `CreateI18nOptions`
+
+Options for the advanced typed `createI18n` API.
+
+```typescript
+interface CreateI18nOptions<
+  TTranslations extends I18nTranslations = I18nTranslations,
+  FallbackNamespace extends keyof TTranslations & string = never,
+> {
+  fallbackNamespace?: FallbackNamespace;
+  enableFallback?: boolean;
+}
+```
+
+`loadNamespace` and `preloadNamespaces` are provider props, not `createI18n` options.
+
+---
+
+### `CreateI18nInstance`
+
+Return type of `createI18n`.
+
+```typescript
+interface CreateI18nInstance<
+  TTranslations extends I18nTranslations = I18nTranslations,
+  FallbackNamespace extends keyof TTranslations & string = never,
+> {
+  I18nProvider: React.ComponentType<
+    Omit<
+      I18nProviderProps<TTranslations>,
+      "translations" | "fallbackNamespace"
+    > & {
+      translations?: TTranslations;
+    }
+  >;
+  useTranslation: {
+    (): CreateI18nUseTranslationReturn<string>;
+    <NS extends keyof TTranslations & string>(
+      namespace: NS,
+    ): CreateI18nUseTranslationReturn<string>;
+  };
+  translations: TTranslations;
+  options: {
+    fallbackNamespace?: FallbackNamespace;
+    enableFallback: boolean;
+  };
+}
+```
+
+---
+
+### `CreateI18nUseTranslationReturn`
+
+Return type of `createI18n(...).useTranslation`.
+
+```typescript
+type CreateI18nUseTranslationReturn<K extends string = string> =
+  LegacyUseTranslationReturn<K>;
 ```
 
 ---
 
 ### `I18NexusDevtoolsProps`
 
-Props for `I18NexusDevtools` component.
+Props for `I18NexusDevtools`. Import this type from the devtools subpath.
+
+```typescript
+import type { I18NexusDevtoolsProps } from "i18nexus/devtools";
+```
 
 ```typescript
 interface I18NexusDevtoolsProps {
@@ -297,11 +411,12 @@ interface LanguageManagerOptions {
 
 ---
 
-## Cookie Types
+## Cookie Option Shape
 
 ### `CookieOptions`
 
-Options for cookie management.
+Options accepted through `LanguageManagerOptions.cookieOptions`. Cookie helper
+functions are internal and are not exported from the package root.
 
 ```typescript
 interface CookieOptions {
@@ -339,14 +454,10 @@ import { config } from "./i18nexus.config";
 type AppLanguages = ExtractLanguages<typeof config>;
 
 function TypeSafeSwitcher() {
-  const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
+  const { changeLanguage } = useLanguageSwitcher();
 
-  // ✅ Type-safe
   changeLanguage("en");
   changeLanguage("ko");
-
-  // ❌ Type error
-  // changeLanguage("fr");
 
   return null;
 }
@@ -474,11 +585,9 @@ import type {
 } from "i18nexus";
 
 function App() {
-  const { t, currentLanguage }: UseTranslationReturn =
-    useTranslation<AppLanguages>();
+  const { t, currentLanguage }: UseTranslationReturn = useTranslation();
 
-  const { changeLanguage }: UseLanguageSwitcherReturn =
-    useLanguageSwitcher<AppLanguages>();
+  const { changeLanguage }: UseLanguageSwitcherReturn = useLanguageSwitcher();
 
   const variables: TranslationVariables = {
     user: "John",

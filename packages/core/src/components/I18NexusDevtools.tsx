@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useI18nContext } from "./I18nProvider";
+import { useI18nContext } from "./I18nProvider.js";
 
 export interface I18NexusDevtoolsProps {
   /** 개발 도구 기본 열림 상태 */

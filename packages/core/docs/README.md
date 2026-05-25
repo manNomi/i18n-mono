@@ -30,6 +30,12 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 
 ### Core Features
 
+#### 🧭 API Tracks
+
+- **Beginner API** - `I18nProvider` + root `useTranslation`
+- **Advanced Typed API** - `createI18n` for namespace/key inference
+- **[createI18n DX Audit](./create-i18n-dx-audit.md)** - Why `createI18n` is kept and repositioned
+
 #### 🌐 Accept-Language Detection
 
 - **[Accept-Language Guide](./guides/accept-language.md)** - Browser language auto-detection
@@ -57,7 +63,7 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 #### 🛠️ Developer Tools
 
 - **[DevTools Guide](./guides/devtools.md)** - Visual debugging
-  - I18NexusDevtools component
+  - `I18NexusDevtools` from `i18nexus/devtools`
   - Features overview
   - Customization options
   - Best practices
@@ -81,7 +87,8 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
   - `useTranslation()`
   - `useLanguageSwitcher()`
   - `I18nProvider`
-  - `I18NexusDevtools`
+  - `createI18n()`
+  - `I18NexusDevtools` subpath
   - Complete type definitions
 
 ### Types
@@ -98,7 +105,12 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 
 ### Latest Releases
 
-- **[v2.7.0](./releases/v2.7.0.md)** (Latest) - Accept-Language Auto-Detection
+- **Current 3.x docs** - Context provider, lazy namespace loading, and `createI18n` advanced typed API
+  - [Migration v3](./MIGRATION_V3.md)
+  - [Lazy Loading](./LAZY_LOADING.md)
+  - [createI18n DX Audit](./create-i18n-dx-audit.md)
+
+- **[v2.7.0](./releases/v2.7.0.md)** - Accept-Language Auto-Detection
   - Browser language detection
   - Quality value support
   - Region code support
@@ -109,7 +121,7 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
   - GitHub Actions automation
 
 - **[v2.5.2](./releases/v2.5.2.md)** - Developer Tools
-  - I18NexusDevtools component
+  - Historical `I18NexusDevtools` release note
   - TypeScript config support
   - Type-safe hooks
 
@@ -180,7 +192,7 @@ docs/
 │   ├── client.md            # Client-side API
 │   └── types.md             # TypeScript types
 └── releases/                 # Release notes
-    ├── v2.7.0.md            # Latest release
+    ├── v2.7.0.md            # Historical release note
     ├── v2.6.0.md            # Variable interpolation
     ├── v2.5.2.md            # Developer tools
     └── v2.1.0.md            # Server components

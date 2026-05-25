@@ -5,7 +5,7 @@ import {
   LanguageManager,
   LanguageConfig,
   LanguageManagerOptions,
-} from "../utils/languageManager";
+} from "../utils/languageManager.js";
 
 /** 번역 객체에서 키 추출 */
 export type ExtractI18nKeys<T extends Record<string, Record<string, string>>> =

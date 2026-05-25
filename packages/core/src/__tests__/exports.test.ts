@@ -1,3 +1,4 @@
+import * as root from "../index";
 import { createI18n } from "../index";
 import type {
   CreateI18nInstance,
@@ -35,5 +36,31 @@ describe("root exports", () => {
     expect(typeof i18n.I18nProvider).toBe("function");
     expect(typeof i18n.useTranslation).toBe("function");
     expect(returnShape.isReady).toBe(true);
+  });
+
+  it("does not expose removed runtime utilities from the root entry", () => {
+    const removedRuntimeExports = [
+      "I18NexusDevtools",
+      "createTypedTranslation",
+      "createTypedTranslationWithStyles",
+      "createMultiLangTypedTranslation",
+      "validateTranslationKeys",
+      "getTranslationKeyList",
+      "createDynamicTranslation",
+      "buildTranslationParams",
+      "buildConditionalTranslation",
+      "mapToTranslationParams",
+      "setCookie",
+      "getCookie",
+      "deleteCookie",
+      "getAllCookies",
+      "LanguageManager",
+      "defaultLanguageManager",
+      "createI18nWithConfig",
+    ];
+
+    for (const exportName of removedRuntimeExports) {
+      expect(root).not.toHaveProperty(exportName);
+    }
   });
 });

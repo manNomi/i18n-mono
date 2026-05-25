@@ -17,13 +17,14 @@ React Query 스타일의 개발자 도구로, 개발 모드에서만 렌더링�
 ### 기본 사용
 
 ```tsx
-import { I18nProvider, I18NexusDevtools } from "i18nexus";
+import { I18nProvider } from "i18nexus";
+import { I18NexusDevtools } from "i18nexus/devtools";
 
 function App() {
   return (
     <I18nProvider
       languageManagerOptions={{
-        supportedLanguages: [
+        availableLanguages: [
           { code: "en", name: "English" },
           { code: "ko", name: "한국어" },
           { code: "ja", name: "日本語" },
@@ -31,10 +32,13 @@ function App() {
         defaultLanguage: "en",
       }}
       translations={{
-        en: { greeting: "Hello" },
-        ko: { greeting: "안녕하세요" },
-        ja: { greeting: "こんにちは" },
-      }}>
+        common: {
+          en: { greeting: "Hello" },
+          ko: { greeting: "안녕하세요" },
+          ja: { greeting: "こんにちは" },
+        },
+      }}
+    >
       <YourApp />
 
       {/* 개발자 도구 추가 */}

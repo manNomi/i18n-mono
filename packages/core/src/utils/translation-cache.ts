@@ -143,5 +143,6 @@ export function cleanupExpiredCache(): void {
 
 // Auto cleanup every 5 minutes
 if (typeof setInterval !== "undefined") {
-  setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+  const cleanupInterval = setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+  (cleanupInterval as { unref?: () => void }).unref?.();
 }

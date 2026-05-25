@@ -16,6 +16,11 @@
       "types": "./dist/utils/server.d.ts",
       "import": "./dist/utils/server.js",
       "default": "./dist/utils/server.js"
+    },
+    "./devtools": {
+      "types": "./dist/components/I18NexusDevtools.d.ts",
+      "import": "./dist/components/I18NexusDevtools.js",
+      "default": "./dist/components/I18NexusDevtools.js"
     }
   },
   "scripts": {
@@ -51,7 +56,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/manNomi/i18nexus.git",
-    "directory": "packages/i18nexus"
+    "directory": "packages/core"
   },
   "bugs": {
     "url": "https://github.com/manNomi/i18nexus/issues"
@@ -65,15 +70,6 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
-  },
-  "dependencies": {
-    "@babel/generator": "^7.23.0",
-    "@babel/parser": "^7.23.0",
-    "@babel/traverse": "^7.23.0",
-    "@babel/types": "^7.23.0",
-    "commander": "^11.0.0",
-    "glob": "^10.3.0",
-    "googleapis": "^128.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

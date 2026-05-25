@@ -579,7 +579,13 @@ This project was inspired by excellent i18n libraries:
 
 ## 📈 Version History
 
-### v3.3.0 (Latest)
+### v3.4.2 (Latest)
+
+- 🔄 Lazy namespace loading stability improvements
+- 🎯 `createI18n` repositioned as the advanced typed API
+- 📚 Public API and documentation alignment
+
+### v3.3.0
 
 - ✨ Type inference improvements - no explicit generics needed
 - 🔄 Wrapper removes redundant generic types

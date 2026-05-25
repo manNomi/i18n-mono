@@ -48,15 +48,15 @@ import { useLanguageSwitcher } from "i18nexus";
 import type { AppLanguages } from "./types/i18n";
 
 function LanguageSwitcher() {
-  const { changeLanguage, currentLanguage } = useLanguageSwitcher<AppLanguages>();
+  const { changeLanguage, currentLanguage } = useLanguageSwitcher();
 
-  // ✅ TypeScript will autocomplete and validate these:
+  // ✅ Keep supported language values centralized:
   const switchToEnglish = () => changeLanguage("en"); // ✅ Works
   const switchToKorean = () => changeLanguage("ko"); // ✅ Works
   const switchToJapanese = () => changeLanguage("ja"); // ✅ Works
 
-  // ❌ TypeScript will error on invalid languages:
-  // const switchToFrench = () => changeLanguage("fr"); // ❌ Error!
+  // ❌ Invalid languages should be prevented at your UI boundary:
+  // const switchToFrench = () => changeLanguage("fr"); // avoid rendering unsupported options
 
   return (
     <div>
@@ -84,13 +84,13 @@ function LanguageSwitcher() {
 }
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `languages` | `string[]` | Array of supported language codes |
-| `defaultLanguage` | `string` | Default language for your app |
-| `localesDir` | `string` | Directory containing translation files |
-| `sourcePattern` | `string` | Glob pattern for source files to scan |
-| `translationImportSource` | `string` | Module name to import translation functions from |
+| Option                    | Type       | Description                                      |
+| ------------------------- | ---------- | ------------------------------------------------ |
+| `languages`               | `string[]` | Array of supported language codes                |
+| `defaultLanguage`         | `string`   | Default language for your app                    |
+| `localesDir`              | `string`   | Directory containing translation files           |
+| `sourcePattern`           | `string`   | Glob pattern for source files to scan            |
+| `translationImportSource` | `string`   | Module name to import translation functions from |
 
 ---
 
@@ -113,7 +113,7 @@ import type { AppLanguages } from "./types/i18n";
 
 function MyComponent() {
   const { t } = useTranslation();
-  const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
+  const { changeLanguage } = useLanguageSwitcher();
 
   return (
     <div>
@@ -276,10 +276,10 @@ import { useLanguageSwitcher } from "i18nexus";
 import type { AppLanguages } from "@/types/i18n";
 
 export function LanguageSwitcher() {
-  const { language, changeLanguage } = useLanguageSwitcher<AppLanguages>();
+  const { currentLanguage, changeLanguage } = useLanguageSwitcher();
 
   return (
-    <select value={language} onChange={(e) => changeLanguage(e.target.value as AppLanguages)}>
+    <select value={currentLanguage} onChange={(e) => changeLanguage(e.target.value as AppLanguages)}>
       <option value="en">English</option>
       <option value="ko">한국어</option>
       <option value="ja">日本語</option>

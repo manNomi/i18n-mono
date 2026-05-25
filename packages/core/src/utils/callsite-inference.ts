@@ -4,7 +4,7 @@
  */
 
 import * as pathLib from "path";
-import { inferNamespaceFromFile } from "./namespace-inference";
+import { inferNamespaceFromFile } from "./namespace-inference.js";
 
 export interface I18nexusConfig {
   fallbackNamespace?: string;

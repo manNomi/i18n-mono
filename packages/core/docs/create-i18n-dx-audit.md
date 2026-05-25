@@ -10,8 +10,8 @@ Recommended direction:
 
 - Keep `I18nProvider` and `useTranslation` as the beginner API.
 - Reposition `createI18n` as the advanced typed API.
-- Do not promote `createI18nWithConfig` as a primary user API yet.
-- Fix the root export and README mismatch in a follow-up change.
+- Keep the package root focused on core runtime APIs.
+- Move devtools to `i18nexus/devtools`.
 
 ## Current API Map
 
@@ -21,23 +21,16 @@ Current root exports from `i18nexus`:
 - `useI18nContext`
 - `useTranslation`
 - `useLanguageSwitcher`
-- `I18NexusDevtools`
-- typed utility helpers such as `createTypedTranslation`
-- `LanguageManager`
-- `defineConfig`
-
-Current non-root utilities still present in source:
-
 - `createI18n`
-- `createI18nWithConfig`
+- `defineConfig`
+- core public setup types such as `I18nTranslations`, `NamespaceLoader`,
+  `LanguageConfig`, and `LanguageManagerOptions`
 
 Current inconsistency:
 
-- `packages/core/src/index.ts` says `createI18n` and `createI18nWithConfig`
-  were removed.
-- `createI18n` is still implemented and covered by a large test suite.
-- README claims type-safe i18n, but the quick start documents only the base
-  `I18nProvider` and `useTranslation` path.
+- Historical docs and release notes may mention removed utilities.
+- Current docs should point new users to the beginner API, `createI18n`, the
+  `i18nexus/server` subpath, and the `i18nexus/devtools` subpath.
 
 ## Base API DX
 
@@ -92,7 +85,7 @@ Strengths:
 
 Weaknesses:
 
-- It is not exported from the package root today.
+- It is an advanced path, so it should not crowd the beginner quick start.
 - Its current static runtime behavior remains legacy-flattened for backward
   compatibility, so type narrowing can be stricter than runtime lookup.
 - Lazy-only users may need a type-only translation shape, which is less obvious
@@ -100,11 +93,10 @@ Weaknesses:
 - The `Legacy*` type names make the API feel deprecated even though the runtime
   path is still maintained.
 
-Current internal/source-only example:
+Current package-root example:
 
 ```tsx
-// Current source utility, not a current package-root export.
-import { createI18n } from "./utils/createI18n";
+import { createI18n } from "i18nexus";
 
 const translations = {
   common: {
@@ -127,17 +119,10 @@ function HomeTitle() {
 }
 ```
 
-Proposed future package-root example if this API is promoted:
-
-```tsx
-import { createI18n } from "i18nexus";
-
-const i18n = createI18n(translations);
-```
-
 ## createI18nWithConfig DX
 
-`createI18nWithConfig` currently adds less user-facing value than `createI18n`.
+`createI18nWithConfig` added less user-facing value than `createI18n` and has
+been removed during the core API diet.
 
 Strengths:
 
@@ -153,7 +138,8 @@ Weaknesses:
 - It should not be promoted until the config/runtime boundary is more clearly
   documented.
 
-Recommendation: keep it as internal or legacy-compatible for now.
+Recommendation: do not reintroduce it unless a future config/runtime design
+proves a clear advantage over explicit `createI18n` setup.
 
 ## Recommendation
 
@@ -163,7 +149,8 @@ Decision:
 
 - Beginner API: `I18nProvider` and root `useTranslation`.
 - Advanced typed API: `createI18n`.
-- Config convenience API: `createI18nWithConfig`, not promoted yet.
+- Devtools API: `i18nexus/devtools` subpath.
+- Server API: `i18nexus/server` subpath.
 
 Why keep `createI18n`:
 
@@ -181,13 +168,8 @@ Why not make it the beginner API:
 
 Recommended next implementation step:
 
-1. Re-export `createI18n` and its public types from the package root.
-2. Keep `createI18nWithConfig` non-promoted unless docs explicitly label it
-   experimental or legacy-compatible.
-3. Rename public-facing `Legacy*` types before root export, or export friendlier
-   aliases while preserving the internal names.
-4. Update README with two tracks:
-   - Quick Start: `I18nProvider` and `useTranslation`.
-   - Advanced Type Safety: `createI18n`.
-5. Add an explicit note that static `createI18n` lookup is currently
-   legacy-flattened at runtime, while types are namespace-narrowed.
+1. Keep testing root exports so removed utilities do not drift back into the
+   public surface.
+2. Add release notes that call out the breaking API diet and devtools subpath.
+3. Consider a future strict namespace mode for `createI18n` once compatibility
+   risk is acceptable.

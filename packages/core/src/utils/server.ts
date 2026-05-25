@@ -2,12 +2,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { inferNamespaceFromCallSite } from "./callsite-inference";
+import { inferNamespaceFromCallSite } from "./callsite-inference.js";
 import {
   getCachedTranslations,
   cacheTranslations,
   invalidateCache as invalidateTranslationCache,
-} from "./translation-cache";
+} from "./translation-cache.js";
 
 type LocalConfig = {
   localesDir?: string;
