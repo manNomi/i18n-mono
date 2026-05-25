@@ -65,8 +65,9 @@ export default function HomePage() {
         <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-700">
           i18nexus
         </p>
-        <h1 className="max-w-4xl text-4xl font-bold tracking-normal text-slate-950 sm:text-5xl">
-          {t("글로벌 앱을 위한 다국어 타입안전 라이브러리")}
+        <h1 className="demo-hero-title">
+          <span className="block">{t("글로벌 앱을 위한")}</span>
+          <span className="block">{t("다국어 타입안전 라이브러리")}</span>
         </h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
           {t("자동화된 워크플로우로 다국어 지원을 1분 안에 설정하세요")}
@@ -109,7 +110,9 @@ export default function HomePage() {
               key={feature.title}
               className="rounded-lg border border-slate-200 bg-slate-50 p-5"
             >
-              <h3 className="font-semibold text-slate-950">{feature.title}</h3>
+              <h3 className="demo-word-safe font-semibold leading-7 text-slate-950">
+                {feature.title}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {feature.description}
               </p>
@@ -126,7 +129,9 @@ export default function HomePage() {
               href={link.href}
               className="rounded-lg border border-slate-200 bg-white p-5 hover:border-blue-200 hover:bg-blue-50"
             >
-              <h3 className="font-semibold text-slate-950">{link.title}</h3>
+              <h3 className="demo-word-safe font-semibold text-slate-950">
+                {link.title}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {link.description}
               </p>

@@ -21,6 +21,7 @@ declare type TranslationNamespace =
   | "cli"
   | "common"
   | "constant"
+  | "dx-lab"
   | "docs-i18nexus"
   | "docs-i18nexus-provider"
   | "docs-i18nexus-server-components"
@@ -255,6 +256,38 @@ declare type CommonKeyVariables = {
 
 /** Translation keys for "constant" namespace */
 declare type ConstantKeys = "English" | "한국어";
+
+declare type DxLabKeys =
+  | "Devtools 상태"
+  | "Fallback lookup"
+  | "Lazy namespace"
+  | "Loading..."
+  | "fallback namespace가 자연스럽게 섞여서 공통 로딩/버튼 문구를 중복하지 않아도 됩니다."
+  | "lazy namespace, fallback 문구, ready 상태를 한 화면에서 확인합니다."
+  | "namespace 이름만 넘기면 lazy load가 시작되어서, 소비자 코드는 생각보다 짧았습니다."
+  | "preloadNamespaces에 없는 namespace를 자동 요청"
+  | "t identity"
+  | "dx-lab에 없는 공통 키는 common에서 해결"
+  | "강점 1"
+  | "강점 2"
+  | "라이브러리를 직접 써보며 만든 데모"
+  | "로드 완료"
+  | "로딩 중"
+  | "마찰 1"
+  | "마찰 2"
+  | "버튼을 누르면 Provider 상태, 쿠키, 현재 페이지 번역이 함께 바뀝니다."
+  | "사용하면서 느낀 피드백"
+  | "새 namespace를 추가해도 생성 타입은 자동 갱신되지 않습니다. typed workflow라면 extractor 실행 안내가 더 선명해야 합니다."
+  | "소비자 코드 예시"
+  | "실사용 DX 점검"
+  | "언어 변경 시 t snapshot이 새로 계산됨"
+  | "언어 변경 후 새 번역 snapshot을 렌더링"
+  | "언어 전환"
+  | "이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation(\"dx-lab\") 호출만으로 불러옵니다."
+  | "현재 구현 기준으로 i18nexus/devtools는 export되지 않으므로 페이지에서는 렌더링하지 않습니다."
+  | "현재 언어"
+  | "준비됨"
+  | "현재 패키지 export에는 devtools subpath가 없어 이 데모는 Provider, hook, fallback 흐름만 검증합니다.";
 
 declare type DocsI18nexusKeys =
   | "I18nProvider 설정"
@@ -999,6 +1032,8 @@ declare type HomeKeys =
   | "layout.tsx에 I18nProvider를 추가합니다"
   | "npm으로 i18nexus를 설치합니다"
   | "개발자를 위해 설계된 완전한 i18n 도구 모음"
+  | "글로벌 앱을 위한"
+  | "다국어 타입안전 라이브러리"
   | "글로벌 앱을 위한 다국어 타입안전 라이브러리"
   | "기본값으로 간단한 설정"
   | "기존 방식의 문제"
@@ -1132,6 +1167,7 @@ declare type TranslationKeys = {
   cli: CliKeys;
   common: CommonKeys;
   constant: ConstantKeys;
+  "dx-lab": DxLabKeys;
   "docs-i18nexus": DocsI18nexusKeys;
   "docs-i18nexus-provider": DocsI18nexusProviderKeys;
   "docs-i18nexus-server-components": DocsI18nexusServerComponentsKeys;
@@ -1240,6 +1276,7 @@ declare module "i18nexus" {
   export type CliKeys = TranslationKeys["cli"];
   export type CommonKeys = TranslationKeys["common"];
   export type ConstantKeys = TranslationKeys["constant"];
+  export type DxLabKeys = TranslationKeys["dx-lab"];
   export type DocsI18nexusKeys = TranslationKeys["docs-i18nexus"];
   export type DocsI18nexusProviderKeys =
     TranslationKeys["docs-i18nexus-provider"];

@@ -215,26 +215,26 @@ export default function Navigation() {
       </aside>
 
       <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/95">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               aria-label={String(sidebarOpen ? t("닫기") : t("메뉴 열기"))}
-              className="rounded-md border border-slate-200 p-2 text-slate-700 hover:bg-slate-50"
+              className="shrink-0 rounded-md border border-slate-200 p-2 text-slate-700 hover:bg-slate-50"
               onClick={() => setSidebarOpen((open) => !open)}
             >
               <MenuIcon open={sidebarOpen} />
             </button>
 
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex min-w-0 items-center gap-2">
               <Image
                 src="/i18n-icon-no-bg.png"
                 alt="i18nexus"
                 width={40}
                 height={30}
-                className="object-contain"
+                className="shrink-0 object-contain"
                 priority
               />
-              <span className="text-base font-semibold text-slate-950 sm:text-lg">
+              <span className="truncate text-base font-semibold text-slate-950 sm:text-lg">
                 i18nexus
               </span>
             </Link>
