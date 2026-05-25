@@ -13,19 +13,19 @@ export default function HomePage() {
     {
       title: t("쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷"),
       description: t(
-        "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다."
+        "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다.",
       ),
     },
     {
       title: t("CLI로 자동 텍스트 래핑"),
       description: t(
-        "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다."
+        "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다.",
       ),
     },
     {
       title: t("Google Sheets 연동"),
       description: t(
-        "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다."
+        "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다.",
       ),
     },
     {
@@ -49,7 +49,7 @@ export default function HomePage() {
       href: "/cli",
       title: "CLI",
       description: t(
-        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구"
+        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구",
       ),
     },
     {
@@ -65,8 +65,9 @@ export default function HomePage() {
         <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-700">
           i18nexus
         </p>
-        <h1 className="max-w-4xl text-4xl font-bold tracking-normal text-slate-950 sm:text-5xl">
-          {t("글로벌 앱을 위한 다국어 타입안전 라이브러리")}
+        <h1 className="demo-hero-title">
+          <span className="block">{t("글로벌 앱을 위한")}</span>
+          <span className="block">{t("다국어 타입안전 라이브러리")}</span>
         </h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
           {t("자동화된 워크플로우로 다국어 지원을 1분 안에 설정하세요")}
@@ -109,7 +110,9 @@ export default function HomePage() {
               key={feature.title}
               className="rounded-lg border border-slate-200 bg-slate-50 p-5"
             >
-              <h3 className="font-semibold text-slate-950">{feature.title}</h3>
+              <h3 className="demo-word-safe font-semibold leading-7 text-slate-950">
+                {feature.title}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {feature.description}
               </p>
@@ -126,7 +129,9 @@ export default function HomePage() {
               href={link.href}
               className="rounded-lg border border-slate-200 bg-white p-5 hover:border-blue-200 hover:bg-blue-50"
             >
-              <h3 className="font-semibold text-slate-950">{link.title}</h3>
+              <h3 className="demo-word-safe font-semibold text-slate-950">
+                {link.title}
+              </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {link.description}
               </p>
