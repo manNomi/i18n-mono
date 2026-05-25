@@ -13,19 +13,19 @@ export default function HomePage() {
     {
       title: t("쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷"),
       description: t(
-        "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다.",
+        "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다."
       ),
     },
     {
       title: t("CLI로 자동 텍스트 래핑"),
       description: t(
-        "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다.",
+        "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다."
       ),
     },
     {
       title: t("Google Sheets 연동"),
       description: t(
-        "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다.",
+        "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다."
       ),
     },
     {
@@ -49,7 +49,7 @@ export default function HomePage() {
       href: "/cli",
       title: "CLI",
       description: t(
-        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구",
+        "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구"
       ),
     },
     {

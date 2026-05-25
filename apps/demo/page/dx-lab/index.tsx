@@ -49,7 +49,7 @@ export default function DxLabPage() {
       eyebrow={t("실사용 DX 점검")}
       title={t("라이브러리를 직접 써보며 만든 데모")}
       description={t(
-        '이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation("dx-lab") 호출만으로 불러옵니다.',
+        "이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation(\"dx-lab\") 호출만으로 불러옵니다."
       )}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -79,7 +79,7 @@ export default function DxLabPage() {
         <Section
           title={t("언어 전환")}
           description={t(
-            "버튼을 누르면 Provider 상태, 쿠키, 현재 페이지 번역이 함께 바뀝니다.",
+            "버튼을 누르면 Provider 상태, 쿠키, 현재 페이지 번역이 함께 바뀝니다."
           )}
           className="mb-0"
         >
@@ -123,7 +123,7 @@ export default function DxLabPage() {
       <Section
         title={t("소비자 코드 예시")}
         description={t(
-          "lazy namespace, fallback 문구, ready 상태를 한 화면에서 확인합니다.",
+          "lazy namespace, fallback 문구, ready 상태를 한 화면에서 확인합니다."
         )}
         className="mt-6"
       >
@@ -132,7 +132,7 @@ export default function DxLabPage() {
 
       <Callout title={t("Devtools 상태")} tone="info">
         {t(
-          "현재 구현 기준으로 i18nexus/devtools는 export되지 않으므로 페이지에서는 렌더링하지 않습니다.",
+          "현재 구현 기준으로 i18nexus/devtools는 export되지 않으므로 페이지에서는 렌더링하지 않습니다."
         )}
       </Callout>
     </PageShell>

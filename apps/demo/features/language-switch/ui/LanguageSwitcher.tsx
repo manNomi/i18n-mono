@@ -14,7 +14,7 @@ export default function LanguageSwitcher() {
   const handleLanguageChange = async (langCode: string) => {
     // 서버 컴포넌트 페이지인 경우 새로고침
     const shouldReload = serverComponentPages.some((path) =>
-      pathname?.startsWith(path),
+      pathname?.startsWith(path)
     );
     await changeLanguage(langCode);
     if (shouldReload) {
