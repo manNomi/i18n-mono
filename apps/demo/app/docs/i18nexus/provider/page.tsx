@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import DocsI18nexusProviderPage from "@/page/docs-i18nexus-provider";
+import ProviderPage from "@/page/provider";
 
 export const metadata: Metadata = {
   title: "I18nProvider - i18nexus Documentation",
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsI18nexusProviderPage />;
+  return <ProviderPage />;
 }

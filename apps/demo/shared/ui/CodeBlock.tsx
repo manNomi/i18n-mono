@@ -1,7 +1,7 @@
 "use client";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface CodeBlockProps {
   children: string;
@@ -18,22 +18,26 @@ export function CodeBlock({
 }: CodeBlockProps) {
   return (
     <div
-      className={`rounded-lg overflow-hidden border border-slate-800 ${className}`}
+      className={`overflow-x-auto rounded-lg border border-slate-200 bg-white ${className}`}
     >
       <SyntaxHighlighter
         language={language}
-        style={vscDarkPlus}
+        style={oneLight}
         showLineNumbers={showLineNumbers}
+        wrapLongLines
         customStyle={{
           margin: 0,
           padding: "1rem",
-          background: "#020617", // slate-950
-          fontSize: "0.875rem", // text-sm
+          background: "#ffffff",
+          fontSize: "0.875rem",
+          minWidth: "100%",
         }}
         codeTagProps={{
           style: {
             fontFamily:
               "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            overflowWrap: "anywhere",
+            whiteSpace: "pre-wrap",
           },
         }}
       >

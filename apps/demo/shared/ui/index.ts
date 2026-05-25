@@ -3,5 +3,6 @@ export { default as Analytics } from "./Analytics";
 export { CodeBlock } from "./CodeBlock";
 export { default as FirebaseStatus } from "./FirebaseStatus";
 export { GlobalErrorProvider, useError } from "./GlobalErrorProvider";
+export { Callout, PageShell, Section, StepCard } from "./PageLayout";
 export { ProjectCard } from "./ProjectCard";
 export { default as ScrollRestorer } from "./ScrollRestorer";

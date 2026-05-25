@@ -138,16 +138,13 @@ export default function ProjectSubmitForm() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
+    <main className="demo-narrow-shell">
       {/* Header */}
-      <div className="text-center mb-8 sm:mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-3xl mb-6 sm:mb-8 shadow-lg shadow-blue-500/50">
-          <span className="text-white font-bold text-2xl sm:text-3xl">📝</span>
-        </div>
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-600 mb-3 sm:mb-4">
+      <div className="mb-8 border-b border-slate-200 pb-6">
+        <h1 className="text-3xl font-bold text-slate-950 sm:text-4xl">
           {t("Showcase 등록하기")}
         </h1>
-        <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto px-4">
+        <p className="mt-3 text-base leading-7 text-slate-600">
           {t(
             "i18nexus를 사용하는 프로젝트를 공유하고 커뮤니티에 영감을 주세요"
           )}
@@ -157,12 +154,12 @@ export default function ProjectSubmitForm() {
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 p-4 sm:p-6 lg:p-8 shadow-2xl"
+        className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6"
       >
         {/* URL Input */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-slate-300 mb-2">
-            {t("🔗 프로젝트 URL (필수)")}
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            프로젝트 URL (필수)
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
@@ -170,7 +167,7 @@ export default function ProjectSubmitForm() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://myproject.vercel.app"
-              className="flex-1 bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="flex-1 rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
               required
             />
 
@@ -178,9 +175,9 @@ export default function ProjectSubmitForm() {
               type="button"
               onClick={handleGeneratePreview}
               disabled={!url || loading}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-lg shadow-blue-500/30 whitespace-nowrap"
+              className="whitespace-nowrap rounded-md border border-blue-600 bg-blue-600 px-6 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-blue-700"
             >
-              {loading ? t("⏳ 로딩...") : t("미리보기 ▶")}
+              {loading ? "로딩..." : "미리보기"}
             </button>
           </div>
           <p className="text-xs text-slate-500 mt-2">
@@ -190,15 +187,15 @@ export default function ProjectSubmitForm() {
 
         {/* Project Name (Optional Override) */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-slate-300 mb-2">
-            {t("📛 프로젝트 이름 (선택)")}
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            프로젝트 이름 (선택)
           </label>
           <input
             type="text"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
             placeholder={t("자동 수집된 제목을 변경하려면 입력하세요")}
-            className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
           />
 
           <p className="text-xs text-slate-500 mt-2">
@@ -208,15 +205,15 @@ export default function ProjectSubmitForm() {
 
         {/* Contact Email (Optional) */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-slate-300 mb-2">
-            {t("📧 연락처 이메일 (선택)")}
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            연락처 이메일 (선택)
           </label>
           <input
             type="email"
             value={contactEmail}
             onChange={(e) => setContactEmail(e.target.value)}
             placeholder="example@gmail.com"
-            className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
           />
 
           <p className="text-xs text-slate-500 mt-2">
@@ -226,9 +223,8 @@ export default function ProjectSubmitForm() {
 
         {/* Preview Card */}
         {preview && (
-          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-slate-950/50 border border-slate-700 rounded-xl">
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
-              <span className="mr-2">👁️</span>
+          <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5">
+            <h3 className="mb-4 text-base font-semibold text-slate-950">
               {t("자동 미리보기")}
             </h3>
             <ProjectCard
@@ -243,17 +239,17 @@ export default function ProjectSubmitForm() {
         )}
 
         {/* Agreement Checkbox */}
-        <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-blue-950/30 border border-blue-800/50 rounded-xl">
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
           <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 w-5 h-5 text-blue-600 bg-slate-800 border-slate-600 rounded focus:ring-2 focus:ring-blue-500"
+              className="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-100"
               required
             />
 
-            <span className="text-sm text-slate-300 leading-relaxed">
+            <span className="text-sm leading-6 text-slate-700">
               {t(
                 "위 정보 제공에 동의하며, i18nexus 쇼케이스에 공개될 수 있음을\n              이해합니다. 관리자 검토 후 공개됩니다. (필수)"
               )}
@@ -265,67 +261,65 @@ export default function ProjectSubmitForm() {
         <button
           type="submit"
           disabled={!preview || !agreed || submitting}
-          className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-lg shadow-green-500/30"
+          className="w-full rounded-md border border-blue-600 bg-blue-600 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-blue-700"
         >
-          {submitting ? t("제출 중...") : t("🚀 제출하기")}
+          {submitting ? t("제출 중...") : "제출하기"}
         </button>
 
         {/* Success Message */}
         {submitted && (
-          <div className="mt-6 p-4 bg-green-900/50 border border-green-700 text-green-100 rounded-xl text-center">
-            <div className="flex items-center justify-center mb-2">
-              <span className="text-2xl mr-2">✅</span>
+          <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-center text-emerald-900">
+            <div className="mb-2 flex items-center justify-center">
               <span className="font-semibold">{t("제출 완료!")}</span>
             </div>
-            <p className="text-sm">{t("검토 후 공개됩니다 😊")}</p>
+            <p className="text-sm">검토 후 공개됩니다.</p>
           </div>
         )}
       </form>
 
       {/* Help Section */}
-      <div className="mt-8 sm:mt-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700 p-4 sm:p-6 lg:p-8">
-        <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
-          <span className="mr-2">💡</span>
+      <div className="mt-8 rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
+        <h2 className="mb-4 text-xl font-semibold text-slate-950">
           {t("제출 팁")}
         </h2>
-        <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-300">
+        <ul className="space-y-3 text-sm text-slate-600">
           <li className="flex items-start">
-            <span className="text-blue-400 mr-3 mt-0.5">•</span>
+            <span className="mr-3 mt-0.5 text-slate-400">-</span>
             <span>
-              <strong className="text-white">
+              <strong className="text-slate-950">
                 {t("공개 접근 가능한 URL")}
               </strong>
               {t("을\n              사용하세요 (localhost, 127.0.0.1 불가)")}
             </span>
           </li>
           <li className="flex items-start">
-            <span className="text-blue-400 mr-3 mt-0.5">•</span>
+            <span className="mr-3 mt-0.5 text-slate-400">-</span>
             <span>
-              <strong className="text-white">{t("전체 URL")}</strong>
+              <strong className="text-slate-950">{t("전체 URL")}</strong>
               {t("을 입력하세요 (예:\n              https://example.com)")}
             </span>
           </li>
           <li className="flex items-start">
-            <span className="text-blue-400 mr-3 mt-0.5">•</span>
+            <span className="mr-3 mt-0.5 text-slate-400">-</span>
             <span>
               {t("프로젝트에")}{" "}
-              <strong className="text-white">
+              <strong className="text-slate-950">
                 {t("Open Graph 메타 태그")}
               </strong>
               {t("가\n              있으면 더 좋은 썸네일을 얻을 수 있습니다")}
             </span>
           </li>
           <li className="flex items-start">
-            <span className="text-blue-400 mr-3 mt-0.5">•</span>
+            <span className="mr-3 mt-0.5 text-slate-400">-</span>
             <span>
               {t("제출 후 관리자 검토를 거쳐 24시간 이내에 공개됩니다")}
             </span>
           </li>
           <li className="flex items-start">
-            <span className="text-blue-400 mr-3 mt-0.5">•</span>
+            <span className="mr-3 mt-0.5 text-slate-400">-</span>
             <span>
               {t("미리보기 생성이 실패하면")}{" "}
-              <strong className="text-white">{t("URL을 다시 확인")}</strong>
+              <strong className="text-slate-950">{t("URL을 다시 확인")}</strong>
               {t("하거나 잠시\n              후 다시 시도해주세요")}
             </span>
           </li>

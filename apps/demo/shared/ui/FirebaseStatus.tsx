@@ -48,7 +48,7 @@ export default function FirebaseStatus() {
           await getDocs(q);
           setStatus((prev) => ({ ...prev, firestore: true }));
         } catch (error) {
-          console.log("Firestore not accessible yet:", error);
+          console.warn("Firestore not accessible yet:", error);
           setStatus((prev) => ({ ...prev, firestore: false }));
         }
 
@@ -65,9 +65,9 @@ export default function FirebaseStatus() {
 
   if (loading) {
     return (
-      <div className="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg">
+      <div className="fixed bottom-4 right-4 hidden rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-700 sm:block">
         <div className="flex items-center space-x-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+          <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-slate-500" />
           <span className="text-sm">{t("Firebase 연결 확인 중...")}</span>
         </div>
       </div>
@@ -75,27 +75,27 @@ export default function FirebaseStatus() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg border border-slate-700">
-      <div className="text-xs font-semibold mb-2">🔥 Firebase Status</div>
+    <div className="fixed bottom-4 right-4 hidden rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 sm:block">
+      <div className="mb-2 text-xs font-semibold">Firebase Status</div>
       <div className="space-y-1 text-xs">
         <div className="flex items-center justify-between space-x-4">
           <span>Authentication:</span>
-          <span className={status.auth ? "text-green-400" : "text-red-400"}>
-            {status.auth ? "✓ Connected" : "✗ Failed"}
+          <span className={status.auth ? "text-green-700" : "text-red-700"}>
+            {status.auth ? "Connected" : "Failed"}
           </span>
         </div>
         <div className="flex items-center justify-between space-x-4">
           <span>Firestore:</span>
           <span
-            className={status.firestore ? "text-green-400" : "text-yellow-400"}
+            className={status.firestore ? "text-green-700" : "text-amber-700"}
           >
-            {status.firestore ? "✓ Connected" : "⚠ Setup Needed"}
+            {status.firestore ? "Connected" : "Setup Needed"}
           </span>
         </div>
         {status.user && (
-          <div className="pt-2 mt-2 border-t border-slate-700">
-            <span className="text-slate-400">Logged in: </span>
-            <span className="text-blue-400">{status.user}</span>
+          <div className="mt-2 border-t border-slate-200 pt-2">
+            <span className="text-slate-500">Logged in: </span>
+            <span className="text-blue-700">{status.user}</span>
           </div>
         )}
       </div>

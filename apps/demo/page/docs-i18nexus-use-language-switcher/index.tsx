@@ -304,9 +304,24 @@ export default function FancyLanguageSwitcher() {
             </p>
             <pre className="bg-slate-950 rounded-lg p-3 overflow-x-auto">
               <code className="text-sm text-slate-400">
-                {t(
-                  "// \u274C \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8\uC5D0\uC11C \uC0AC\uC6A9 \uBD88\uAC00\nexport default async function Page() {\n  changeLanguage(\"en\"); // \uC5D0\uB7EC! (\uD074\uB77C\uC774\uC5B8\uD2B8 \uC804\uC6A9)\n}\n\n// \u2705 \uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8\uC5D0\uC11C \uC0AC\uC6A9\n\"use client\";\nexport default function Page() {\n  changeLanguage(\"en\"); // \uC815\uC0C1!\n}\n\n// \u2705 \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8\uC5D0\uC11C\uB294 getServerTranslation \uC0AC\uC6A9\nexport default async function Page() {\n  const { t } = await i18n.getServerTranslation(\"common\");\n  // \uC5B8\uC5B4\uB294 \uD5E4\uB354\uC5D0\uC11C \uC790\uB3D9 \uAC10\uC9C0\uB428\n}"
-                )}
+                {`// 서버 컴포넌트에서는 클라이언트 훅을 사용할 수 없습니다.
+export default async function Page() {
+  changeLanguage("en"); // Error: client hook state is unavailable.
+}
+
+// 클라이언트 컴포넌트에서 언어를 변경합니다.
+"use client";
+export default function Page() {
+  changeLanguage("en");
+}
+
+// 서버 컴포넌트 번역은 getTranslation()을 사용합니다.
+import { getTranslation } from "i18nexus/server";
+
+export default async function ServerPage() {
+  const { t } = await getTranslation<"common">("common");
+  return <h1>{t("환영합니다")}</h1>;
+}`}
               </code>
             </pre>
           </div>
