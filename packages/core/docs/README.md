@@ -75,10 +75,11 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 ### Server-Side API
 
 - **[Server API](./api/server.md)** - Server Component utilities
-  - `createServerI18n()`
+  - `getTranslation()`
   - `getServerLanguage()`
   - `parseAcceptLanguage()`
   - `createServerTranslation()`
+  - `createServerI18nWithTranslations()`
   - Complete type definitions
 
 ### Client-Side API
@@ -105,7 +106,8 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 
 ### Latest Releases
 
-- **Current 3.x docs** - Context provider, lazy namespace loading, and `createI18n` advanced typed API
+- **Current 4.x docs** - Slim root API, devtools subpath, lazy namespace loading, and `createI18n` advanced typed API
+  - [Migration v4](./MIGRATION_V4.md)
   - [Migration v3](./MIGRATION_V3.md)
   - [Lazy Loading](./LAZY_LOADING.md)
   - [createI18n DX Audit](./create-i18n-dx-audit.md)

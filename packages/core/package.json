@@ -1,6 +1,6 @@
 {
   "name": "i18nexus",
-  "version": "3.4.2",
+  "version": "4.0.0",
   "description": "Type-safe React i18n toolkit with intelligent automation and SSR support",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -61,10 +61,11 @@
   "bugs": {
     "url": "https://github.com/manNomi/i18nexus/issues"
   },
-  "homepage": "https://github.com/manNomi/i18nexus/tree/main/packages/i18nexus#readme",
+  "homepage": "https://github.com/manNomi/i18nexus/tree/main/packages/core#readme",
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "peerDependencies": {

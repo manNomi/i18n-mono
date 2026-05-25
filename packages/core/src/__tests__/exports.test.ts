@@ -1,12 +1,34 @@
 import * as root from "../index";
 import { createI18n } from "../index";
+import { I18NexusDevtools } from "../components/I18NexusDevtools";
 import type {
   CreateI18nInstance,
   CreateI18nUseTranslationReturn,
   I18nTranslations,
 } from "../index";
 
+const packageJson = require("../../package.json") as {
+  version: string;
+  files: string[];
+  exports: Record<string, unknown>;
+};
+
 describe("root exports", () => {
+  it("keeps the expected core runtime exports at the package root", () => {
+    const keptRootExports = [
+      "I18nProvider",
+      "useI18nContext",
+      "useTranslation",
+      "useLanguageSwitcher",
+      "createI18n",
+      "defineConfig",
+    ];
+
+    for (const exportName of keptRootExports) {
+      expect(root).toHaveProperty(exportName);
+    }
+  });
+
   it("exports createI18n as the advanced typed API", () => {
     const translations = {
       common: {
@@ -62,5 +84,20 @@ describe("root exports", () => {
     for (const exportName of removedRuntimeExports) {
       expect(root).not.toHaveProperty(exportName);
     }
+  });
+
+  it("declares devtools and server as explicit package subpaths", () => {
+    expect(packageJson.version).toBe("4.0.0");
+    expect(packageJson.files).toContain("CHANGELOG.md");
+    expect(Object.prototype.hasOwnProperty.call(packageJson.exports, ".")).toBe(
+      true,
+    );
+    expect(
+      Object.prototype.hasOwnProperty.call(packageJson.exports, "./server"),
+    ).toBe(true);
+    expect(
+      Object.prototype.hasOwnProperty.call(packageJson.exports, "./devtools"),
+    ).toBe(true);
+    expect(typeof I18NexusDevtools).toBe("function");
   });
 });
