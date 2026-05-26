@@ -40,7 +40,7 @@ Examples:
 Features:
   - ⚠️  SWC 파서 사용 (실험적, 현재 Babel보다 느릴 수 있음)
   - 한국어/영어 문자열 자동 감지 및 t() 래핑
-  - useTranslation() 훅 자동 추가 (i18nexus-core)
+  - useTranslation() 훅 자동 추가 (i18nexus)
   - 기존 t() 호출 및 import 보존
 
 Performance Comparison:
@@ -64,11 +64,14 @@ Performance Comparison:
 }
 
 console.log("⚠️  Running with SWC parser (experimental mode)");
-console.log("⚠️  Note: SWC may be slower than Babel due to AST conversion overhead.");
-console.log("⚠️  For best performance, use the default Babel parser: npx i18n-wrapper");
+console.log(
+  "⚠️  Note: SWC may be slower than Babel due to AST conversion overhead.",
+);
+console.log(
+  "⚠️  For best performance, use the default Babel parser: npx i18n-wrapper",
+);
 
 wrapTranslations(config).catch((error) => {
   console.error("❌ Translation wrapper failed:", error);
   process.exit(1);
 });
-

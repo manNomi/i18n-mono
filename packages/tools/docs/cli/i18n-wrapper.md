@@ -32,11 +32,13 @@ I18N_PERF_MONITOR=true I18N_PERF_VERBOSE=true npx i18n-wrapper-swc
 ```
 
 **Current Test Results:**
+
 - **Babel is faster** than SWC in current implementation
 - SWC AST → Babel AST conversion overhead causes performance degradation
 - **Recommendation:** Use `i18n-wrapper` (Babel) for best performance
 
 **Why is SWC slower?**
+
 - SWC AST structure differs from Babel AST
 - Current implementation uses type casting instead of proper conversion
 - Babel traverse operations may be inefficient with SWC AST
@@ -219,7 +221,9 @@ const apiKey = "한글 API 키";
 export default function Welcome() {
   return <h1>안녕하세요</h1>;
 }
+```
 
+```tsx
 // After
 "use client";
 
@@ -242,10 +246,10 @@ export default function ServerPage() {
 }
 
 // After
-import { getServerTranslation } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function ServerPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <h1>{t("서버 렌더링")}</h1>;
 }
 ```
@@ -255,12 +259,12 @@ export default async function ServerPage() {
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 - `mode`: `"client"` 또는 `"server"` (선택사항)
-- `serverTranslationFunction`: 서버 모드에서 사용할 함수명 (기본값: `"getServerTranslation"`)
+- `serverTranslationFunction`: 서버 모드에서 사용할 함수명 (기본값: `"getTranslation"`)
 
 ## Template Literal Conversion
 
@@ -315,21 +319,23 @@ The wrapper reads configuration from `i18nexus.config.json`:
   "sourcePattern": "src/**/*.{ts,tsx}",
   "translationImportSource": "i18nexus",
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 ### Mode Options
 
 **Server Mode:**
+
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 **Client Mode:**
+
 ```json
 {
   "mode": "client"

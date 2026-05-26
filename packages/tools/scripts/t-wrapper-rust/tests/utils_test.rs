@@ -3,7 +3,10 @@ use t_wrapper_rust::is_server_component;
 
 #[test]
 fn test_is_server_component_integration() {
-    let code = "const { t } = await getServerTranslation();";
+    let code = "const { t } = await getTranslation();";
+    assert!(is_server_component(code));
+
+    let code = r#"const { t } = await getTranslation("dashboard");"#;
     assert!(is_server_component(code));
     
     let code = "const { t } = useTranslation();";
@@ -24,4 +27,3 @@ fn test_is_react_component_integration() {
     assert!(!is_react_component("myFunction"));
     assert!(!is_react_component("handleClick"));
 }
-

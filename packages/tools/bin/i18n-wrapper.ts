@@ -39,7 +39,7 @@ Examples:
   
 Features:
   - 한국어/영어 문자열 자동 감지 및 t() 래핑
-  - useTranslation() 훅 자동 추가 (i18nexus-core)
+  - useTranslation() 훅 자동 추가 (i18nexus)
   - 기존 t() 호출 및 import 보존
       `);
       process.exit(0);

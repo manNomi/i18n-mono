@@ -160,9 +160,9 @@ npx i18n-download -s "id"
 
 ### 🐛 Bug Fixes
 
-- **Server mode wrapper 수정**: `mode: "server"` 설정 시 `getServerTranslation` 생성 및 올바른 import source 사용
+- **Server mode wrapper 수정**: `mode: "server"` 설정 시 `getTranslation` 생성 및 올바른 import source 사용
   - `i18nexus.config.json`에서 `mode`, `framework`, `serverTranslationFunction` 설정을 wrapper에 전달하도록 수정
   - 서버 모드일 때 import source에 `/server` 경로 자동 추가
-  - 결과: `import { getServerTranslation } from "i18nexus/server"` (이전: `import { useTranslation } from "i18nexus"`)
+  - 결과: `import { getTranslation } from "i18nexus/server"` (이전: `import { useTranslation } from "i18nexus"`)
 
 ---

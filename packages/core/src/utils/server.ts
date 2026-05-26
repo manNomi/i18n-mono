@@ -326,6 +326,25 @@ export async function loadTranslations(
   }
 }
 
+async function readNamespaceTranslationFile(
+  resolvedLocalesDir: string,
+  namespace: string,
+  language: string,
+): Promise<Record<string, string>> {
+  const translationFilePath = path.join(
+    resolvedLocalesDir,
+    namespace,
+    `${language}.json`,
+  );
+
+  if (!fs.existsSync(translationFilePath)) {
+    throw new Error(`File not found: ${translationFilePath}`);
+  }
+
+  const fileContent = await fs.promises.readFile(translationFilePath, "utf8");
+  return JSON.parse(fileContent) as Record<string, string>;
+}
+
 /** 서버 번역 컨텍스트 생성 (설정 자동 로드, 헤더 자동 감지) */
 export interface GetTranslationOptions {
   /** Force specific language (bypasses header/cookie detection) */
@@ -342,10 +361,13 @@ export interface GetTranslationOptions {
   disableCache?: boolean;
 }
 
-export interface GetTranslationReturn<NS extends string = string> {
+export interface GetTranslationReturn<
+  NS extends string = string,
+  K extends string = string,
+> {
   /** Type-safe translation function */
   t: (
-    key: string,
+    key: K,
     variables?: Record<string, string | number>,
     fallback?: string,
   ) => string;
@@ -385,10 +407,13 @@ export interface GetTranslationReturn<NS extends string = string> {
  * }
  * ```
  */
-export async function getTranslation<NS extends string = string>(
+export async function getTranslation<
+  NS extends string = string,
+  K extends string = string,
+>(
   namespace?: NS,
   options?: GetTranslationOptions,
-): Promise<GetTranslationReturn<NS>> {
+): Promise<GetTranslationReturn<NS, K>> {
   // 1. Load config (with config directory path)
   let config: LocalConfig | null;
   let configDir: string;
@@ -485,32 +510,43 @@ export async function getTranslation<NS extends string = string>(
   // 5. Load translations
   let translations: Record<string, Record<string, string>>;
 
-  // 서버 환경에서는 fs를 사용하여 파일 직접 읽기 (동적 import 경로 문제 해결)
-  const translationFilePath = path.join(
-    resolvedLocalesDir,
-    resolvedNamespace,
-    `${language}.json`,
-  );
-
   try {
-    // 파일이 존재하는지 확인
-    if (!fs.existsSync(translationFilePath)) {
-      throw new Error(`File not found: ${translationFilePath}`);
+    const translationData = await readNamespaceTranslationFile(
+      resolvedLocalesDir,
+      resolvedNamespace,
+      language,
+    );
+
+    translations = {};
+
+    if (
+      config?.fallbackNamespace &&
+      config.fallbackNamespace !== resolvedNamespace
+    ) {
+      try {
+        const fallbackData = await readNamespaceTranslationFile(
+          resolvedLocalesDir,
+          config.fallbackNamespace,
+          language,
+        );
+        translations[config.fallbackNamespace] = fallbackData;
+      } catch (fallbackError) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn(
+            `[i18nexus] Failed to load fallback namespace '${config.fallbackNamespace}':`,
+            fallbackError,
+          );
+        }
+      }
     }
 
-    // 파일 읽기
-    const fileContent = await fs.promises.readFile(translationFilePath, "utf8");
-    const translationData = JSON.parse(fileContent);
-
-    // translationData는 { "key": "value" } 형태
-    // translations는 { [namespace]: { "key": "value" } } 형태로 저장
-    translations = { [resolvedNamespace]: translationData };
+    translations[resolvedNamespace] = translationData;
 
     // 디버깅: 개발 환경에서 번역 파일 로드 확인
     if (process.env.NODE_ENV === "development") {
       const keyCount = Object.keys(translationData).length;
       console.log(
-        `[i18nexus] Loaded ${keyCount} translations from ${translationFilePath}`,
+        `[i18nexus] Loaded ${keyCount} translations for namespace '${resolvedNamespace}'`,
       );
     }
   } catch (error) {
@@ -525,21 +561,11 @@ export async function getTranslation<NS extends string = string>(
       );
 
       try {
-        const fallbackFilePath = path.join(
+        const fallbackData = await readNamespaceTranslationFile(
           resolvedLocalesDir,
           config.fallbackNamespace,
-          `${language}.json`,
+          language,
         );
-
-        if (!fs.existsSync(fallbackFilePath)) {
-          throw new Error(`File not found: ${fallbackFilePath}`);
-        }
-
-        const fallbackContent = await fs.promises.readFile(
-          fallbackFilePath,
-          "utf8",
-        );
-        const fallbackData = JSON.parse(fallbackContent);
         translations = {
           [config.fallbackNamespace]: fallbackData,
         };

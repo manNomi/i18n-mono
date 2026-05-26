@@ -80,7 +80,7 @@ Create `i18nexus.config.json` in your project root:
   "languages": ["en", "ko"],
   "defaultLanguage": "en",
   "localesDir": "./locales",
-  "fallbackNamespace": ["common", "constant"],
+  "fallbackNamespace": "common",
   "googleSheets": {
     "spreadsheetId": "your-spreadsheet-id",
     "credentialsPath": "./credentials.json"
@@ -386,7 +386,7 @@ npx i18n-sheets share "spreadsheet-id" "user@example.com"
   "languages": ["en", "ko"],
   "defaultLanguage": "en",
   "localesDir": "./locales",
-  "fallbackNamespace": ["common", "constant"],
+  "fallbackNamespace": "common",
 
   "googleSheets": {
     "spreadsheetId": "your-spreadsheet-id",
@@ -402,7 +402,7 @@ npx i18n-sheets share "spreadsheet-id" "user@example.com"
 - `languages` - Array of language codes
 - `defaultLanguage` - Default language code
 - `localesDir` - Directory for translation files
-- `fallbackNamespace` - Default namespaces to load
+- `fallbackNamespace` - Default namespace used for fallback keys
 - `googleSheets.spreadsheetId` - Google Spreadsheet ID
 - `googleSheets.credentialsPath` - Path to Google credentials JSON
 

@@ -227,7 +227,7 @@ TemplateLiteral: (subPath) => {
 
   // 1. 한국어 체크
   const hasKorean = subPath.node.quasis.some((quasi) =>
-    REGEX_PATTERNS.KOREAN_TEXT.test(quasi.value.raw)
+    REGEX_PATTERNS.KOREAN_TEXT.test(quasi.value.raw),
   );
 
   // 2. i18next 형식으로 변환
@@ -293,7 +293,7 @@ JSXText: (subPath) => {
 
     // JSX 텍스트는 JSXExpressionContainer로 감싸야 함
     const replacement = t.jsxExpressionContainer(
-      t.callExpression(t.identifier("t"), [t.stringLiteral(text)])
+      t.callExpression(t.identifier("t"), [t.stringLiteral(text)]),
     );
 
     subPath.replaceWith(replacement);
@@ -358,8 +358,8 @@ if (isServerMode) {
   componentPath.node.async = true;
 
   const body = componentPath.get("body");
-  const decl = this.createServerTBinding("getServerTranslation");
-  // const { t } = await getServerTranslation();
+  const decl = this.createServerTBinding("getTranslation");
+  // const { t } = await getTranslation();
 
   if (body.isBlockStatement()) {
     body.unshiftContainer("body", decl);
@@ -375,7 +375,7 @@ if (isServerMode) {
 **동작:**
 
 1. 함수를 `async`로 변경
-2. `getServerTranslation()` 바인딩 추가
+2. `getTranslation()` 바인딩 추가
 3. Concise body(`=> expr`)면 Block body로 변환
 
 **예시:**
@@ -386,7 +386,7 @@ const Component = () => <div>안녕</div>;
 
 // 변환 후
 const Component = async () => {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <div>{t("안녕")}</div>;
 };
 ```
@@ -404,9 +404,9 @@ if (wasServerImportAdded) {
   this.ensureNamedImport(
     ast,
     this.config.translationImportSource,
-    this.config.serverTranslationFunction
+    this.config.serverTranslationFunction,
   );
-  // import { getServerTranslation } from "i18nexus";
+  // import { getTranslation } from "i18nexus";
 }
 ```
 

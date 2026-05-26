@@ -14,8 +14,7 @@ impl Default for ScriptConfig {
             translation_import_source: "i18nexus".to_string(),
             mode: None,
             framework: None,
-            server_translation_function: Some("getTranslations".to_string()),
+            server_translation_function: Some("getTranslation".to_string()),
         }
     }
 }
-

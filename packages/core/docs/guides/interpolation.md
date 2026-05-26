@@ -79,7 +79,7 @@ function StyledMessage() {
       {t(
         "환영합니다 {{name}}님",
         { name: "홍길동" },
-        { name: { color: "blue", fontWeight: "bold" } }
+        { name: { color: "blue", fontWeight: "bold" } },
       )}
 
       {/* 복수 변수에 각각 스타일 적용 */}
@@ -89,7 +89,7 @@ function StyledMessage() {
         {
           count: { color: "gray" },
           completed: { color: "green", fontWeight: "bold" },
-        }
+        },
       )}
     </div>
   );
@@ -115,10 +115,10 @@ Server Component에서도 동일한 문법으로 변수 삽입을 사용할 수 
 
 ```tsx
 // app/page.tsx (Server Component)
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function ServerPage() {
-  const { t } = await createServerI18n();
+  const { t } = await getTranslation("common");
 
   const userName = "홍길동";
   const count = 5;
@@ -139,7 +139,7 @@ export default async function ServerPage() {
 
 ```tsx
 // app/posts/[id]/page.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 async function getPost(id: string) {
   // API 호출
@@ -147,7 +147,7 @@ async function getPost(id: string) {
 }
 
 export default async function PostPage({ params }: { params: { id: string } }) {
-  const { t } = await createServerI18n();
+  const { t } = await getTranslation("common");
   const post = await getPost(params.id);
 
   return (
@@ -216,7 +216,7 @@ function ShoppingCart({ items }: { items: CartItem[] }) {
         {t(
           "합계: {{total}}원",
           { total: totalPrice },
-          { total: { fontSize: "1.5em", fontWeight: "bold", color: "red" } }
+          { total: { fontSize: "1.5em", fontWeight: "bold", color: "red" } },
         )}
       </p>
     </div>
@@ -250,7 +250,7 @@ function NotificationBadge({ unreadCount }: { unreadCount: number }) {
             borderRadius: "10px",
             fontSize: "12px",
           },
-        }
+        },
       )}
     </span>
   );
@@ -344,15 +344,22 @@ t("{{user.name}}", { "user.name": "홍길동" }); // 점 불가
 
 ```typescript
 // ❌ Server Component에서는 작동하지 않음
+import { getTranslation } from "i18nexus/server";
+
 export default async function ServerPage() {
-  const { t } = await createServerI18n();
+  const { t } = await getTranslation("common");
 
   return t("{{name}}", { name: "홍길동" }, { name: { color: "red" } });
   // 세 번째 인자(스타일)는 무시됨
 }
+```
 
+```typescript
 // ✅ Client Component에서만 스타일 사용
-("use client");
+"use client";
+
+import { useTranslation } from "i18nexus";
+
 export default function ClientPage() {
   const { t } = useTranslation();
 

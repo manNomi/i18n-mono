@@ -164,7 +164,7 @@ This uploads Korean text as plain text and English as Google Translate formulas:
 ```tsx
 // Server component - no hook added
 export default async function ServerPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <h1>{t("서버 렌더링")}</h1>;
 }
 ```
@@ -284,7 +284,7 @@ export const config = defineConfig({
 ```tsx
 // ❌ Problem: Variable name conflict
 const { t } = useTranslation("dashboard");
-const { t } = useTranslation("constant");  // Error: 't' is already declared
+const { t } = useTranslation("constant"); // Error: 't' is already declared
 
 // ✅ Solution: Use aliases
 const { t: tDashboard } = useTranslation("dashboard");

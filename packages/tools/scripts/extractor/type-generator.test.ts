@@ -4,6 +4,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { execFileSync } from "child_process";
 import {
   generateTypeDefinitions,
   ExtractedTranslations,
@@ -99,6 +100,9 @@ describe("Type Generator", () => {
       // Check that useTranslation includes fallback keys
       expect(content).toContain(
         "UseTranslationReturn<TranslationKeys[NS] | CommonKeys>",
+      );
+      expect(content).toContain(
+        "Promise<GetTranslationReturn<NS, TranslationKeys[NS] | CommonKeys>>",
       );
     });
 
@@ -331,6 +335,126 @@ describe("Type Generator", () => {
       expect(content).toContain("GetTranslationReturn");
       expect(content).toContain("from 'i18nexus'");
       expect(content).toContain("from 'i18nexus/server'");
+      expect(content).not.toContain("UseLanguageSwitcherReturn");
+      expect(content).not.toContain("I18nProviderProps");
+      expect(content).not.toContain("export function useLanguageSwitcher");
+      expect(content).not.toContain("export function I18nProvider");
+    });
+
+    it("should compile generated i18nexus augmentation against core-style exports", () => {
+      const extractedData: ExtractedTranslations = {
+        common: {
+          en: { save: "Save" },
+          ko: { save: "저장" },
+        },
+        home: {
+          en: { title: "Home" },
+          ko: { title: "홈" },
+        },
+      };
+
+      const config: TypeGeneratorConfig = {
+        outputPath,
+        fallbackNamespace: "common",
+        translationImportSource: "i18nexus",
+      };
+
+      generateTypeDefinitions(extractedData, config);
+
+      const shimPath = path.join(tempDir, "i18nexus-shim.d.ts");
+      const usagePath = path.join(tempDir, "usage.ts");
+      const tsconfigPath = path.join(tempDir, "tsconfig.json");
+
+      fs.writeFileSync(
+        shimPath,
+        `
+declare module "i18nexus" {
+  export interface UseTranslationReturn<K extends string = string> {
+    t: (key: K) => string;
+    currentLanguage: string;
+    lng: string;
+    isReady: boolean;
+  }
+  export interface UseLanguageSwitcherReturn {
+    currentLanguage: string;
+  }
+  export interface I18nProviderProps<TTranslations = unknown> {
+    translations?: TTranslations;
+  }
+  export function useTranslation<K extends string = string>(
+    namespace?: string
+  ): UseTranslationReturn<K>;
+  export const useLanguageSwitcher: () => UseLanguageSwitcherReturn;
+  export function I18nProvider(
+    props: I18nProviderProps
+  ): unknown;
+}
+
+declare module "i18nexus/server" {
+  export interface GetTranslationOptions {
+    language?: string;
+  }
+  export interface GetTranslationReturn<
+    NS extends string = string,
+    K extends string = string
+  > {
+    t: (key: K) => string;
+    namespace: NS;
+  }
+  export function getTranslation<
+    NS extends string = string,
+    K extends string = string
+  >(
+    namespace?: NS,
+    options?: GetTranslationOptions
+  ): Promise<GetTranslationReturn<NS, K>>;
+}
+`,
+      );
+
+      fs.writeFileSync(
+        usagePath,
+        `
+import { useLanguageSwitcher, useTranslation } from "i18nexus";
+import { getTranslation } from "i18nexus/server";
+
+const { t } = useTranslation("home");
+t("title");
+t("save");
+useLanguageSwitcher().currentLanguage;
+
+async function run() {
+  const server = await getTranslation("home");
+  server.t("title");
+  server.t("save");
+}
+
+void run();
+`,
+      );
+
+      fs.writeFileSync(
+        tsconfigPath,
+        JSON.stringify(
+          {
+            compilerOptions: {
+              strict: true,
+              skipLibCheck: false,
+              module: "CommonJS",
+              target: "ES2020",
+              noEmit: true,
+            },
+            files: [shimPath, outputPath, usagePath],
+          },
+          null,
+          2,
+        ),
+      );
+
+      execFileSync("npx", ["tsc", "-p", tsconfigPath], {
+        cwd: path.resolve(__dirname, "../.."),
+        stdio: "pipe",
+      });
     });
 
     it("should handle custom translation import source", () => {

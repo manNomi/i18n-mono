@@ -379,8 +379,6 @@ function generateTypeContent(
   if (isI18nexus) {
     content += `import type {\n`;
     content += `  UseTranslationReturn,\n`;
-    content += `  UseLanguageSwitcherReturn,\n`;
-    content += `  I18nProviderProps,\n`;
     content += `} from '${importSource}';\n`;
     content += `import type {\n`;
     content += `  GetTranslationReturn,\n`;
@@ -475,61 +473,6 @@ function generateTypeContent(
     content += `    lng: string;  // Alias for currentLanguage (react-i18next compatibility)\n`;
     content += `    isReady: boolean;\n`;
     content += `  };\n\n`;
-  }
-
-  // useLanguageSwitcher hook (i18nexus 사용자에 한해서만 추가)
-  if (isI18nexus) {
-    if (includeJsDocs) {
-      content += `  /**\n`;
-      content += `   * Language switcher hook (Client Component)\n`;
-      content += `   * \n`;
-      content += `   * @returns Language switching utilities\n`;
-      content += `   * \n`;
-      content += `   * @example\n`;
-      content += `   * \`\`\`tsx\n`;
-      content += `   * const { changeLanguage, availableLanguages } = useLanguageSwitcher();\n`;
-      content += `   * changeLanguage("en");  // ✅ Change to English\n`;
-      content += `   * \`\`\`\n`;
-      content += `   */\n`;
-    }
-    // Use original type from the package
-    content += `  export function useLanguageSwitcher(): UseLanguageSwitcherReturn;\n\n`;
-
-    // I18nProvider component (i18nexus 사용자에 한해서만 추가)
-    if (includeJsDocs) {
-      content += `  /**\n`;
-      content += `   * I18nProvider component (Client Component)\n`;
-      content += `   * \n`;
-      content += `   * Provides i18n context to child components. Supports both eager and lazy loading.\n`;
-      content += `   * \n`;
-      content += `   * @template TTranslations - The namespace translations structure\n`;
-      content += `   * @param props - Props for the I18nProvider\n`;
-      content += `   * @returns React.ReactElement\n`;
-      content += `   * \n`;
-      content += `   * @example\n`;
-      content += `   * \`\`\`tsx\n`;
-      content += `   * // Lazy loading (recommended)\n`;
-      content += `   * <I18nProvider \n`;
-      content += `   *   loadNamespace={async (ns, lang) => {\n`;
-      content += `   *     const data = await import(\\\`./locales/\\\${ns}/\\\${lang}.json\\\`);\n`;
-      content += `   *     return data.default;\n`;
-      content += `   *   }}\n`;
-      content += `   *   fallbackNamespace="common"\n`;
-      content += `   * >\n`;
-      content += `   *   <App />\n`;
-      content += `   * </I18nProvider>\n`;
-      content += `   * \n`;
-      content += `   * // Eager loading\n`;
-      content += `   * <I18nProvider translations={translations}>\n`;
-      content += `   *   <App />\n`;
-      content += `   * </I18nProvider>\n`;
-      content += `   * \`\`\`\n`;
-      content += `   */\n`;
-    }
-    // Use original type from the package
-    content += `  export function I18nProvider<TTranslations extends Record<string, Record<string, Record<string, string>>> = Record<string, Record<string, Record<string, string>>>>(\n`;
-    content += `    props: I18nProviderProps<TTranslations>\n`;
-    content += `  ): React.ReactElement;\n\n`;
   }
 
   // Export individual namespace key types for use in constants

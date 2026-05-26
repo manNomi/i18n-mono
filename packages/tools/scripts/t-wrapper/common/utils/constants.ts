@@ -36,7 +36,7 @@ export const STRING_CONSTANTS = Object.freeze({
   I18N_IGNORE_JSX: "{/* i18n-ignore",
   TRANSLATION_FUNCTION: "t",
   USE_TRANSLATION: "useTranslation",
-  GET_SERVER_TRANSLATION: "getTranslations",
+  GET_SERVER_TRANSLATION: "getTranslation",
   USE_CLIENT_DIRECTIVE: "use client",
   COMPLETION_TITLE: "Translation Wrapper Completed",
   DEFAULT_ENV: "production",

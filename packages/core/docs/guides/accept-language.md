@@ -26,10 +26,10 @@ i18nexus는 다음 우선순위로 언어를 결정합니다:
 
 ```tsx
 // app/layout.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function RootLayout({ children }) {
-  const { t, language } = await createServerI18n({
+  const { t, language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja", "zh"],
     defaultLanguage: "en",
   });
@@ -71,13 +71,13 @@ export default async function Page() {
 
 ## Server Components
 
-### createServerI18n() - 자동 감지 포함
+### getTranslation(namespace) - 자동 감지 포함
 
 ```tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function ServerPage() {
-  const { t, language } = await createServerI18n({
+  const { t, language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja", "zh"],
     defaultLanguage: "en",
   });
@@ -111,7 +111,7 @@ export default async function ServerPage() {
     {
       availableLanguages: ["en", "ko"],
       defaultLanguage: "en",
-    }
+    },
   );
 
   return <h1>{t("Welcome")}</h1>;
@@ -126,7 +126,7 @@ export default async function ServerPage() {
 
 ```tsx
 // app/blog/[slug]/page.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 interface Post {
   title: string;
@@ -148,7 +148,7 @@ export default async function BlogPost({
 }: {
   params: { slug: string };
 }) {
-  const { t, language } = await createServerI18n({
+  const { t, language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja", "zh"],
     defaultLanguage: "en",
   });
@@ -173,7 +173,7 @@ export default async function BlogPost({
 
 ```tsx
 // app/products/[id]/page.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 interface Product {
   name: string;
@@ -194,7 +194,7 @@ export default async function ProductPage({
 }: {
   params: { id: string };
 }) {
-  const { t, language } = await createServerI18n({
+  const { t, language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja", "zh"],
     defaultLanguage: "en",
   });
@@ -221,7 +221,7 @@ export default async function ProductPage({
 
 ```tsx
 // app/dashboard/page.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 interface Stats {
   users: number;
@@ -238,7 +238,7 @@ async function getStats(): Promise<Stats> {
 }
 
 export default async function Dashboard() {
-  const { t } = await createServerI18n({
+  const { t } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja", "zh", "es", "fr"],
     defaultLanguage: "en",
   });
@@ -382,12 +382,12 @@ Accept-Language 감지를 사용하려면 `availableLanguages` 옵션이 **필�
 
 ```tsx
 // ❌ 작동하지 않음 - availableLanguages 없음
-const { language } = await createServerI18n({
+const { language } = await getTranslation("common", {
   defaultLanguage: "en",
 });
 
 // ✅ 올바른 사용
-const { language } = await createServerI18n({
+const { language } = await getTranslation("common", {
   availableLanguages: ["en", "ko", "ja"],
   defaultLanguage: "en",
 });
@@ -420,7 +420,7 @@ const { language } = await createServerI18n({
 ### 1. 충분한 언어 목록 제공
 
 ```tsx
-const { language } = await createServerI18n({
+const { language } = await getTranslation("common", {
   // 지원하는 모든 언어를 명시
   availableLanguages: ["en", "ko", "ja", "zh", "es", "fr", "de"],
   defaultLanguage: "en",
@@ -442,10 +442,11 @@ export type AppLanguages = (typeof config.languages)[number];
 
 ```tsx
 // app/layout.tsx
+import { getTranslation } from "i18nexus/server";
 import { config } from "@/i18nexus.config";
 
 export default async function RootLayout({ children }) {
-  const { language } = await createServerI18n({
+  const { language } = await getTranslation("common", {
     availableLanguages: [...config.languages],
     defaultLanguage: config.defaultLanguage,
   });
@@ -469,7 +470,8 @@ export default function LanguageSwitcher() {
   return (
     <select
       value={currentLanguage}
-      onChange={(e) => changeLanguage(e.target.value)}>
+      onChange={(e) => changeLanguage(e.target.value)}
+    >
       {availableLanguages.map((lang) => (
         <option key={lang.code} value={lang.code}>
           {lang.flag} {lang.name}

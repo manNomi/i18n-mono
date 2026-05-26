@@ -127,7 +127,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
   it("서버 컴포넌트는 useTranslation 훅을 추가하지 않아야 함", async () => {
     const testFile = path.join(tempDir, "ServerComponent.tsx");
     const originalContent = `async function ServerComponent() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <div>안녕하세요</div>;
 }`;
 
@@ -140,7 +140,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
     const modifiedContent = readFile(testFile);
     expect(modifiedContent).toContain("t(");
     expect(modifiedContent).not.toContain("useTranslation");
-    expect(modifiedContent).toContain("getServerTranslation");
+    expect(modifiedContent).toContain("getTranslation");
   });
 
   it("i18n-ignore 주석이 있으면 변환하지 않아야 함", async () => {

@@ -77,8 +77,8 @@ npx i18n-wrapper --dry-run
 
 - 한국어/영어 문자열 자동 감지
 - **템플릿 리터럴 지원**: `` `한국어 ${변수}` `` 패턴 자동 래핑
-- `useTranslation()` 훅 자동 추가 (i18nexus-core)
-- **서버 컴포넌트 자동 감지**: `getServerTranslation` 사용 시 `useTranslation` 훅 추가 안 함
+- `useTranslation()` 훅 자동 추가 (i18nexus)
+- **서버 컴포넌트 자동 감지**: `getTranslation` 사용 시 `useTranslation` 훅 추가 안 함
 - 번역 키 파일 자동 생성 (띄어쓰기 포함)
 - 기존 t() 호출 및 import 보존
 - **`{/* i18n-ignore */}` 주석으로 특정 코드 래핑 제외**
@@ -230,13 +230,16 @@ export default function Component() {
 ```tsx
 // 서버 컴포넌트 - useTranslation 훅이 추가되지 않음
 export default async function ServerPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return <h1>{t("서버에서 렌더링")}</h1>;
 }
+```
 
+```tsx
 // 클라이언트 컴포넌트 - useTranslation 훅이 자동 추가됨
-("use client");
+"use client";
+
 export default function ClientComponent() {
   // const { t } = useTranslation(); 이 자동으로 추가됨
   return <h1>{t("클라이언트에서 렌더링")}</h1>;
@@ -539,7 +542,7 @@ export default function Welcome() {
 }
 
 // After (i18n-wrapper 실행 후)
-import { useTranslation } from "i18nexus-core";
+import { useTranslation } from "i18nexus";
 
 export default function Welcome() {
   const { t } = useTranslation("common");
@@ -650,8 +653,8 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 
 ## 관련 패키지
 
-- `i18nexus-core` - React 컴포넌트와 훅
-- `i18nexus` - 전체 toolkit (Google Sheets 연동 포함)
+- `i18nexus` - React 컴포넌트와 훅
+- `i18nexus-tools` - 전체 toolkit (Google Sheets 연동 포함)
 
 ## 라이센스
 
