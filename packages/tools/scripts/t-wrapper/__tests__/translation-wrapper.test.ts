@@ -80,6 +80,49 @@ describe("translation-wrapper", () => {
       expect(content).toContain("t(");
     });
 
+    it("client 모드에서는 필요한 useTranslation만 import해야 함", async () => {
+      const testFile = path.join(tempDir, "minimal-client.tsx");
+      writeFile(
+        testFile,
+        `function ClientComp() {
+  return <div>안녕하세요</div>;
+}`,
+      );
+
+      await wrapTranslations({
+        sourcePattern: path.join(tempDir, "**/*.tsx"),
+        mode: "client",
+        framework: "react",
+      } as any);
+
+      const content = readFile(testFile);
+      expect(content).toContain("useTranslation");
+      expect(content).not.toContain("I18nProvider");
+      expect(content).not.toContain("useLanguageSwitcher");
+    });
+
+    it("server 모드 기본값은 i18nexus/server의 getTranslation을 사용해야 함", async () => {
+      const testFile = path.join(tempDir, "server-default.tsx");
+      writeFile(
+        testFile,
+        `function ServerComp() {
+  return <div>안녕하세요</div>;
+}`,
+      );
+
+      await wrapTranslations({
+        sourcePattern: path.join(tempDir, "**/*.tsx"),
+        mode: "server",
+      } as any);
+
+      const content = readFile(testFile);
+      expect(content).toContain(
+        'import { getTranslation } from "i18nexus/server"',
+      );
+      expect(content).toContain("await getTranslation");
+      expect(content).toContain("t(");
+    });
+
     it("server 모드에서는 지정한 serverTranslationFunction으로 t 바인딩을 생성해야 함", async () => {
       const testFile = path.join(tempDir, "server.tsx");
       writeFile(

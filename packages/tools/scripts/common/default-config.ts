@@ -55,13 +55,13 @@ export interface ScriptConfig {
   translationImportSource?: string;
   /**
    * 서버 변환 시 사용할 함수명 (라이브러리별 상이)
-   * 기본값: "getServerTranslation"
+   * 기본값: "getTranslation"
    */
   serverTranslationFunction?: string;
   /**
    * 번역 함수 모드 (기능적 선택)
    * - 'client': useTranslation() 사용
-   * - 'server': getServerTranslation() 사용
+   * - 'server': getTranslation() 사용
    * - 지정하지 않으면 기존 판단 로직 사용
    *
    * ⚠️ 주의: 이 옵션은 번역 함수 선택만 담당합니다.
@@ -99,7 +99,7 @@ export interface ScriptConfig {
 export const SCRIPT_CONFIG_DEFAULTS: Required<ScriptConfig> = {
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
-  serverTranslationFunction: "getServerTranslation",
+  serverTranslationFunction: "getTranslation",
   mode: undefined as unknown as "client" | "server",
   framework: undefined as unknown as "nextjs" | "react" | "other",
   enablePerformanceMonitoring: WRAPPER_DEFAULTS.enablePerformanceMonitoring,

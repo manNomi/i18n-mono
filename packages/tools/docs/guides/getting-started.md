@@ -146,7 +146,8 @@ export default async function RootLayout({
               { code: "ko", name: "한국어", flag: "🇰🇷" },
               { code: "en", name: "English", flag: "🇺🇸" },
             ],
-          }}>
+          }}
+        >
           {children}
         </I18nProvider>
       </body>
@@ -170,7 +171,8 @@ function MyApp({ Component, pageProps }) {
           { code: "ko", name: "한국어", flag: "🇰🇷" },
           { code: "en", name: "English", flag: "🇺🇸" },
         ],
-      }}>
+      }}
+    >
       <Component {...pageProps} />
     </I18nProvider>
   );
@@ -256,7 +258,7 @@ Server components are automatically detected:
 ```tsx
 // Server component - no useTranslation hook added
 export default async function ServerPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <h1>{t("서버 렌더링")}</h1>;
 }
 ```

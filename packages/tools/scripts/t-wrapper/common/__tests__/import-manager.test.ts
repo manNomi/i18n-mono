@@ -63,14 +63,14 @@ function Component() {}`;
         sourceType: "module",
         plugins: ["typescript", "jsx"],
       });
-      const result = ensureNamedImport(ast, "i18nexus", "getServerTranslation");
+      const result = ensureNamedImport(ast, "i18nexus", "getTranslation");
       expect(result).toBe(true);
       const importNode = ast.program.body[0] as t.ImportDeclaration;
       expect(importNode.specifiers[0]).toBeDefined();
       expect(
         t.isImportSpecifier(importNode.specifiers[0]) &&
           t.isIdentifier(importNode.specifiers[0].imported) &&
-          importNode.specifiers[0].imported.name === "getServerTranslation",
+          importNode.specifiers[0].imported.name === "getTranslation",
       ).toBe(true);
     });
   });

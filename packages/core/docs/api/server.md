@@ -306,7 +306,7 @@ function createServerI18nWithTranslations(
 - `translations` - Pre-loaded translations
 - `options` - Configuration options
 
-**Returns:** Same as `createServerI18n()`
+**Returns:** Same basic server translation shape as `getTranslation()`
 
 **Example:**
 

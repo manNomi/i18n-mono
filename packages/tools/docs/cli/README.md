@@ -9,6 +9,7 @@ Complete reference for all i18nexus-tools CLI commands.
 | `i18n-wrapper`      | Wrap strings with t()         | [→ Details](./i18n-wrapper.md)      |
 | `i18n-extractor`    | Extract translation keys      | [→ Details](./i18n-extractor.md)    |
 | `i18n-type`         | Generate TypeScript types     | [→ Details](./i18n-type.md)         |
+| `i18n-doctor`       | Diagnose core v4 setup        | [→ Details](./i18n-doctor.md)       |
 | `i18n-clean-legacy` | Remove unused keys            | [→ Details](./i18n-clean-legacy.md) |
 | `i18n-upload`       | Upload to Google Sheets       | [→ Details](./i18n-upload.md)       |
 | `i18n-download`     | Download from Google Sheets   | [→ Details](./i18n-download.md)     |
@@ -72,7 +73,24 @@ npx i18n-type [options]
 
 [→ Full Documentation](./i18n-type.md)
 
-#### 4. i18n-clean-legacy
+#### 4. i18n-doctor
+
+Checks whether the project is aligned with `i18nexus@4` and the generated tools workflow.
+
+```bash
+npx i18n-doctor
+```
+
+**Key Features:**
+
+- Core version check
+- Generated `locales/index.ts` check
+- Generated type declaration check
+- Fallback namespace and translation completeness check
+
+[→ Full Documentation](./i18n-doctor.md)
+
+#### 5. i18n-clean-legacy
 
 Removes unused and invalid translation keys.
 
@@ -93,7 +111,7 @@ npx i18n-clean-legacy [options]
 
 Commands for collaborative translation:
 
-#### 4. i18n-upload
+#### 6. i18n-upload
 
 Uploads local translations to Google Sheets.
 
@@ -110,7 +128,7 @@ npx i18n-upload [options]
 
 [→ Full Documentation](./i18n-upload.md)
 
-#### 5. i18n-download
+#### 7. i18n-download
 
 Downloads translations from Google Sheets.
 
@@ -128,7 +146,7 @@ npx i18n-download-force [options]
 
 [→ Full Documentation](./i18n-download.md)
 
-#### 6. i18n-sheets (Legacy)
+#### 8. i18n-sheets (Legacy)
 
 Legacy combined commands for Google Sheets.
 
@@ -157,11 +175,11 @@ npx i18n-wrapper
 # 2. Extract keys
 npx i18n-extractor
 
-# 3. Generate types
-npx i18n-type
+# 3. Validate generated core v4 setup
+npx i18n-doctor
 
 # 4. Add translations
-# Edit locales/en.json
+# Edit locales/[namespace]/en.json
 
 # 5. Regenerate types (if needed)
 npx i18n-type
@@ -178,7 +196,7 @@ npx i18n-sheets init
 # 2. Wrap & extract & generate types
 npx i18n-wrapper
 npx i18n-extractor
-npx i18n-type
+npx i18n-doctor
 
 # 3. Upload
 npx i18n-upload

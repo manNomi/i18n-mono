@@ -171,6 +171,7 @@ export function generateTypeDefinitions(
 
   // Step 2: Generate type definition content
   const typeContent = generateTypeContent(
+    extractedData,
     namespaceKeys,
     namespaceKeysWithInfo,
     config,
@@ -233,18 +234,20 @@ function extractNamespaceKeys(
   const namespaceKeys: Record<string, string[]> = {};
 
   for (const [namespace, languages] of Object.entries(extractedData)) {
-    // Get keys from the first available language
-    const firstLanguage =
-      languages["ko"] || languages["en"] || Object.values(languages)[0];
+    const keys = new Set<string>();
 
-    if (!firstLanguage) {
+    for (const translationMap of Object.values(languages)) {
+      for (const key of Object.keys(translationMap)) {
+        keys.add(key);
+      }
+    }
+
+    if (keys.size === 0) {
       console.warn(`⚠️  No translations found for namespace: ${namespace}`);
       continue;
     }
 
-    // Extract all keys (sorted for consistency)
-    const keys = Object.keys(firstLanguage).sort();
-    namespaceKeys[namespace] = keys;
+    namespaceKeys[namespace] = [...keys].sort();
   }
 
   return namespaceKeys;
@@ -259,19 +262,25 @@ function extractNamespaceKeysWithInfo(
   const result: Record<string, KeyInfo[]> = {};
 
   for (const [namespace, languages] of Object.entries(extractedData)) {
-    // Get keys from the first available language
-    const firstLanguage =
-      languages["ko"] || languages["en"] || Object.values(languages)[0];
+    const variablesByKey = new Map<string, Set<string>>();
 
-    if (!firstLanguage) {
-      continue;
+    for (const translationMap of Object.values(languages)) {
+      for (const [key, value] of Object.entries(translationMap)) {
+        const variables = variablesByKey.get(key) || new Set<string>();
+        if (typeof value === "string") {
+          extractInterpolationVariables(value).forEach((variable) =>
+            variables.add(variable),
+          );
+        }
+        variablesByKey.set(key, variables);
+      }
     }
 
-    result[namespace] = Object.keys(firstLanguage)
+    result[namespace] = [...variablesByKey.entries()]
       .sort()
-      .map((key) => ({
+      .map(([key, variables]) => ({
         key,
-        variables: extractInterpolationVariables(key),
+        variables: [...variables].sort(),
       }));
   }
 
@@ -282,6 +291,7 @@ function extractNamespaceKeysWithInfo(
  * Generate the actual TypeScript type definition content
  */
 function generateTypeContent(
+  extractedData: ExtractedTranslations,
   namespaceKeys: Record<string, string[]>,
   namespaceKeysWithInfo: Record<string, KeyInfo[]>,
   config: TypeGeneratorConfig,
@@ -367,6 +377,8 @@ function generateTypeContent(
   }
   content += `};\n\n`;
 
+  content += generateTranslationsShapeType(extractedData, namespaceKeys);
+
   // Module augmentation
   const importSource = config.translationImportSource || "i18nexus";
   const isI18nexus = importSource === "i18nexus";
@@ -379,8 +391,6 @@ function generateTypeContent(
   if (isI18nexus) {
     content += `import type {\n`;
     content += `  UseTranslationReturn,\n`;
-    content += `  UseLanguageSwitcherReturn,\n`;
-    content += `  I18nProviderProps,\n`;
     content += `} from '${importSource}';\n`;
     content += `import type {\n`;
     content += `  GetTranslationReturn,\n`;
@@ -477,61 +487,6 @@ function generateTypeContent(
     content += `  };\n\n`;
   }
 
-  // useLanguageSwitcher hook (i18nexus 사용자에 한해서만 추가)
-  if (isI18nexus) {
-    if (includeJsDocs) {
-      content += `  /**\n`;
-      content += `   * Language switcher hook (Client Component)\n`;
-      content += `   * \n`;
-      content += `   * @returns Language switching utilities\n`;
-      content += `   * \n`;
-      content += `   * @example\n`;
-      content += `   * \`\`\`tsx\n`;
-      content += `   * const { changeLanguage, availableLanguages } = useLanguageSwitcher();\n`;
-      content += `   * changeLanguage("en");  // ✅ Change to English\n`;
-      content += `   * \`\`\`\n`;
-      content += `   */\n`;
-    }
-    // Use original type from the package
-    content += `  export function useLanguageSwitcher(): UseLanguageSwitcherReturn;\n\n`;
-
-    // I18nProvider component (i18nexus 사용자에 한해서만 추가)
-    if (includeJsDocs) {
-      content += `  /**\n`;
-      content += `   * I18nProvider component (Client Component)\n`;
-      content += `   * \n`;
-      content += `   * Provides i18n context to child components. Supports both eager and lazy loading.\n`;
-      content += `   * \n`;
-      content += `   * @template TTranslations - The namespace translations structure\n`;
-      content += `   * @param props - Props for the I18nProvider\n`;
-      content += `   * @returns React.ReactElement\n`;
-      content += `   * \n`;
-      content += `   * @example\n`;
-      content += `   * \`\`\`tsx\n`;
-      content += `   * // Lazy loading (recommended)\n`;
-      content += `   * <I18nProvider \n`;
-      content += `   *   loadNamespace={async (ns, lang) => {\n`;
-      content += `   *     const data = await import(\\\`./locales/\\\${ns}/\\\${lang}.json\\\`);\n`;
-      content += `   *     return data.default;\n`;
-      content += `   *   }}\n`;
-      content += `   *   fallbackNamespace="common"\n`;
-      content += `   * >\n`;
-      content += `   *   <App />\n`;
-      content += `   * </I18nProvider>\n`;
-      content += `   * \n`;
-      content += `   * // Eager loading\n`;
-      content += `   * <I18nProvider translations={translations}>\n`;
-      content += `   *   <App />\n`;
-      content += `   * </I18nProvider>\n`;
-      content += `   * \`\`\`\n`;
-      content += `   */\n`;
-    }
-    // Use original type from the package
-    content += `  export function I18nProvider<TTranslations extends Record<string, Record<string, Record<string, string>>> = Record<string, Record<string, Record<string, string>>>>(\n`;
-    content += `    props: I18nProviderProps<TTranslations>\n`;
-    content += `  ): React.ReactElement;\n\n`;
-  }
-
   // Export individual namespace key types for use in constants
   content += `  // Individual namespace key types (for use in constants and type definitions)\n`;
   for (const namespace of Object.keys(namespaceKeys)) {
@@ -599,6 +554,49 @@ function generateTypeContent(
   content += `}\n`;
 
   return content;
+}
+
+function generateTranslationsShapeType(
+  extractedData: ExtractedTranslations,
+  namespaceKeys: Record<string, string[]>,
+): string {
+  const sortedNamespaces = Object.keys(namespaceKeys).sort();
+  const lines: string[] = [
+    `/**`,
+    ` * Translation shape for createI18n().`,
+    ` *`,
+    ` * Generated locale entrypoints can use this type without importing JSON at runtime:`,
+    ` * createI18n({} as I18nexusGeneratedTranslations, { fallbackNamespace: "common" })`,
+    ` */`,
+    `export type I18nexusGeneratedTranslations = {`,
+  ];
+
+  for (const namespace of sortedNamespaces) {
+    const languageMaps = extractedData[namespace] || {};
+    const sortedLanguages = Object.keys(languageMaps).sort();
+    lines.push(`  readonly "${escapeString(namespace)}": {`);
+
+    for (const language of sortedLanguages) {
+      const keys = Object.keys(languageMaps[language] || {}).sort();
+      lines.push(`    readonly "${escapeString(language)}": {`);
+
+      for (const key of keys) {
+        lines.push(`      readonly "${escapeString(key)}": string;`);
+      }
+
+      lines.push(`    };`);
+    }
+
+    lines.push(`  };`);
+  }
+
+  lines.push(`};`, ``);
+  lines.push(
+    `export type I18nexusGeneratedNamespace = keyof I18nexusGeneratedTranslations & string;`,
+    ``,
+  );
+
+  return lines.join("\n");
 }
 
 /**

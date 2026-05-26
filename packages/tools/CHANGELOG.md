@@ -4,6 +4,56 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-05-26
+
+### ✨ Features
+
+- **Core v4 companion workflow**:
+  - `i18n-extractor` now generates a core v4-ready `locales/index.ts`.
+  - Generated entrypoint exports `languages`, `namespaces`, `fallbackNamespace`, `loadNamespace`, and typed `createI18n` helpers.
+  - Advanced users can import generated `I18nProvider` and `useTranslation` from `./locales`.
+
+- **Automatic type generation after extraction**:
+  - `i18n-extractor` now generates `locales/types/i18nexus.d.ts` by default.
+  - Added `--no-types`, `--types-output`, and `--strict-types` options.
+  - Generated declarations now include `I18nexusGeneratedTranslations` for `createI18n`.
+  - Translation keys are collected across all language files instead of relying on the first language only.
+  - Interpolation variables are inferred from translation values.
+
+- **New `i18n-doctor` command**:
+  - Checks core package version, locale entrypoint, generated type file, fallback namespace, and translation completeness.
+  - Intended as a final CI/local confidence check after `i18n-extractor`.
+
+### 🔄 Breaking Changes
+
+- `i18nexus-tools` is now positioned around `i18nexus@4`.
+- Projects using older core versions should upgrade to `i18nexus@4` before adopting tools v3.
+- `i18n-extractor` now writes generated type files by default. Use `--no-types` to keep the previous extract-only behavior.
+
+### 📋 Migration Guide
+
+```bash
+npm install i18nexus@latest
+npm install -D i18nexus-tools@latest
+
+npx i18n-extractor
+npx i18n-doctor
+```
+
+For lazy namespace loading, wire the generated entrypoint into core:
+
+```tsx
+import { I18nProvider } from "i18nexus";
+import { fallbackNamespace, loadNamespace } from "./locales";
+
+<I18nProvider
+  loadNamespace={loadNamespace}
+  fallbackNamespace={fallbackNamespace}
+>
+  {children}
+</I18nProvider>;
+```
+
 ### 🗑️ Removed
 
 - **Deprecated code cleanup**:
@@ -160,9 +210,9 @@ npx i18n-download -s "id"
 
 ### 🐛 Bug Fixes
 
-- **Server mode wrapper 수정**: `mode: "server"` 설정 시 `getServerTranslation` 생성 및 올바른 import source 사용
+- **Server mode wrapper 수정**: `mode: "server"` 설정 시 `getTranslation` 생성 및 올바른 import source 사용
   - `i18nexus.config.json`에서 `mode`, `framework`, `serverTranslationFunction` 설정을 wrapper에 전달하도록 수정
   - 서버 모드일 때 import source에 `/server` 경로 자동 추가
-  - 결과: `import { getServerTranslation } from "i18nexus/server"` (이전: `import { useTranslation } from "i18nexus"`)
+  - 결과: `import { getTranslation } from "i18nexus/server"` (이전: `import { useTranslation } from "i18nexus"`)
 
 ---

@@ -1,6 +1,6 @@
 # 🛠️ i18nexus-tools
 
-> i18n 워크플로우를 자동화하는 강력한 CLI 도구
+> i18nexus core v4 companion CLI: 코드 래핑, 네임스페이스 추출, 타입/런타임 엔트리 생성, 상태 진단, Google Sheets 동기화까지 한 번에 다룹니다.
 
 [English](./README.md) | [한국어](./README.ko.md)
 
@@ -37,8 +37,8 @@ npx i18n-sheets init -s <spreadsheet-id> -c ./credentials.json
 초기화 시 다음 파일들이 생성됩니다:
 
 - `i18nexus.config.json` - 프로젝트 설정 파일
-- `locales/en.json` - 영어 번역 파일
-- `locales/ko.json` - 한국어 번역 파일
+- `locales` - 번역 파일 디렉토리
+- tools v3의 권장 추출 결과는 `locales/[namespace]/[language].json` 구조입니다.
 
 ### 2. 설정 파일 (`i18nexus.config.json`)
 
@@ -48,6 +48,9 @@ npx i18n-sheets init -s <spreadsheet-id> -c ./credentials.json
   "defaultLanguage": "ko",
   "localesDir": "./locales",
   "sourcePattern": "src/**/*.{js,jsx,ts,tsx}",
+  "translationImportSource": "i18nexus",
+  "fallbackNamespace": "common",
+  "useNamespaceStructure": true,
   "googleSheets": {
     "spreadsheetId": "",
     "credentialsPath": "./credentials.json",
@@ -56,7 +59,71 @@ npx i18n-sheets init -s <spreadsheet-id> -c ./credentials.json
 }
 ```
 
+### 3. core v4 권장 워크플로우
+
+```bash
+# 1. 하드코딩 문자열을 t()로 래핑
+npx i18n-wrapper
+
+# 2. 번역 키 추출 + locales/index.ts + 타입 자동 생성
+npx i18n-extractor
+
+# 3. core v4 companion 설정 진단
+npx i18n-doctor
+
+# 선택: 타입만 다시 생성
+npx i18n-type
+```
+
+`i18n-extractor`는 기본적으로 다음 파일을 함께 생성합니다:
+
+- `locales/[namespace]/[language].json`
+- `locales/index.ts`: `loadNamespace`, `fallbackNamespace`, typed `createI18n` 엔트리
+- `locales/types/i18nexus.d.ts`: `useTranslation`, `getTranslation`, `createI18n`용 타입
+
+생성된 `locales/index.ts`는 초급 API와 고급 typed API 양쪽을 지원합니다:
+
+```tsx
+// 초급 API
+import { I18nProvider } from "i18nexus";
+import { fallbackNamespace, loadNamespace } from "./locales";
+
+<I18nProvider
+  loadNamespace={loadNamespace}
+  fallbackNamespace={fallbackNamespace}
+>
+  {children}
+</I18nProvider>;
+```
+
+```tsx
+// 고급 typed API
+import { I18nProvider, useTranslation } from "./locales";
+
+function HomeTitle() {
+  const { t, isReady } = useTranslation("home");
+  return isReady ? <h1>{t("title")}</h1> : null;
+}
+```
+
 ## 핵심 도구
+
+### i18n-doctor - core v4 설정 진단
+
+현재 프로젝트가 `i18nexus@4`와 tools v3 생성 흐름에 맞는지 검사합니다.
+
+```bash
+npx i18n-doctor
+```
+
+검사 항목:
+
+- `i18nexus` core 버전
+- `translationImportSource`
+- fallback namespace 존재 여부
+- `locales/index.ts` 생성 여부
+- `locales/types/i18nexus.d.ts` 생성 여부
+- 언어별 누락/빈 번역
 
 ### 1. i18n-wrapper - 자동 번역 래핑
 
@@ -77,8 +144,8 @@ npx i18n-wrapper --dry-run
 
 - 한국어/영어 문자열 자동 감지
 - **템플릿 리터럴 지원**: `` `한국어 ${변수}` `` 패턴 자동 래핑
-- `useTranslation()` 훅 자동 추가 (i18nexus-core)
-- **서버 컴포넌트 자동 감지**: `getServerTranslation` 사용 시 `useTranslation` 훅 추가 안 함
+- `useTranslation()` 훅 자동 추가 (i18nexus)
+- **서버 컴포넌트 자동 감지**: `getTranslation` 사용 시 `useTranslation` 훅 추가 안 함
 - 번역 키 파일 자동 생성 (띄어쓰기 포함)
 - 기존 t() 호출 및 import 보존
 - **`{/* i18n-ignore */}` 주석으로 특정 코드 래핑 제외**
@@ -230,13 +297,16 @@ export default function Component() {
 ```tsx
 // 서버 컴포넌트 - useTranslation 훅이 추가되지 않음
 export default async function ServerPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return <h1>{t("서버에서 렌더링")}</h1>;
 }
+```
 
+```tsx
 // 클라이언트 컴포넌트 - useTranslation 훅이 자동 추가됨
-("use client");
+"use client";
+
 export default function ClientComponent() {
   // const { t } = useTranslation(); 이 자동으로 추가됨
   return <h1>{t("클라이언트에서 렌더링")}</h1>;
@@ -245,7 +315,7 @@ export default function ClientComponent() {
 
 ### 2. i18n-extractor - 번역 키 추출
 
-`t()` 함수 호출에서 번역 키를 추출하여 en.json과 ko.json 파일을 생성/업데이트합니다.
+`t()` 함수 호출에서 번역 키를 추출하여 core v4용 namespace JSON, `locales/index.ts`, 타입 정의를 생성/업데이트합니다.
 
 ```bash
 # 기본 사용법 - 새로운 키만 추가 (기존 번역 유지)
@@ -260,6 +330,9 @@ npx i18n-extractor -p "app/**/*.tsx" -d "./public/locales"
 # CSV 형식으로 추출 (Google Sheets 용)
 npx i18n-extractor -f csv -o "translations.csv"
 
+# legacy flat 구조가 필요한 경우
+npx i18n-extractor --flat
+
 # 추출 결과 미리보기
 npx i18n-extractor --dry-run
 ```
@@ -269,7 +342,10 @@ npx i18n-extractor --dry-run
 - t() 함수 호출에서 번역 키 자동 추출
 - **기본 모드: 기존 번역을 유지하고 새로운 키만 추가** (안전한 업데이트)
 - **--force 옵션: 모든 번역을 새로 추출된 값으로 덮어씀** (완전 재생성)
-- JSON: i18n-core 호환 형식 출력
+- JSON: core v4 권장 구조 출력 (`locales/[namespace]/[language].json`)
+- `locales/index.ts`: `loadNamespace`, `fallbackNamespace`, typed `createI18n` 엔트리 생성
+- `locales/types/i18nexus.d.ts`: 타입 자동 생성
+- `--flat`: 기존 flat 구조(`locales/en.json`, `locales/ko.json`) 유지
 - CSV: 구글 시트 호환 형식 출력 (Key, English, Korean)
 - 중복 키 감지 및 보고
 
@@ -319,7 +395,7 @@ npx i18n-clean-legacy --no-backup
 
 ### 4. i18n-upload / i18n-download - Google Sheets 업로드/다운로드
 
-로컬 번역 파일(`en.json`, `ko.json`)과 Google Sheets를 동기화합니다.
+로컬 번역 파일(`locales/[namespace]/[language].json` 또는 `--flat` 구조의 `en.json`, `ko.json`)과 Google Sheets를 동기화합니다.
 
 ```bash
 # Google Sheets에 번역 업로드 (기본 모드 - 새로운 키만 추가)
@@ -349,7 +425,8 @@ npx i18n-download -s <spreadsheet-id> -c ./credentials.json
 **특징:**
 
 - `i18nexus.config.json`에서 설정 자동 로드
-- `locales/en.json`, `locales/ko.json` 형식으로 저장
+- 기본 권장 구조는 `locales/[namespace]/[language].json`입니다.
+- `--flat` 또는 legacy 설정을 쓰는 프로젝트는 `locales/en.json`, `locales/ko.json` 형식도 사용할 수 있습니다.
 
 **업로드 모드:**
 
@@ -408,8 +485,12 @@ your-app/
 │   ├── page.tsx            # 홈 페이지
 │   └── components/         # 클라이언트 컴포넌트
 ├── locales/
-│   ├── en.json            # 영어 번역
-│   └── ko.json            # 한국어 번역
+│   ├── common/
+│   │   ├── en.json        # 공통 영어 번역
+│   │   └── ko.json        # 공통 한국어 번역
+│   ├── index.ts           # generated loadNamespace/createI18n entrypoint
+│   └── types/
+│       └── i18nexus.d.ts  # generated translation types
 ├── i18nexus.config.json   # i18nexus 설정
 └── package.json
 ```
@@ -501,7 +582,7 @@ npx i18n-sheets init
 # 2. app 디렉토리의 하드코딩된 텍스트를 t() 함수로 래핑
 npx i18n-wrapper -p "app/**/*.{ts,tsx}"
 
-# 3. 번역 키를 en.json과 ko.json에 추출
+# 3. 번역 키를 namespace JSON, locales/index.ts, 타입으로 추출
 npx i18n-extractor -p "app/**/*.{ts,tsx}" -d "./locales"
 
 # 4. 번역 작업 (선택사항 - Google Sheets 사용)
@@ -539,7 +620,7 @@ export default function Welcome() {
 }
 
 // After (i18n-wrapper 실행 후)
-import { useTranslation } from "i18nexus-core";
+import { useTranslation } from "i18nexus";
 
 export default function Welcome() {
   const { t } = useTranslation("common");
@@ -556,12 +637,12 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 생성된 파일:
 
 ```json
-// locales/ko.json
+// locales/common/ko.json
 {
   "안녕하세요 반갑습니다": "안녕하세요 반갑습니다"
 }
 
-// locales/en.json
+// locales/common/en.json
 {
   "안녕하세요 반갑습니다": ""
 }
@@ -570,7 +651,7 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 ### 3단계: 영어 번역 추가
 
 ```json
-// locales/en.json
+// locales/common/en.json
 {
   "안녕하세요 반갑습니다": "Welcome! Nice to meet you"
 }
@@ -597,6 +678,9 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 | `-d, --output-dir` | 출력 디렉토리                 | `"./locales"`                   |
 | `-f, --format`     | 출력 형식 (json/csv)          | `"json"`                        |
 | `--force`          | Force 모드 (기존 번역 덮어씀) | `false` (새 키만 추가)          |
+| `--flat`           | legacy flat 구조 사용         | -                               |
+| `--no-types`       | 타입 자동 생성 생략           | -                               |
+| `--strict-types`   | 누락/빈 번역을 오류로 처리    | -                               |
 | `--dry-run`        | 실제 파일 생성 없이 미리보기  | -                               |
 | `-h, --help`       | 도움말 표시                   | -                               |
 
@@ -617,7 +701,7 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 1. **초기화**: `npx i18n-sheets init`으로 프로젝트 설정
 2. **개발**: 한국어로 하드코딩하여 개발
 3. **변환**: `npx i18n-wrapper`로 t() 함수 래핑
-4. **추출**: `npx i18n-extractor`로 번역 키를 en.json, ko.json에 추출
+4. **추출**: `npx i18n-extractor`로 namespace JSON, `locales/index.ts`, 타입 생성
 5. **번역**: 영어 번역 추가
 6. **배포**: 다국어 지원 완료
 
@@ -650,8 +734,8 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 
 ## 관련 패키지
 
-- `i18nexus-core` - React 컴포넌트와 훅
-- `i18nexus` - 전체 toolkit (Google Sheets 연동 포함)
+- `i18nexus` - React 컴포넌트와 훅
+- `i18nexus-tools` - 전체 toolkit (Google Sheets 연동 포함)
 
 ## 라이센스
 

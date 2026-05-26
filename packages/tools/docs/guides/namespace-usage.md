@@ -14,12 +14,12 @@
 // ❌ 문제: t 변수명이 중복됨
 function MyComponent() {
   const { t } = useTranslation("dashboard");
-  const { t } = useTranslation("constant");  // 에러: 't' is already declared
-  const { t } = useTranslation("common");    // 에러: 't' is already declared
+  const { t } = useTranslation("constant"); // 에러: 't' is already declared
+  const { t } = useTranslation("common"); // 에러: 't' is already declared
 
   return (
     <div>
-      <h1>{t("title")}</h1>  // 어떤 t를 사용하는지 불명확
+      <h1>{t("title")}</h1> // 어떤 t를 사용하는지 불명확
     </div>
   );
 }
@@ -31,22 +31,12 @@ function MyComponent() {
 
 **가장 권장하는 방법**은 여러 네임스페이스를 사용하는 대신, **기본 네임스페이스와 폴백을 설정**하는 것입니다.
 
-#### i18next 폴백 설정
+#### i18nexus 폴백 설정
 
-```typescript
-// i18n 설정
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-
-i18n
-  .use(initReactI18next)
-  .init({
-    defaultNS: 'dashboard',  // 기본 네임스페이스
-    fallbackNS: 'common',   // 폴백 네임스페이스
-    // 또는 여러 폴백
-    fallbackNS: ['common', 'constant'],
-    // ...
-  });
+```json
+{
+  "fallbackNamespace": "common"
+}
 ```
 
 #### 사용 예시
@@ -54,23 +44,24 @@ i18n
 ```tsx
 // ✅ 권장: 기본 네임스페이스만 사용, 폴백 자동 적용
 function MyComponent() {
-  const { t } = useTranslation("dashboard");  // 기본 네임스페이스
+  const { t } = useTranslation("dashboard"); // 기본 네임스페이스
 
   return (
     <div>
-      <h1>{t("title")}</h1>  // dashboard 네임스페이스에서 찾음
-      <button>{t("submit")}</button>  // dashboard에 없으면 common에서 찾음
-      <p>{t("description")}</p>  // dashboard에 없으면 common에서 찾음
+      <h1>{t("title")}</h1> // dashboard 네임스페이스에서 찾음
+      <button>{t("submit")}</button> // dashboard에 없으면 common에서 찾음
+      <p>{t("description")}</p> // dashboard에 없으면 common에서 찾음
     </div>
   );
 }
 ```
 
 **장점:**
+
 - ✅ 변수명 충돌 없음
 - ✅ Extractor와 완벽 호환 (`t`만 사용)
 - ✅ 코드가 간단함
-- ✅ i18next의 폴백 기능 활용
+- ✅ i18nexus의 폴백 기능 활용
 - ✅ 네임스페이스별 파일 분리 가능
 
 #### 폴백 동작 방식
@@ -93,9 +84,9 @@ function MyComponent() {
 ```tsx
 const { t } = useTranslation("dashboard");
 
-t("title");  // "대시보드" (dashboard에서 찾음)
-t("submit");  // "제출" (dashboard에 없어서 common에서 찾음)
-t("description");  // "설명" (dashboard에 없어서 common에서 찾음)
+t("title"); // "대시보드" (dashboard에서 찾음)
+t("submit"); // "제출" (dashboard에 없어서 common에서 찾음)
+t("description"); // "설명" (dashboard에 없어서 common에서 찾음)
 ```
 
 ### 방법 2: 하나의 네임스페이스로 통일
@@ -110,18 +101,20 @@ function MyComponent() {
   return (
     <div>
       <h1>{t("title")}</h1>
-      <p>{t("constant.description")}</p>  // 네임스페이스 대신 키에 포함
+      <p>{t("constant.description")}</p> // 네임스페이스 대신 키에 포함
     </div>
   );
 }
 ```
 
 **장점:**
+
 - ✅ 가장 간단함
 - ✅ Extractor와 완벽 호환
 - ✅ 변수명 충돌 없음
 
 **단점:**
+
 - ❌ 키 이름이 길어질 수 있음
 - ❌ 네임스페이스별 파일 분리 어려움
 
@@ -152,11 +145,13 @@ function MyComponent() {
 ```
 
 **장점:**
+
 - ✅ 각 컴포넌트에서 기본 `t` 사용 가능
 - ✅ Extractor와 호환
 - ✅ 컴포넌트 책임 분리
 
 **단점:**
+
 - ❌ 컴포넌트가 많아질 수 있음
 
 ### 방법 4: 별칭(Alias) 사용 (최후의 수단) ⚠️
@@ -174,15 +169,16 @@ function MyComponent() {
 
   return (
     <div>
-      <h1>{tDashboard("title")}</h1>  // ✅ 추출됨
-      <p>{tConstant("description")}</p>  // ❌ 추출 안 됨!
-      <button>{tCommon("submit")}</button>  // ❌ 추출 안 됨!
+      <h1>{tDashboard("title")}</h1> // ✅ 추출됨
+      <p>{tConstant("description")}</p> // ❌ 추출 안 됨!
+      <button>{tCommon("submit")}</button> // ❌ 추출 안 됨!
     </div>
   );
 }
 ```
 
 **단점:**
+
 - ❌ Extractor가 별칭을 인식하지 못함
 - ❌ 코드가 복잡해짐
 - ❌ 변수명 관리 필요
@@ -260,8 +256,8 @@ function ContactForm() {
 ```tsx
 // 서버 컴포넌트에서도 동일하게 적용
 async function ServerComponent() {
-  const { t: tDashboard } = await getServerTranslation("dashboard");
-  const { t: tConstant } = await getServerTranslation("constant");
+  const { t: tDashboard } = await getTranslation("dashboard");
+  const { t: tConstant } = await getTranslation("constant");
 
   return (
     <div>
@@ -281,7 +277,7 @@ async function ServerComponent() {
 ```tsx
 // i18n-wrapper가 자동 생성
 function Component() {
-  const { t } = useTranslation();  // 기본 네임스페이스
+  const { t } = useTranslation(); // 기본 네임스페이스
   return <div>{t("안녕하세요")}</div>;
 }
 ```
@@ -294,7 +290,7 @@ function Component() {
 // ❌ 문제: extractor가 추출하지 못함
 function Component() {
   const { t: tConstant } = useTranslation("constant");
-  return <button>{tConstant("submit")}</button>;  // 추출 안 됨!
+  return <button>{tConstant("submit")}</button>; // 추출 안 됨!
 }
 ```
 
@@ -302,30 +298,29 @@ function Component() {
 
 #### 1. 폴백 네임스페이스 설정 (가장 권장) ⭐
 
-i18next 설정에서 폴백 네임스페이스를 설정하고, 기본 네임스페이스만 사용합니다.
+i18nexus 설정에서 폴백 네임스페이스를 설정하고, 기본 네임스페이스만 사용합니다.
 
-```typescript
-// i18n 설정
-i18n.init({
-  defaultNS: 'dashboard',
-  fallbackNS: 'common',  // 또는 ['common', 'constant']
-});
+```json
+{
+  "fallbackNamespace": "common"
+}
 ```
 
 ```tsx
 // ✅ 권장: 기본 네임스페이스만 사용
 function Component() {
-  const { t } = useTranslation("dashboard");  // 기본 네임스페이스
+  const { t } = useTranslation("dashboard"); // 기본 네임스페이스
   return (
     <div>
-      <h1>{t("title")}</h1>  // dashboard에서 찾음
-      <button>{t("submit")}</button>  // dashboard에 없으면 common에서 찾음
+      <h1>{t("title")}</h1> // dashboard에서 찾음
+      <button>{t("submit")}</button> // dashboard에 없으면 common에서 찾음
     </div>
   );
 }
 ```
 
 **장점:**
+
 - ✅ Extractor와 완벽 호환
 - ✅ 변수명 충돌 없음
 - ✅ 코드가 간단함
@@ -340,13 +335,13 @@ function Component() {
 // components/DashboardContent.tsx
 function DashboardContent() {
   const { t } = useTranslation("dashboard");
-  return <h1>{t("title")}</h1>;  // 추출됨
+  return <h1>{t("title")}</h1>; // 추출됨
 }
 
 // components/ConstantContent.tsx
 function ConstantContent() {
   const { t } = useTranslation("constant");
-  return <button>{t("submit")}</button>;  // 추출됨
+  return <button>{t("submit")}</button>; // 추출됨
 }
 ```
 
@@ -357,12 +352,12 @@ function ConstantContent() {
 ```tsx
 // ⚠️ 주의: extractor가 추출하지 못함
 function Component() {
-  const { t } = useTranslation("dashboard");  // i18n-wrapper가 생성
-  const { t: tConstant } = useTranslation("constant");  // 수동 추가
+  const { t } = useTranslation("dashboard"); // i18n-wrapper가 생성
+  const { t: tConstant } = useTranslation("constant"); // 수동 추가
   return (
     <div>
-      <p>{t("안녕하세요")}</p>  {/* ✅ 추출됨 */}
-      <button>{tConstant("submit")}</button>  {/* ❌ 추출 안 됨 */}
+      <p>{t("안녕하세요")}</p> {/* ✅ 추출됨 */}
+      <button>{tConstant("submit")}</button> {/* ❌ 추출 안 됨 */}
     </div>
   );
 }
@@ -383,12 +378,12 @@ function Component() {
 ```tsx
 // 향후 버전에서 자동 생성될 코드
 function Component() {
-  const { t } = useTranslation("dashboard");  // 기본 네임스페이스
-  const { t: tConstant } = useTranslation("constant");  // 자동으로 별칭 생성
+  const { t } = useTranslation("dashboard"); // 기본 네임스페이스
+  const { t: tConstant } = useTranslation("constant"); // 자동으로 별칭 생성
   return (
     <div>
       <h1>{t("title")}</h1>
-      <button>{tConstant("submit")}</button>  // extractor가 추출 가능
+      <button>{tConstant("submit")}</button> // extractor가 추출 가능
     </div>
   );
 }
@@ -400,34 +395,33 @@ function Component() {
 
 **여러 네임스페이스를 사용하는 대신, 폴백을 설정하는 것이 가장 좋습니다.**
 
-```typescript
-// i18n 설정
-i18n.init({
-  defaultNS: 'dashboard',
-  fallbackNS: ['common', 'constant'],  // 여러 폴백 가능
-});
+```json
+{
+  "fallbackNamespace": "common"
+}
 ```
 
 ```tsx
 // ✅ 권장: 기본 네임스페이스만 사용
 function Component() {
   const { t } = useTranslation("dashboard");
-  
+
   return (
     <div>
-      <h1>{t("title")}</h1>  // dashboard에서 찾음
-      <button>{t("submit")}</button>  // dashboard → common → constant 순서로 찾음
+      <h1>{t("title")}</h1> // dashboard에서 찾음
+      <button>{t("submit")}</button> // dashboard → common 순서로 찾음
     </div>
   );
 }
 ```
 
 **장점:**
+
 - ✅ Extractor와 완벽 호환
 - ✅ 변수명 충돌 없음
 - ✅ 코드가 간단함
 - ✅ 네임스페이스별 파일 분리 가능
-- ✅ i18next의 표준 기능 활용
+- ✅ i18nexus의 단일 fallback 네임스페이스와 호환
 
 ### 2. 네임스페이스 구조 설계
 
@@ -444,7 +438,7 @@ locales/
 
 ```typescript
 // 각 페이지/컴포넌트에서
-const { t } = useTranslation("dashboard");  // dashboard + common + constant 자동 폴백
+const { t } = useTranslation("dashboard"); // dashboard + common 자동 폴백
 ```
 
 ### 3. 네임스페이스별 파일 분리
@@ -480,10 +474,11 @@ function Component() {
 ```
 
 **대신:**
+
 ```tsx
 // ✅ 권장 패턴
 function Component() {
-  const { t } = useTranslation("dashboard");  // 폴백으로 common, constant 자동 사용
+  const { t } = useTranslation("dashboard"); // 폴백으로 common 자동 사용
   // ...
 }
 ```
@@ -494,43 +489,35 @@ function Component() {
 
 A: **아니요. 폴백 네임스페이스를 설정하는 것이 더 좋습니다.**
 
-```typescript
-// ✅ 권장: 폴백 설정
-i18n.init({
-  defaultNS: 'dashboard',
-  fallbackNS: ['common', 'constant'],
-});
+```json
+{
+  "fallbackNamespace": "common"
+}
+```
 
+```tsx
 // 사용
-const { t } = useTranslation("dashboard");  // dashboard → common → constant 순서로 찾음
+const { t } = useTranslation("dashboard"); // dashboard → common 순서로 찾음
 ```
 
 ### Q: 폴백 네임스페이스는 어떻게 설정하나요?
 
-A: i18next 초기화 시 `fallbackNS` 옵션을 설정합니다.
+A: `i18nexus.config.json` 또는 `I18nProvider`의 `fallbackNamespace` 옵션을 설정합니다.
 
-```typescript
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-
-i18n
-  .use(initReactI18next)
-  .init({
-    defaultNS: 'dashboard',
-    fallbackNS: 'common',  // 단일 폴백
-    // 또는
-    fallbackNS: ['common', 'constant'],  // 여러 폴백
-  });
+```json
+{
+  "fallbackNamespace": "common"
+}
 ```
 
 ### Q: 서버 컴포넌트에서도 폴백이 작동하나요?
 
-A: 네, `getServerTranslation`에서도 폴백이 작동합니다.
+A: 네, `getTranslation`에서도 폴백이 작동합니다.
 
 ```tsx
 async function ServerComponent() {
-  const { t } = await getServerTranslation("dashboard");  // 폴백 자동 적용
-  return <div>{t("submit")}</div>;  // dashboard → common 순서로 찾음
+  const { t } = await getTranslation("dashboard"); // 폴백 자동 적용
+  return <div>{t("submit")}</div>; // dashboard → common 순서로 찾음
 }
 ```
 
@@ -554,4 +541,3 @@ A: **가능한 한 피하세요.** 다음 경우에만 고려하세요:
 
 **작성 일자**: 2025년 11월  
 **관련 이슈**: 네임스페이스 사용 시 변수명 충돌
-

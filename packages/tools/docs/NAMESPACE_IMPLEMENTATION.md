@@ -315,12 +315,15 @@ import dashboard from "./locales/dashboard/ko.json"; // 대시보드만
 ```tsx
 // 서버 컴포넌트 자동 감지
 export default async function ServerPage() {
-  const { t } = await getServerTranslation(); // 자동 변환
+  const { t } = await getTranslation(); // 자동 변환
   return <h1>{t("서버 렌더링")}</h1>;
 }
+```
 
+```tsx
 // 클라이언트 컴포넌트
-("use client");
+"use client";
+
 export default function ClientPage() {
   const { t } = useTranslation(); // 자동 변환
   return <h1>{t("클라이언트 렌더링")}</h1>;
@@ -416,7 +419,7 @@ npx i18n-extractor
 
 ### 관련 패키지
 
-- **i18nexus-core**: React 컴포넌트 및 훅
+- **i18nexus**: React 컴포넌트 및 훅
 - **i18nexus**: Google Sheets 통합이 포함된 완전한 툴킷
 
 ### 지원 및 커뮤니티
@@ -675,7 +678,7 @@ function inferNamespace(filePath: string, config: NamespacingConfig): string {
   const cleanedPath = removeFrameworkPatterns(
     relativePath,
     config.framework,
-    config.ignorePatterns
+    config.ignorePatterns,
   );
   // 예: "dashboard/Chart.tsx"
 
@@ -699,7 +702,7 @@ function validateNamespace(
   filePath: string,
   code: string,
   expectedNamespace: string,
-  config: NamespacingConfig
+  config: NamespacingConfig,
 ): { valid: boolean; error?: string } {
   // 1. 파일 내 useTranslation 호출 찾기
   const useTranslationCalls = findUseTranslationCalls(filePath, code);
@@ -730,7 +733,7 @@ function validateNamespace(
 ```typescript
 function writeOutputFileWithNamespace(
   data: any,
-  config: OutputConfig & { namespace: string }
+  config: OutputConfig & { namespace: string },
 ): void {
   // 1. 네임스페이스 디렉토리 생성
   const namespaceDir = path.join(config.outputDir, config.namespace);

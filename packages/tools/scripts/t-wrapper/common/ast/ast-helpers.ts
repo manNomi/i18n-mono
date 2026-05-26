@@ -142,7 +142,7 @@ export function hasTranslationFunctionCall(
 /**
  * 번역 함수 바인딩 생성 (공통 함수)
  * client 모드: const { t } = useTranslation("namespace")
- * server 모드: const { t } = await getServerTranslation("namespace")
+ * server 모드: const { t } = await getTranslation("namespace")
  *
  * @param mode - "client" 또는 "server"
  * @param serverFnName - 서버 번역 함수명 (server 모드일 때만)
@@ -166,7 +166,7 @@ export function createTranslationBinding(
   const args: t.Expression[] = namespace ? [t.stringLiteral(namespace)] : [];
 
   if (mode === "server") {
-    // 서버 모드: await getServerTranslation("namespace")
+    // 서버 모드: await getTranslation("namespace")
     const fnName = serverFnName || STRING_CONSTANTS.GET_SERVER_TRANSLATION;
     callExpression = t.awaitExpression(
       t.callExpression(t.identifier(fnName), args),

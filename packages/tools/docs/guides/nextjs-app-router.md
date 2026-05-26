@@ -28,13 +28,14 @@ Edit `i18nexus.config.json`:
   "sourcePattern": "app/**/*.{ts,tsx}",
   "translationImportSource": "i18nexus",
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 **Mode Options:**
+
 - `"client"`: 모든 컴포넌트에 `useTranslation` + `'use client'` 적용
-- `"server"`: 모든 컴포넌트에 `getServerTranslation` + `async/await` 적용
+- `"server"`: 모든 컴포넌트에 `getTranslation` + `async/await` 적용
 - 생략 시 기본값 (기존 동작 유지)
 
 ## 🏗️ Project Structure
@@ -83,7 +84,8 @@ export default async function RootLayout({
               { code: "ko", name: "한국어", flag: "🇰🇷" },
               { code: "en", name: "English", flag: "🇺🇸" },
             ],
-          }}>
+          }}
+        >
           {children}
         </I18nProvider>
       </body>
@@ -103,11 +105,12 @@ i18nexus-tools는 `mode` 옵션으로 변환 전략을 명시적으로 제어합
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 **Before:**
+
 ```tsx
 // app/page.tsx
 export default function HomePage() {
@@ -121,12 +124,13 @@ export default function HomePage() {
 ```
 
 **After:**
+
 ```tsx
 // app/page.tsx
-import { getServerTranslation } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function HomePage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return (
     <div>
@@ -148,6 +152,7 @@ export default async function HomePage() {
 ```
 
 **Before:**
+
 ```tsx
 // app/components/LanguageSwitcher.tsx
 export default function LanguageSwitcher() {
@@ -156,6 +161,7 @@ export default function LanguageSwitcher() {
 ```
 
 **After:**
+
 ```tsx
 // app/components/LanguageSwitcher.tsx
 "use client";
@@ -174,7 +180,8 @@ export default function LanguageSwitcher() {
       </p>
       <select
         value={currentLanguage}
-        onChange={(e) => changeLanguage(e.target.value)}>
+        onChange={(e) => changeLanguage(e.target.value)}
+      >
         {availableLanguages.map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.flag} {lang.name}
@@ -210,7 +217,7 @@ export default function AboutPage() {
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
@@ -224,10 +231,10 @@ npx i18n-wrapper
 
 ```tsx
 // app/about/page.tsx
-import { getServerTranslation } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function AboutPage() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return (
     <div>
@@ -311,14 +318,14 @@ Generated files:
 
 ```tsx
 // app/blog/[slug]/page.tsx
-import { getServerTranslation } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function BlogPost({
   params,
 }: {
   params: { slug: string };
 }) {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return (
     <div>
@@ -334,10 +341,10 @@ export default async function BlogPost({
 ```tsx
 // app/api/hello/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerTranslation } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export async function GET(request: NextRequest) {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
 
   return NextResponse.json({
     message: t("안녕하세요"),
@@ -382,25 +389,27 @@ export const config = {
   "sourcePattern": "app/**/*.{ts,tsx}",
   "translationImportSource": "i18nexus",
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 ### Mode Options
 
 **Server Mode (권장):**
+
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 - 모든 컴포넌트에 `async` 함수로 변환
-- `getServerTranslation()` 호출 자동 주입
+- `getTranslation()` 호출 자동 주입
 - 서버 컴포넌트에 적합
 
 **Client Mode:**
+
 ```json
 {
   "mode": "client"
@@ -435,6 +444,7 @@ export const config = {
 ### Mode Selection
 
 **Server Mode를 사용하는 경우:**
+
 - Next.js App Router의 서버 컴포넌트
 - 정적 콘텐츠
 - SEO가 중요한 페이지
@@ -443,11 +453,12 @@ export const config = {
 ```json
 {
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation"
+  "serverTranslationFunction": "getTranslation"
 }
 ```
 
 **Client Mode를 사용하는 경우:**
+
 - 인터랙티브 요소
 - 상태 관리가 필요한 컴포넌트
 - 이벤트 핸들러가 있는 컴포넌트
@@ -463,18 +474,21 @@ export const config = {
 프로젝트 전체를 한 번에 처리하려면:
 
 1. **Server 컴포넌트 처리:**
+
 ```bash
 # server 모드로 실행
 npx i18n-wrapper -p "app/**/*.tsx"
 ```
 
 2. **Client 컴포넌트 처리:**
+
 ```json
 // i18nexus.config.json 임시 변경
 {
   "mode": "client"
 }
 ```
+
 ```bash
 # client 모드로 실행
 npx i18n-wrapper -p "app/components/**/*.tsx"

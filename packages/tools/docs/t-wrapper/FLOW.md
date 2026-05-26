@@ -18,7 +18,7 @@
 4. AST 변환
     ├─ 한국어 문자열 → t() 호출
     ├─ useTranslation 훅 추가 (클라이언트)
-    ├─ getServerTranslation 바인딩 (서버)
+    ├─ getTranslation 바인딩 (서버)
     └─ use client 디렉티브 추가 (Next.js)
     ↓
 5. 코드 생성
@@ -117,8 +117,8 @@ functionBody.body.unshift(hook);
 
 ```typescript
 // translation-wrapper.ts
-const binding = createServerTBinding("getServerTranslation");
-// const { t } = await getServerTranslation();
+const binding = createServerTBinding("getTranslation");
+// const { t } = await getTranslation();
 
 // 함수 본문 시작 부분에 추가
 functionBody.body.unshift(binding);
@@ -221,7 +221,7 @@ function Component() {
 
 ```tsx
 async function Component() {
-  const { t } = await getServerTranslation();
+  const { t } = await getTranslation();
   return <div>{t("안녕하세요")}</div>;
 }
 ```
@@ -231,7 +231,7 @@ async function Component() {
 ### `mode`
 
 - `"client"`: `useTranslation()` 훅 사용
-- `"server"`: `getServerTranslation()` 함수 사용
+- `"server"`: `getTranslation()` 함수 사용
 
 ### `framework`
 

@@ -10,7 +10,10 @@ export class PerformanceReporter {
   /**
    * 성능 리포트를 콘솔에 출력
    */
-  static printReport(report: PerformanceReport, verbose: boolean = false): void {
+  static printReport(
+    report: PerformanceReport,
+    verbose: boolean = false,
+  ): void {
     if (report.metrics.length === 0) {
       console.log("📊 Performance monitoring disabled or no metrics collected");
       return;
@@ -21,7 +24,7 @@ export class PerformanceReporter {
     console.log(`⏱️  Total Duration: ${report.totalDuration.toFixed(2)}ms`);
     console.log(`📈 Total Operations: ${report.summary.totalOperations}`);
     console.log(
-      `📊 Average Duration: ${report.summary.averageDuration.toFixed(2)}ms`
+      `📊 Average Duration: ${report.summary.averageDuration.toFixed(2)}ms`,
     );
     console.log(`🐌 Slowest: ${report.summary.slowestOperation}`);
     console.log(`⚡ Fastest: ${report.summary.fastestOperation}`);
@@ -32,18 +35,18 @@ export class PerformanceReporter {
 
       // 느린 순서로 정렬
       const sorted = [...report.metrics].sort(
-        (a, b) => b.duration - a.duration
+        (a, b) => b.duration - a.duration,
       );
 
       sorted.forEach((metric, index) => {
-        const memMB = metric.memoryUsage
-          ? (metric.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)
+        const memoryLabel = metric.memoryUsage
+          ? `${(metric.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)}MB`
           : "N/A";
 
         console.log(
           `${index + 1}. ${metric.name.padEnd(40)} ` +
             `${metric.duration.toFixed(2)}ms`.padStart(12) +
-            ` | Memory: ${memMB}MB`
+            ` | Memory: ${memoryLabel}`,
         );
 
         if (metric.metadata && Object.keys(metric.metadata).length > 0) {
@@ -59,12 +62,12 @@ export class PerformanceReporter {
    * 단일 메트릭을 콘솔에 출력
    */
   static printMetric(metric: PerformanceMetric): void {
-    const memMB = metric.memoryUsage
-      ? (metric.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)
+    const memoryLabel = metric.memoryUsage
+      ? `${(metric.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)}MB`
       : "N/A";
 
     console.log(
-      `📊 ${metric.name}: ${metric.duration.toFixed(2)}ms | Memory: ${memMB}MB`
+      `📊 ${metric.name}: ${metric.duration.toFixed(2)}ms | Memory: ${memoryLabel}`,
     );
 
     if (metric.metadata && Object.keys(metric.metadata).length > 0) {
@@ -89,7 +92,7 @@ export class PerformanceReporter {
     report: PerformanceReport,
     processedFiles: string[],
     totalTime: number,
-    title: string = "Completed"
+    title: string = "Completed",
   ): void {
     const metrics = report.metrics;
     const processedCount = processedFiles.length || 1;
@@ -123,7 +126,7 @@ export class PerformanceReporter {
         const filePath = m.metadata?.filePath || "unknown";
         const fileName = filePath.split("/").pop();
         console.log(
-          `   ${index + 1}. ${fileName?.padEnd(40)} ${m.duration.toFixed(1)}ms`
+          `   ${index + 1}. ${fileName?.padEnd(40)} ${m.duration.toFixed(1)}ms`,
         );
       });
     }
@@ -131,4 +134,3 @@ export class PerformanceReporter {
     console.log("═".repeat(80) + "\n");
   }
 }
-

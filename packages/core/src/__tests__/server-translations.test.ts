@@ -2,7 +2,14 @@
  * Tests for server-side getServerTranslations with type safety
  */
 
-import { getServerTranslations } from "../utils/server";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import {
+  getServerTranslations,
+  getTranslation,
+  invalidateCache,
+} from "../utils/server";
 
 describe("getServerTranslations (Type-Safe)", () => {
   const translations = {
@@ -102,5 +109,83 @@ describe("getServerTranslations (Type-Safe)", () => {
 
     expect(dict.welcome).toBe("Welcome");
     expect(dict.home).toBe("Home");
+  });
+
+  it("should merge flat namespace maps with later namespaces overriding earlier ones", () => {
+    const dict = getServerTranslations("en", {
+      common: {
+        save: "Save",
+        title: "Common title",
+      },
+      dashboard: {
+        title: "Dashboard title",
+      },
+    });
+
+    expect(dict.save).toBe("Save");
+    expect(dict.title).toBe("Dashboard title");
+  });
+});
+
+describe("getTranslation server namespace fallback", () => {
+  const originalCwd = process.cwd();
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "i18nexus-server-"));
+    process.chdir(tempDir);
+    invalidateCache();
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    invalidateCache();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it("should merge fallback namespace keys and let requested namespace override them", async () => {
+    fs.mkdirSync(path.join(tempDir, "locales", "common"), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(tempDir, "locales", "dashboard"), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(tempDir, "i18nexus.config.json"),
+      JSON.stringify({
+        localesDir: "./locales",
+        defaultLanguage: "en",
+        fallbackNamespace: "common",
+      }),
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "locales", "common", "en.json"),
+      JSON.stringify({
+        save: "Save",
+        title: "Common title",
+      }),
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "locales", "dashboard", "en.json"),
+      JSON.stringify({
+        title: "Dashboard title",
+      }),
+    );
+
+    const { t, dict, translations, namespace } = await getTranslation(
+      "dashboard",
+      {
+        language: "en",
+        disableCache: true,
+      },
+    );
+
+    expect(namespace).toBe("dashboard");
+    expect(t("save")).toBe("Save");
+    expect(t("title")).toBe("Dashboard title");
+    expect(dict.save).toBe("Save");
+    expect(dict.title).toBe("Dashboard title");
+    expect(translations.common.save).toBe("Save");
+    expect(translations.dashboard.title).toBe("Dashboard title");
   });
 });

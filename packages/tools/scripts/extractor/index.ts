@@ -34,6 +34,10 @@ import {
   validateNamespace,
   NamespacingConfig,
 } from "./namespace-inference";
+import {
+  generateTypeDefinitions,
+  readExtractedTranslations,
+} from "./type-generator";
 
 export interface ExtractorConfig {
   sourcePattern?: string;
@@ -49,9 +53,13 @@ export interface ExtractorConfig {
   outputFormat?: "json" | "csv";
   languages?: string[]; // 언어 목록 추가
   force?: boolean; // force 모드: 기존 값을 덮어씀
+  useNamespaceStructure?: boolean; // core v4 권장 네임스페이스 폴더 구조 사용
   namespacing?: NamespacingConfig; // 네임스페이스 자동화 설정
   skipValidation?: boolean; // 검증 스킵 (마이그레이션 시 사용)
   namespaceStrategy?: "full" | "page-based" | "single"; // 네임스페이스 전략
+  generateTypes?: boolean; // 추출 후 타입 자동 생성
+  typesOutputPath?: string; // 타입 출력 경로
+  strictTypeGeneration?: boolean; // 타입 생성 시 엄격 검증
 }
 
 const DEFAULT_CONFIG: Required<ExtractorConfig> = {
@@ -68,6 +76,7 @@ const DEFAULT_CONFIG: Required<ExtractorConfig> = {
   fallbackNamespace: COMMON_DEFAULTS.fallbackNamespace,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
   force: false, // 기본값: 기존 번역 유지
+  useNamespaceStructure: true,
   namespaceStrategy: "full", // 기본값: full
   namespacing: {
     enabled: false, // 기본값: false (레거시 모드)
@@ -77,6 +86,9 @@ const DEFAULT_CONFIG: Required<ExtractorConfig> = {
     ignorePatterns: [],
   },
   skipValidation: false,
+  generateTypes: true,
+  typesOutputPath: "",
+  strictTypeGeneration: false,
 };
 
 // ExtractedKey는 key-extractor.ts에서 import
@@ -90,15 +102,50 @@ export class TranslationExtractor {
   constructor(config: Partial<ExtractorConfig> = {}) {
     // 프로젝트 config에서 namespacing 설정 로드
     const projectConfig = loadConfig();
-    const namespacingConfig = config.namespacing || projectConfig.namespacing;
     const translationImportSource =
       config.translationImportSource || projectConfig.translationImportSource;
+    const useNamespaceStructure =
+      config.useNamespaceStructure ??
+      projectConfig.useNamespaceStructure ??
+      (translationImportSource || DEFAULT_CONFIG.translationImportSource) ===
+        "i18nexus";
+    const fallbackNamespace =
+      config.fallbackNamespace ||
+      projectConfig.fallbackNamespace ||
+      DEFAULT_CONFIG.fallbackNamespace;
+    const explicitNamespacingConfig =
+      config.namespacing || projectConfig.namespacing;
+    const namespacingConfig = explicitNamespacingConfig
+      ? {
+          ...DEFAULT_CONFIG.namespacing,
+          defaultNamespace: fallbackNamespace,
+          ...explicitNamespacingConfig,
+        }
+      : {
+          ...DEFAULT_CONFIG.namespacing,
+          enabled: useNamespaceStructure,
+          defaultNamespace: fallbackNamespace,
+        };
 
     this.config = {
       ...DEFAULT_CONFIG,
       ...config,
-      namespacing: namespacingConfig || DEFAULT_CONFIG.namespacing,
+      fallbackNamespace,
+      useNamespaceStructure,
+      namespacing: namespacingConfig,
       skipValidation: config.skipValidation || false,
+      namespaceStrategy:
+        config.namespaceStrategy ??
+        projectConfig.namespaceStrategy ??
+        DEFAULT_CONFIG.namespaceStrategy,
+      generateTypes:
+        config.generateTypes ?? projectConfig.generateTypes ?? true,
+      typesOutputPath:
+        config.typesOutputPath || projectConfig.typesOutputPath || "",
+      strictTypeGeneration:
+        config.strictTypeGeneration ??
+        projectConfig.strictTypeGeneration ??
+        false,
       translationImportSource:
         translationImportSource || DEFAULT_CONFIG.translationImportSource,
     };
@@ -282,10 +329,12 @@ export class TranslationExtractor {
         }
 
         // 모든 네임스페이스를 통합하는 index.ts 파일 생성
-        // i18nexus 사용시에만 생성 (translationImportSource가 "i18nexus"일 때)
+        // i18nexus + JSON 출력일 때만 생성 (CSV 출력에는 런타임 JSON이 없음)
         const namespaces = Array.from(this.namespaceKeys.keys());
         const useI18nexusLibrary =
           (this.config.translationImportSource || "i18nexus") === "i18nexus";
+        const canGenerateRuntimeEntrypoint =
+          useI18nexusLibrary && this.config.outputFormat === "json";
 
         generateNamespaceIndexFile(
           namespaces,
@@ -293,16 +342,12 @@ export class TranslationExtractor {
           this.config.outputDir,
           this.config.namespacing.defaultNamespace,
           this.config.dryRun,
-          useI18nexusLibrary,
+          canGenerateRuntimeEntrypoint,
+          this.config.generateTypes,
+          this.getTypesOutputPath(),
         );
 
-        // TypeScript 타입 정의 파일 생성은 별도 명령어로 분리됨
-        if (!this.config.dryRun) {
-          console.log(
-            "\n💡 Tip: Generate TypeScript type definitions by running:",
-          );
-          console.log("   npx i18n-type");
-        }
+        this.generateTypesIfEnabled(canGenerateRuntimeEntrypoint);
       } else {
         // 레거시 모드: 기존 방식 유지
         const keys = Array.from(this.extractedKeys.values());
@@ -325,11 +370,54 @@ export class TranslationExtractor {
           force: this.config.force,
           dryRun: this.config.dryRun,
         });
+
+        this.generateTypesIfEnabled(
+          (this.config.translationImportSource || "i18nexus") === "i18nexus",
+        );
       }
     } catch (error) {
       console.error(CONSOLE_MESSAGES.EXTRACTION_FAILED, error);
       throw error;
     }
+  }
+
+  private generateTypesIfEnabled(useI18nexusLibrary: boolean): void {
+    if (
+      this.config.dryRun ||
+      !this.config.generateTypes ||
+      !useI18nexusLibrary
+    ) {
+      if (!this.config.dryRun && !this.config.generateTypes) {
+        console.log("\n💡 Tip: Generate types later with:");
+        console.log("   npx i18n-type");
+      }
+      return;
+    }
+
+    const outputPath = this.getTypesOutputPath();
+    const translations = readExtractedTranslations(this.config.outputDir, {
+      fallbackNamespace: this.config.fallbackNamespace,
+    });
+
+    if (Object.keys(translations).length === 0) {
+      console.warn("⚠️  No translation files found. Skipping type generation.");
+      return;
+    }
+
+    generateTypeDefinitions(translations, {
+      outputPath,
+      fallbackNamespace: this.config.fallbackNamespace,
+      translationImportSource: this.config.translationImportSource,
+      includeJsDocs: true,
+      strictValidation: this.config.strictTypeGeneration,
+    });
+  }
+
+  private getTypesOutputPath(): string {
+    return (
+      this.config.typesOutputPath ||
+      pathLib.join(this.config.outputDir, "types", "i18nexus.d.ts")
+    );
   }
 }
 

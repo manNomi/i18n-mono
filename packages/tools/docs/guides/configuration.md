@@ -30,7 +30,7 @@ i18nexus.config.ts > i18nexus.config.js > i18nexus.config.json
   "sourcePattern": "src/**/*.{js,jsx,ts,tsx}",
   "translationImportSource": "i18nexus",
   "mode": "server",
-  "serverTranslationFunction": "getServerTranslation",
+  "serverTranslationFunction": "getTranslation",
   "googleSheets": {
     "spreadsheetId": "",
     "credentialsPath": "./credentials.json",

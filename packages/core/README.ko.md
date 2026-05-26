@@ -67,11 +67,11 @@ npx i18n-sheets init
 
 ```tsx
 // app/layout.tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 import { I18nProvider } from "i18nexus";
 
 export default async function RootLayout({ children }) {
-  const { language } = await createServerI18n({
+  const { language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja"],
     defaultLanguage: "ko",
   });
@@ -91,10 +91,10 @@ export default async function RootLayout({ children }) {
 **Server Component:**
 
 ```tsx
-import { createServerI18n } from "i18nexus/server";
+import { getTranslation } from "i18nexus/server";
 
 export default async function Page() {
-  const { t, language } = await createServerI18n({
+  const { t, language } = await getTranslation("common", {
     availableLanguages: ["en", "ko", "ja"],
     defaultLanguage: "ko",
   });
@@ -266,7 +266,7 @@ function HomePage() {
 
 ### 📚 API 레퍼런스
 
-- [서버 사이드 API](./docs/api/server.md) - `createServerI18n`, `getServerLanguage` 등
+- [서버 사이드 API](./docs/api/server.md) - `getTranslation`, `getServerLanguage` 등
 - [클라이언트 사이드 API](./docs/api/client.md) - `useTranslation`, `useLanguageSwitcher` 등
 - [TypeScript 타입](./docs/api/types.md) - 완전한 타입 정의
 
@@ -287,7 +287,7 @@ function HomePage() {
 `Accept-Language` 헤더에서 사용자의 브라우저 언어를 자동으로 감지합니다:
 
 ```tsx
-const { t, language } = await createServerI18n({
+const { t, language } = await getTranslation("common", {
   availableLanguages: ["en", "ko", "ja", "zh"],
   defaultLanguage: "ko",
 });

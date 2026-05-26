@@ -495,7 +495,7 @@ Create a configuration file in your project root:
   "languages": ["en", "ko"],
   "defaultLanguage": "en",
   "localesDir": "./locales",
-  "fallbackNamespace": ["common", "constant"]
+  "fallbackNamespace": "common"
 }
 ```
 
@@ -506,7 +506,7 @@ Create a configuration file in your project root:
 - `languages` - List of supported languages
 - `defaultLanguage` - Default language
 - `localesDir` - Directory for translation files
-- `fallbackNamespace` - Namespaces to load by default
+- `fallbackNamespace` - Default namespace used for fallback keys
 
 ## 🛠️ CLI Tools
 

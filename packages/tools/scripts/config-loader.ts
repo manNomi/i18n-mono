@@ -16,7 +16,7 @@ export interface I18nexusConfig {
   /**
    * 번역 함수 모드 (기능적 선택)
    * - 'client': useTranslation() 사용
-   * - 'server': getServerTranslation() 사용
+   * - 'server': getTranslation() 사용
    * - 생략 시 기존 판단 로직 유지
    *
    * ⚠️ 주의: 이 옵션은 번역 함수 선택만 담당합니다.
@@ -35,7 +35,7 @@ export interface I18nexusConfig {
   framework?: "nextjs" | "react" | "other";
   /**
    * 서버 변환 시 사용할 함수명 (라이브러리별 상이)
-   * 예: "getServerTranslation", "getServerT" 등
+   * 예: "getTranslation", "getServerT" 등
    */
   serverTranslationFunction?: string;
   googleSheets?: {
@@ -106,6 +106,17 @@ export interface I18nexusConfig {
    * @default false
    */
   strictTypeGeneration?: boolean;
+  /**
+   * i18n-extractor 실행 후 TypeScript 타입을 자동 생성할지 여부
+   * @default true
+   */
+  generateTypes?: boolean;
+  /**
+   * 생성할 타입 정의 파일 경로
+   * 상대 경로는 프로젝트 루트 기준으로 해석됩니다.
+   * @default "{localesDir}/types/i18nexus.d.ts"
+   */
+  typesOutputPath?: string;
 }
 
 const DEFAULT_CONFIG: I18nexusConfig = {
@@ -115,7 +126,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
   mode: undefined,
-  serverTranslationFunction: "getServerTranslation",
+  serverTranslationFunction: "getTranslation",
   googleSheets: {
     spreadsheetId: GOOGLE_SHEETS_DEFAULTS.spreadsheetId,
     credentialsPath: GOOGLE_SHEETS_DEFAULTS.credentialsPath,
@@ -123,6 +134,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   },
   useNamespaceStructure: true,
   strictTypeGeneration: false,
+  generateTypes: true,
 };
 
 function isHelpOrVersionCommand(): boolean {

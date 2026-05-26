@@ -123,9 +123,9 @@ const text = "hello";`;
       expect(found).toBe(true);
     });
 
-    it("getServerTranslation 호출이 있으면 true를 반환해야 함", () => {
+    it("getTranslation 호출이 있으면 true를 반환해야 함", () => {
       const code = `async function Component() {
-        const { t } = await getServerTranslation();
+        const { t } = await getTranslation();
         return <div>{t("hello")}</div>;
       }`;
       const ast = parse(code, {
@@ -136,7 +136,7 @@ const text = "hello";`;
       traverse(ast, {
         FunctionDeclaration(path) {
           const body = path.get("body");
-          if (hasTranslationFunctionCall(body, "getServerTranslation")) {
+          if (hasTranslationFunctionCall(body, "getTranslation")) {
             found = true;
           }
         },
@@ -218,8 +218,8 @@ const text = "hello";`;
       }
     });
 
-    it("server 모드로 getServerTranslation 바인딩을 생성해야 함", () => {
-      const decl = createTranslationBinding("server", "getServerTranslation");
+    it("server 모드로 getTranslation 바인딩을 생성해야 함", () => {
+      const decl = createTranslationBinding("server", "getTranslation");
 
       // 변수 선언 타입 확인
       expect(decl.type).toBe("VariableDeclaration");
@@ -236,7 +236,7 @@ const text = "hello";`;
         if (t.isCallExpression(declarator.init.argument)) {
           const callExpr = declarator.init.argument;
           if (t.isIdentifier(callExpr.callee)) {
-            expect(callExpr.callee.name).toBe("getServerTranslation");
+            expect(callExpr.callee.name).toBe("getTranslation");
           }
           expect(callExpr.arguments).toHaveLength(0);
         }
