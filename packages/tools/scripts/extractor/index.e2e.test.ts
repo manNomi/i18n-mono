@@ -339,4 +339,48 @@ export function App() {
     expect(typesContent).toContain('readonly "home"');
     expect(typesContent).toContain('readonly "title": string');
   });
+
+  it("custom typesOutputPath를 locales index의 타입 import에 반영해야 함", async () => {
+    const previousCwd = process.cwd();
+    const testFile = path.join(tempDir, "src", "App.tsx");
+    fs.mkdirSync(path.dirname(testFile), { recursive: true });
+    fs.writeFileSync(
+      testFile,
+      `import { useTranslation } from "i18nexus";
+
+export function App() {
+  const { t } = useTranslation("home");
+  return <h1>{t("title")}</h1>;
+}`,
+      "utf-8",
+    );
+
+    try {
+      process.chdir(tempDir);
+
+      await runTranslationExtractor({
+        sourcePattern: "src/**/*.tsx",
+        outputDir: "locales",
+        outputFormat: "json",
+        languages: ["ko", "en"],
+        fallbackNamespace: "common",
+        translationImportSource: "i18nexus",
+        typesOutputPath: "./src/i18n/types.d.ts",
+      });
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const indexFile = path.join(tempDir, "locales", "index.ts");
+    const typesFile = path.join(tempDir, "src", "i18n", "types.d.ts");
+
+    expect(fs.existsSync(indexFile)).toBe(true);
+    expect(fs.existsSync(typesFile)).toBe(true);
+
+    const indexContent = fs.readFileSync(indexFile, "utf-8");
+    expect(indexContent).toContain(
+      'import type { I18nexusGeneratedTranslations } from "../src/i18n/types";',
+    );
+    expect(indexContent).not.toContain("./types/i18nexus");
+  });
 });

@@ -187,6 +187,27 @@ describe("output-generator", () => {
       );
     });
 
+    it("custom typesOutputPath를 기준으로 타입 import 경로를 생성해야 함", () => {
+      const typesOutputPath = path.join(tempDir, "src", "i18n", "types.d.ts");
+      generateNamespaceIndexFile(
+        ["common"],
+        ["en", "ko"],
+        tempDir,
+        "common",
+        false,
+        true,
+        true,
+        typesOutputPath,
+      );
+
+      const content = readFileContent(path.join(tempDir, "index.ts"));
+
+      expect(content).toContain(
+        'import type { I18nexusGeneratedTranslations } from "./src/i18n/types"',
+      );
+      expect(content).not.toContain("./types/i18nexus");
+    });
+
     it("타입 생성을 끄면 loose translation shape를 생성해야 함", () => {
       generateNamespaceIndexFile(
         ["common"],

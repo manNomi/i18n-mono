@@ -116,6 +116,7 @@ export function generateNamespaceIndexFile(
   dryRun: boolean,
   useI18nexusLibrary: boolean = true,
   useGeneratedTypes: boolean = true,
+  typesOutputPath?: string,
 ): void {
   // useI18nexusLibrary가 false이면 index.ts를 생성하지 않음
   if (!useI18nexusLibrary) {
@@ -143,8 +144,12 @@ export function generateNamespaceIndexFile(
   const namespacesLiteral = sortedNamespaces
     .map((namespace) => `"${namespace}"`)
     .join(", ");
+  const generatedTypeImportPath = getGeneratedTypeImportPath(
+    outputDir,
+    typesOutputPath,
+  );
   const generatedTypeImport = useGeneratedTypes
-    ? `import type { I18nexusGeneratedTranslations } from "./types/i18nexus";\n`
+    ? `import type { I18nexusGeneratedTranslations } from "${generatedTypeImportPath}";\n`
     : "";
   const generatedTypeFallback = useGeneratedTypes
     ? ""
@@ -198,6 +203,25 @@ export const useTranslation = i18n.useTranslation;
     fs.writeFileSync(indexPath, content, "utf-8");
     console.log(`✅ Generated core v4 locale entrypoint`);
   }
+}
+
+function getGeneratedTypeImportPath(
+  outputDir: string,
+  typesOutputPath?: string,
+): string {
+  const effectiveTypesOutputPath =
+    typesOutputPath && typesOutputPath.trim().length > 0
+      ? typesOutputPath
+      : pathLib.join(outputDir, "types", "i18nexus.d.ts");
+  const relativePath = pathLib
+    .relative(
+      pathLib.resolve(outputDir),
+      pathLib.resolve(effectiveTypesOutputPath),
+    )
+    .replace(/\\/g, "/")
+    .replace(/(\.d)?\.tsx?$/, "");
+
+  return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
 }
 
 /**

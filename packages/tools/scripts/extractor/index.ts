@@ -344,6 +344,7 @@ export class TranslationExtractor {
           this.config.dryRun,
           canGenerateRuntimeEntrypoint,
           this.config.generateTypes,
+          this.getTypesOutputPath(),
         );
 
         this.generateTypesIfEnabled(canGenerateRuntimeEntrypoint);
@@ -393,9 +394,7 @@ export class TranslationExtractor {
       return;
     }
 
-    const outputPath =
-      this.config.typesOutputPath ||
-      pathLib.join(this.config.outputDir, "types", "i18nexus.d.ts");
+    const outputPath = this.getTypesOutputPath();
     const translations = readExtractedTranslations(this.config.outputDir, {
       fallbackNamespace: this.config.fallbackNamespace,
     });
@@ -412,6 +411,13 @@ export class TranslationExtractor {
       includeJsDocs: true,
       strictValidation: this.config.strictTypeGeneration,
     });
+  }
+
+  private getTypesOutputPath(): string {
+    return (
+      this.config.typesOutputPath ||
+      pathLib.join(this.config.outputDir, "types", "i18nexus.d.ts")
+    );
   }
 }
 
