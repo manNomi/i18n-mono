@@ -8,6 +8,7 @@ import { execFileSync } from "child_process";
 import {
   generateTypeDefinitions,
   ExtractedTranslations,
+  readExtractedTranslations,
   TypeGeneratorConfig,
   validateTranslationsForTypeGeneration,
 } from "./type-generator";
@@ -615,6 +616,80 @@ void run();
 
       const issues = validateTranslationsForTypeGeneration(extractedData);
       expect(issues).toHaveLength(0);
+    });
+  });
+
+  describe("readExtractedTranslations", () => {
+    let consoleWarnSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+    });
+
+    afterEach(() => {
+      consoleWarnSpy.mockRestore();
+    });
+
+    it("should return an empty map when locales directory is missing", () => {
+      const missingDir = path.join(tempDir, "missing-locales");
+
+      expect(readExtractedTranslations(missingDir)).toEqual({});
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `⚠️  Locales directory not found: ${missingDir}`,
+      );
+    });
+
+    it("should read legacy root language files into the fallback namespace", () => {
+      fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, "locales", "en.json"),
+        JSON.stringify({ save: "Save" }),
+      );
+      fs.writeFileSync(
+        path.join(tempDir, "locales", "ko.json"),
+        JSON.stringify({ save: "저장" }),
+      );
+
+      expect(
+        readExtractedTranslations(path.join(tempDir, "locales"), {
+          fallbackNamespace: "base",
+        }),
+      ).toEqual({
+        base: {
+          en: { save: "Save" },
+          ko: { save: "저장" },
+        },
+      });
+    });
+
+    it("should read namespaced locale folders and skip types folders", () => {
+      const localesDir = path.join(tempDir, "locales");
+      fs.mkdirSync(path.join(localesDir, "home"), { recursive: true });
+      fs.mkdirSync(path.join(localesDir, "types"), { recursive: true });
+      fs.writeFileSync(
+        path.join(localesDir, "home", "en.json"),
+        JSON.stringify({ title: "Home" }),
+      );
+      fs.writeFileSync(path.join(localesDir, "types", "en.json"), "{}");
+
+      expect(readExtractedTranslations(localesDir)).toEqual({
+        home: {
+          en: { title: "Home" },
+        },
+      });
+    });
+
+    it("should warn on invalid namespace JSON and remove empty namespaces", () => {
+      const localesDir = path.join(tempDir, "locales");
+      const brokenFile = path.join(localesDir, "broken", "en.json");
+      fs.mkdirSync(path.dirname(brokenFile), { recursive: true });
+      fs.writeFileSync(brokenFile, "invalid json");
+
+      expect(readExtractedTranslations(localesDir)).toEqual({});
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `⚠️  Failed to read ${brokenFile}:`,
+        expect.any(SyntaxError),
+      );
     });
   });
 });
