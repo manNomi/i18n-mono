@@ -106,6 +106,17 @@ export interface I18nexusConfig {
    * @default false
    */
   strictTypeGeneration?: boolean;
+  /**
+   * i18n-extractor 실행 후 TypeScript 타입을 자동 생성할지 여부
+   * @default true
+   */
+  generateTypes?: boolean;
+  /**
+   * 생성할 타입 정의 파일 경로
+   * 상대 경로는 프로젝트 루트 기준으로 해석됩니다.
+   * @default "{localesDir}/types/i18nexus.d.ts"
+   */
+  typesOutputPath?: string;
 }
 
 const DEFAULT_CONFIG: I18nexusConfig = {
@@ -123,6 +134,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   },
   useNamespaceStructure: true,
   strictTypeGeneration: false,
+  generateTypes: true,
 };
 
 function isHelpOrVersionCommand(): boolean {

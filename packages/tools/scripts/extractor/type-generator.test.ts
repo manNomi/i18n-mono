@@ -64,6 +64,9 @@ describe("Type Generator", () => {
       expect(content).toContain("CommonKeys");
       expect(content).toContain("welcome.title");
       expect(content).toContain("button.save");
+      expect(content).toContain("export type I18nexusGeneratedTranslations");
+      expect(content).toContain('readonly "common"');
+      expect(content).toContain('readonly "en"');
     });
 
     it("should include fallback namespace keys in all namespaces", () => {
@@ -107,9 +110,7 @@ describe("Type Generator", () => {
       );
     });
 
-    it("should extract interpolation variables", () => {
-      // Note: The type generator extracts variables from KEY NAMES, not values
-      // So we need to include variables in the key names for this test
+    it("should extract interpolation variables from translation values", () => {
       const extractedData: ExtractedTranslations = {
         common: {
           en: {
@@ -132,16 +133,31 @@ describe("Type Generator", () => {
 
       const content = readFileContent(outputPath);
 
-      // The type generator currently extracts variables from KEY NAMES
-      // Since our keys don't have variables in their names, we check for the keys themselves
-      // and verify the type structure is generated correctly
       expect(content).toContain("CommonKeys");
       expect(content).toContain("days.remaining");
       expect(content).toContain("user.greeting");
+      expect(content).toContain("declare type CommonKeyVariables");
+      expect(content).toContain('"days.remaining": "totalDays"');
+      expect(content).toContain('"user.greeting": "name"');
+    });
 
-      // If variables were in key names, CommonKeyVariables would be generated
-      // For now, just verify the basic structure is correct
-      expect(content).toContain("declare type");
+    it("should include keys from all languages when translations are incomplete", () => {
+      const extractedData: ExtractedTranslations = {
+        common: {
+          en: { save: "Save" },
+          ko: { save: "저장", cancel: "취소" },
+        },
+      };
+
+      generateTypeDefinitions(extractedData, {
+        outputPath,
+        translationImportSource: "i18nexus",
+      });
+
+      const content = readFileContent(outputPath);
+
+      expect(content).toContain('"cancel" | "save"');
+      expect(content).toContain('readonly "cancel": string');
     });
 
     it("should generate module augmentation", () => {

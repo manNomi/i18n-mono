@@ -171,6 +171,7 @@ export function generateTypeDefinitions(
 
   // Step 2: Generate type definition content
   const typeContent = generateTypeContent(
+    extractedData,
     namespaceKeys,
     namespaceKeysWithInfo,
     config,
@@ -233,18 +234,20 @@ function extractNamespaceKeys(
   const namespaceKeys: Record<string, string[]> = {};
 
   for (const [namespace, languages] of Object.entries(extractedData)) {
-    // Get keys from the first available language
-    const firstLanguage =
-      languages["ko"] || languages["en"] || Object.values(languages)[0];
+    const keys = new Set<string>();
 
-    if (!firstLanguage) {
+    for (const translationMap of Object.values(languages)) {
+      for (const key of Object.keys(translationMap)) {
+        keys.add(key);
+      }
+    }
+
+    if (keys.size === 0) {
       console.warn(`⚠️  No translations found for namespace: ${namespace}`);
       continue;
     }
 
-    // Extract all keys (sorted for consistency)
-    const keys = Object.keys(firstLanguage).sort();
-    namespaceKeys[namespace] = keys;
+    namespaceKeys[namespace] = [...keys].sort();
   }
 
   return namespaceKeys;
@@ -259,19 +262,25 @@ function extractNamespaceKeysWithInfo(
   const result: Record<string, KeyInfo[]> = {};
 
   for (const [namespace, languages] of Object.entries(extractedData)) {
-    // Get keys from the first available language
-    const firstLanguage =
-      languages["ko"] || languages["en"] || Object.values(languages)[0];
+    const variablesByKey = new Map<string, Set<string>>();
 
-    if (!firstLanguage) {
-      continue;
+    for (const translationMap of Object.values(languages)) {
+      for (const [key, value] of Object.entries(translationMap)) {
+        const variables = variablesByKey.get(key) || new Set<string>();
+        if (typeof value === "string") {
+          extractInterpolationVariables(value).forEach((variable) =>
+            variables.add(variable),
+          );
+        }
+        variablesByKey.set(key, variables);
+      }
     }
 
-    result[namespace] = Object.keys(firstLanguage)
+    result[namespace] = [...variablesByKey.entries()]
       .sort()
-      .map((key) => ({
+      .map(([key, variables]) => ({
         key,
-        variables: extractInterpolationVariables(key),
+        variables: [...variables].sort(),
       }));
   }
 
@@ -282,6 +291,7 @@ function extractNamespaceKeysWithInfo(
  * Generate the actual TypeScript type definition content
  */
 function generateTypeContent(
+  extractedData: ExtractedTranslations,
   namespaceKeys: Record<string, string[]>,
   namespaceKeysWithInfo: Record<string, KeyInfo[]>,
   config: TypeGeneratorConfig,
@@ -366,6 +376,8 @@ function generateTypeContent(
     content += `  "${namespace}": ${typeName};\n`;
   }
   content += `};\n\n`;
+
+  content += generateTranslationsShapeType(extractedData, namespaceKeys);
 
   // Module augmentation
   const importSource = config.translationImportSource || "i18nexus";
@@ -542,6 +554,49 @@ function generateTypeContent(
   content += `}\n`;
 
   return content;
+}
+
+function generateTranslationsShapeType(
+  extractedData: ExtractedTranslations,
+  namespaceKeys: Record<string, string[]>,
+): string {
+  const sortedNamespaces = Object.keys(namespaceKeys).sort();
+  const lines: string[] = [
+    `/**`,
+    ` * Translation shape for createI18n().`,
+    ` *`,
+    ` * Generated locale entrypoints can use this type without importing JSON at runtime:`,
+    ` * createI18n({} as I18nexusGeneratedTranslations, { fallbackNamespace: "common" })`,
+    ` */`,
+    `export type I18nexusGeneratedTranslations = {`,
+  ];
+
+  for (const namespace of sortedNamespaces) {
+    const languageMaps = extractedData[namespace] || {};
+    const sortedLanguages = Object.keys(languageMaps).sort();
+    lines.push(`  readonly "${escapeString(namespace)}": {`);
+
+    for (const language of sortedLanguages) {
+      const keys = Object.keys(languageMaps[language] || {}).sort();
+      lines.push(`    readonly "${escapeString(language)}": {`);
+
+      for (const key of keys) {
+        lines.push(`      readonly "${escapeString(key)}": string;`);
+      }
+
+      lines.push(`    };`);
+    }
+
+    lines.push(`  };`);
+  }
+
+  lines.push(`};`, ``);
+  lines.push(
+    `export type I18nexusGeneratedNamespace = keyof I18nexusGeneratedTranslations & string;`,
+    ``,
+  );
+
+  return lines.join("\n");
 }
 
 /**

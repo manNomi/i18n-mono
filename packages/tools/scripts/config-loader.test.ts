@@ -100,6 +100,28 @@ describe("config-loader", () => {
     });
   });
 
+  describe("core v4 type generation defaults", () => {
+    it("generateTypes는 기본적으로 true", () => {
+      const config = loadConfig(testConfigPath, { silent: true });
+
+      expect(config.generateTypes).toBe(true);
+      expect(config.typesOutputPath).toBeUndefined();
+    });
+
+    it("generateTypes와 typesOutputPath 설정을 로드해야 함", () => {
+      const testConfig = {
+        generateTypes: false,
+        typesOutputPath: "./src/i18n/types.d.ts",
+      };
+
+      fs.writeFileSync(testConfigPath, JSON.stringify(testConfig));
+
+      const config = loadConfig(testConfigPath, { silent: true });
+      expect(config.generateTypes).toBe(false);
+      expect(config.typesOutputPath).toBe("./src/i18n/types.d.ts");
+    });
+  });
+
   describe("CLI help output", () => {
     it("설정 파일이 없어도 일반 실행에서는 안내 로그를 출력", () => {
       const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});

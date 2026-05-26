@@ -168,6 +168,42 @@ describe("output-generator", () => {
       const content = readFileContent(indexPath);
       expect(content).toContain("loadNamespace");
       expect(content).toContain("fallbackNamespace");
+      expect(content).toContain("import { createI18n, type NamespaceLoader }");
+      expect(content).toContain(
+        'import type { I18nexusGeneratedTranslations } from "./types/i18nexus"',
+      );
+      expect(content).toContain(
+        'export const languages = ["en", "ko"] as const',
+      );
+      expect(content).toContain(
+        'export const namespaces = ["common", "dashboard"] as const',
+      );
+      expect(content).toContain("export const i18n = createI18n");
+      expect(content).toContain(
+        "export const I18nProvider = i18n.I18nProvider",
+      );
+      expect(content).toContain(
+        "export const useTranslation = i18n.useTranslation",
+      );
+    });
+
+    it("타입 생성을 끄면 loose translation shape를 생성해야 함", () => {
+      generateNamespaceIndexFile(
+        ["common"],
+        ["en", "ko"],
+        tempDir,
+        "common",
+        false,
+        true,
+        false,
+      );
+
+      const content = readFileContent(path.join(tempDir, "index.ts"));
+
+      expect(content).not.toContain("./types/i18nexus");
+      expect(content).toContain(
+        "type I18nexusGeneratedTranslations = Record<AppNamespace",
+      );
     });
 
     it("useI18nexusLibrary가 false이면 파일을 생성하지 않아야 함", () => {

@@ -6,6 +6,14 @@ Complete reference for the `i18n-extractor` command.
 
 The `i18n-extractor` command extracts translation keys from `t()` function calls and generates/updates translation files for multiple languages.
 
+In tools v3, the default JSON output is aligned with `i18nexus@4`:
+
+- `locales/[namespace]/[language].json`
+- `locales/index.ts` with `loadNamespace`, `fallbackNamespace`, and typed `createI18n`
+- `locales/types/i18nexus.d.ts`
+
+Use `--flat` only when you intentionally need the legacy `locales/en.json` and `locales/ko.json` layout.
+
 ## Basic Usage
 
 ```bash
@@ -120,14 +128,62 @@ npx i18n-extractor --force
 }
 ```
 
-### `--csv`
+### `--flat`
+
+Use the legacy flat file layout instead of the core v4 namespace layout.
+
+**Usage:**
+
+```bash
+npx i18n-extractor --flat
+```
+
+**Output:**
+
+```
+locales/
+├── en.json
+└── ko.json
+```
+
+### `--no-types`
+
+Skip automatic type generation after extraction.
+
+**Usage:**
+
+```bash
+npx i18n-extractor --no-types
+```
+
+### `--types-output <path>`
+
+Write generated TypeScript declarations to a custom path.
+
+**Usage:**
+
+```bash
+npx i18n-extractor --types-output src/i18n/generated.d.ts
+```
+
+### `--strict-types`
+
+Fail type generation when a language file is missing keys or contains empty values.
+
+**Usage:**
+
+```bash
+npx i18n-extractor --strict-types
+```
+
+### `-f, --format csv`
 
 Export translations as CSV format instead of JSON.
 
 **Usage:**
 
 ```bash
-npx i18n-extractor --csv
+npx i18n-extractor -f csv -o translations.csv
 ```
 
 **Output:**
@@ -174,7 +230,7 @@ Finds all `t()` function calls:
 ```tsx
 // Source file
 function Welcome() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   return (
     <div>
       <h1>{t("안녕하세요")}</h1>
@@ -193,16 +249,16 @@ Identifies translation keys:
 
 ### 3. Generates Translation Files
 
-Creates or updates language files:
+Creates or updates namespace language files:
 
 ```json
-// locales/ko.json
+// locales/common/ko.json
 {
   "안녕하세요": "안녕하세요",
   "환영합니다": "환영합니다"
 }
 
-// locales/en.json
+// locales/common/en.json
 {
   "안녕하세요": "",
   "환영합니다": ""
@@ -224,9 +280,13 @@ Creates or updates language files:
 
 ```
 locales/
-├── en.json
-├── ko.json
-└── ja.json
+├── common/
+│   ├── en.json
+│   ├── ko.json
+│   └── ja.json
+├── index.ts
+└── types/
+    └── i18nexus.d.ts
 ```
 
 ### CSV Format
@@ -355,7 +415,7 @@ npx i18n-wrapper
 npx i18n-extractor
 
 # 3. Add translations manually
-# Edit locales/en.json
+# Edit locales/[namespace]/en.json
 
 # 4. Test application
 npm run dev
@@ -381,7 +441,7 @@ npx i18n-extractor --force
 
 ```bash
 # 1. Extract to CSV
-npx i18n-extractor --csv
+npx i18n-extractor -f csv -o translations.csv
 
 # 2. Upload to Google Sheets
 npx i18n-upload
@@ -399,12 +459,14 @@ npx i18n-download
 npx i18n-extractor -l "en,ko,ja,zh,es,fr"
 
 # Result:
-# locales/en.json
-# locales/ko.json
-# locales/ja.json
-# locales/zh.json
-# locales/es.json
-# locales/fr.json
+# locales/common/en.json
+# locales/common/ko.json
+# locales/common/ja.json
+# locales/common/zh.json
+# locales/common/es.json
+# locales/common/fr.json
+# locales/index.ts
+# locales/types/i18nexus.d.ts
 ```
 
 ## Configuration
@@ -490,7 +552,7 @@ Skipping empty key...
 ### File Write Errors
 
 ```bash
-❌ Failed to write: locales/en.json
+❌ Failed to write: locales/common/en.json
 Permission denied
 ```
 
@@ -627,8 +689,10 @@ $ npx i18n-extractor
 📝 Found 150 translation keys
 
 📁 Writing translation files:
-✅ locales/ko.json (150 keys)
-✅ locales/en.json (150 keys, 45 new)
+✅ locales/common/ko.json (150 keys)
+✅ locales/common/en.json (150 keys, 45 new)
+✅ locales/index.ts
+✅ locales/types/i18nexus.d.ts
 
 📊 Summary:
 - Total keys: 150
@@ -639,7 +703,7 @@ $ npx i18n-extractor
 
 ### Generated Files
 
-**locales/ko.json:**
+**locales/common/ko.json:**
 
 ```json
 {
@@ -649,7 +713,7 @@ $ npx i18n-extractor
 }
 ```
 
-**locales/en.json:**
+**locales/common/en.json:**
 
 ```json
 {

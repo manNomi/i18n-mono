@@ -101,7 +101,7 @@ describe("TranslationExtractor", () => {
         appDir,
         "page.tsx",
         `
-        const { t } = useTranslation();
+        const { t } = useTranslation("dashboard");
         t("dashboard.title");
       `,
       );
@@ -319,7 +319,7 @@ describe("TranslationExtractor", () => {
       createTempFile(
         appDir,
         "page.tsx",
-        `const { t } = useTranslation(); t("key");`,
+        `const { t } = useTranslation("dashboard"); t("key");`,
       );
 
       const extractor = new TranslationExtractor({

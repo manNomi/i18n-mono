@@ -8,6 +8,15 @@ import * as path from "path";
 import * as os from "os";
 import { runTranslationExtractor } from "./index";
 
+const legacyFlatConfig = {
+  useNamespaceStructure: false,
+  namespacing: {
+    enabled: false,
+    basePath: "",
+    defaultNamespace: "common",
+  },
+} as const;
+
 describe("extractor E2E", () => {
   let tempDir: string;
   let outputDir: string;
@@ -33,6 +42,7 @@ describe("extractor E2E", () => {
     fs.writeFileSync(testFile, originalContent, "utf-8");
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -61,6 +71,7 @@ describe("extractor E2E", () => {
     fs.writeFileSync(testFile, originalContent, "utf-8");
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -84,6 +95,7 @@ describe("extractor E2E", () => {
     fs.writeFileSync(testFile, originalContent, "utf-8");
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -100,10 +112,19 @@ describe("extractor E2E", () => {
     const file1 = path.join(tempDir, "Component1.tsx");
     const file2 = path.join(tempDir, "Component2.tsx");
 
-    fs.writeFileSync(file1, `function Component1() { return <div>{t("key1")}</div>; }`, "utf-8");
-    fs.writeFileSync(file2, `function Component2() { return <div>{t("key2")}</div>; }`, "utf-8");
+    fs.writeFileSync(
+      file1,
+      `function Component1() { return <div>{t("key1")}</div>; }`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      file2,
+      `function Component2() { return <div>{t("key2")}</div>; }`,
+      "utf-8",
+    );
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -132,6 +153,7 @@ describe("extractor E2E", () => {
     fs.writeFileSync(testFile, originalContent, "utf-8");
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -158,6 +180,7 @@ describe("extractor E2E", () => {
     fs.writeFileSync(testFile, originalContent, "utf-8");
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "csv",
@@ -181,17 +204,18 @@ describe("extractor E2E", () => {
     fs.writeFileSync(
       koFile,
       JSON.stringify({ existing: "기존 키" }, null, 2),
-      "utf-8"
+      "utf-8",
     );
 
     // 새 키가 있는 파일 생성
     fs.writeFileSync(
       testFile,
       `function Component() { return <div>{t("new.key")}</div>; }`,
-      "utf-8"
+      "utf-8",
     );
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -217,17 +241,18 @@ describe("extractor E2E", () => {
     fs.writeFileSync(
       koFile,
       JSON.stringify({ old: "기존 값" }, null, 2),
-      "utf-8"
+      "utf-8",
     );
 
     // 새 키만 있는 파일 생성
     fs.writeFileSync(
       testFile,
       `function Component() { return <div>{t("new")}</div>; }`,
-      "utf-8"
+      "utf-8",
     );
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -248,10 +273,11 @@ describe("extractor E2E", () => {
     fs.writeFileSync(
       testFile,
       `function Component() { return <div>{t("hello")}</div>; }`,
-      "utf-8"
+      "utf-8",
     );
 
     await runTranslationExtractor({
+      ...legacyFlatConfig,
       sourcePattern: path.join(tempDir, "**/*.tsx"),
       outputDir,
       outputFormat: "json",
@@ -266,5 +292,51 @@ describe("extractor E2E", () => {
     expect(indexContent).toContain("import en from");
     expect(indexContent).toContain("export const translations");
   });
-});
 
+  it("core v4 기본 흐름으로 namespace entrypoint와 타입을 생성해야 함", async () => {
+    const testFile = path.join(tempDir, "src", "App.tsx");
+    fs.mkdirSync(path.dirname(testFile), { recursive: true });
+    fs.writeFileSync(
+      testFile,
+      `import { useTranslation } from "i18nexus";
+
+export function App() {
+  const { t } = useTranslation("home");
+  return <h1>{t("title")}</h1>;
+}`,
+      "utf-8",
+    );
+
+    await runTranslationExtractor({
+      sourcePattern: path.join(tempDir, "src", "**/*.tsx"),
+      outputDir,
+      outputFormat: "json",
+      languages: ["ko", "en"],
+      fallbackNamespace: "common",
+      translationImportSource: "i18nexus",
+    });
+
+    const homeKoFile = path.join(outputDir, "home", "ko.json");
+    const indexFile = path.join(outputDir, "index.ts");
+    const typesFile = path.join(outputDir, "types", "i18nexus.d.ts");
+
+    expect(fs.existsSync(homeKoFile)).toBe(true);
+    expect(fs.existsSync(indexFile)).toBe(true);
+    expect(fs.existsSync(typesFile)).toBe(true);
+
+    const indexContent = fs.readFileSync(indexFile, "utf-8");
+    expect(indexContent).toContain(
+      'import { createI18n, type NamespaceLoader } from "i18nexus";',
+    );
+    expect(indexContent).toContain(
+      'export const namespaces = ["home"] as const;',
+    );
+    expect(indexContent).toContain("export const loadNamespace");
+    expect(indexContent).toContain("export const i18n = createI18n");
+
+    const typesContent = fs.readFileSync(typesFile, "utf-8");
+    expect(typesContent).toContain("export type I18nexusGeneratedTranslations");
+    expect(typesContent).toContain('readonly "home"');
+    expect(typesContent).toContain('readonly "title": string');
+  });
+});

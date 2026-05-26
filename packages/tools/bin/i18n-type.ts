@@ -44,7 +44,8 @@ Config (i18nexus.config.json):
     "localesDir": "./locales",
     "fallbackNamespace": "common",  // Keys from fallback namespace are included in all namespaces
     "translationImportSource": "i18nexus",
-    "strictTypeGeneration": false    // When true, fail if any key/value is missing
+    "strictTypeGeneration": false,   // When true, fail if any key/value is missing
+    "typesOutputPath": "./locales/types/i18nexus.d.ts"
   }
 
 Output:
@@ -73,7 +74,9 @@ Note: Run this command after extracting translations or modifying JSON files.
     }
 
     // 2. 타입 정의 생성
-    const outputPath = path.join(config.localesDir, "types", "i18nexus.d.ts");
+    const outputPath =
+      config.typesOutputPath ||
+      path.join(config.localesDir, "types", "i18nexus.d.ts");
     generateTypeDefinitions(translations, {
       outputPath,
       fallbackNamespace: config.fallbackNamespace,
