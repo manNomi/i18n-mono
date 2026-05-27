@@ -145,6 +145,7 @@ Options:
 **Features:**
 
 - Scans codebase for `t()` function calls
+- Resolves safe static constants used as keys (`const key = "title"; t(key)`, `t(keys.title)`, `keys.map((item) => t(item))`)
 - Extracts translation keys and variables
 - Generates `locales/index.ts` with `loadNamespace`, `fallbackNamespace`, and typed `createI18n`
 - Generates `locales/types/i18nexus.d.ts` by default

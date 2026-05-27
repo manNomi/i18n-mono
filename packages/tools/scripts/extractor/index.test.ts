@@ -90,6 +90,48 @@ describe("TranslationExtractor", () => {
       const koFile = path.join(outputDir, "ko.json");
       expect(fileExists(koFile)).toBe(true);
     });
+
+    it("const 배열 map 콜백의 t(item) 키를 추출해야 함", async () => {
+      createTempFile(
+        sourceDir,
+        "page.tsx",
+        `
+        import { useTranslation } from "i18nexus";
+
+        const navKeys = ["nav.home", "nav.settings"] as const;
+
+        export default function Page() {
+          const { t } = useTranslation();
+          return (
+            <nav>
+              {navKeys.map((item) => (
+                <span key={item}>{t(item)}</span>
+              ))}
+            </nav>
+          );
+        }
+      `,
+      );
+
+      const extractor = new TranslationExtractor({
+        sourcePattern: path.join(sourceDir, "**/*.tsx"),
+        outputDir,
+        languages: ["en", "ko"],
+        namespacing: {
+          enabled: false,
+          basePath: "",
+          defaultNamespace: "common",
+        },
+        dryRun: false,
+      });
+
+      await extractor.extract();
+
+      const koFile = path.join(outputDir, "ko.json");
+      const data = readJsonFile(koFile);
+      expect(data["nav.home"]).toBeDefined();
+      expect(data["nav.settings"]).toBeDefined();
+    });
   });
 
   describe("네임스페이스 모드 (namespacing.enabled = true)", () => {

@@ -105,6 +105,55 @@ describe("i18n-extractor CLI E2E", () => {
       expect(koData).toHaveProperty("greeting");
       expect(koData).toHaveProperty("farewell");
     });
+
+    it("const 문자열/객체/배열 map에서 정적 번역 키를 추출해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            const titleKey = "home.title";
+            const labelKeys = {
+              subtitle: "home.subtitle",
+              cta: "home.cta",
+            } as const;
+            const navKeys = ["nav.home", "nav.settings"] as const;
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return (
+                <div>
+                  <h1>{t(titleKey)}</h1>
+                  <p>{t(labelKeys.subtitle)}</p>
+                  <button>{t(labelKeys["cta"])}</button>
+                  {navKeys.map((item) => (
+                    <span key={item}>{t(item)}</span>
+                  ))}
+                </div>
+              );
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir);
+
+      const result = await runCLICommand("i18n-extractor", [], projectDir);
+
+      if (result.exitCode !== 0) {
+        console.log("STDOUT:", result.stdout);
+        console.log("STDERR:", result.stderr);
+      }
+
+      expect(result.exitCode).toBe(0);
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+
+      expect(getValueByDotOrLiteral(koData, "home.title")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "home.subtitle")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "home.cta")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "nav.home")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "nav.settings")).toBeDefined();
+    });
   });
 
   describe("옵션 테스트", () => {

@@ -247,6 +247,35 @@ Identifies translation keys:
 - `"안녕하세요"`
 - `"환영합니다"`
 
+The extractor also resolves safe static constants when the value is visible in
+the same source file:
+
+```tsx
+const titleKey = "title";
+const labels = {
+  subtitle: "subtitle",
+  cta: "cta",
+} as const;
+const navKeys = ["nav.home", "nav.settings"] as const;
+
+function Home() {
+  const { t } = useTranslation("home");
+
+  return (
+    <>
+      {t(titleKey)}
+      {t(labels.subtitle)}
+      {navKeys.map((item) => (
+        <span key={item}>{t(item)}</span>
+      ))}
+    </>
+  );
+}
+```
+
+Dynamic values from functions, props, state, API data, or arrays mixed with
+dynamic entries are skipped to avoid false positives.
+
 ### 3. Generates Translation Files
 
 Creates or updates namespace language files:

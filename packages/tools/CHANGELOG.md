@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-05-27
+
+### ✨ Features
+
+- **Static constant key extraction**:
+  - `i18n-extractor` now resolves safe static constants used as translation keys.
+  - Supported patterns include `const key = "title"; t(key)`, const object members such as `t(keys.title)`, and const array iteration such as `keys.map((item) => t(item))`.
+  - Dynamic values from functions, props, state, API data, or arrays mixed with dynamic entries are intentionally skipped to avoid false positives.
+
 ## [3.0.0] - 2026-05-26
 
 ### ✨ Features

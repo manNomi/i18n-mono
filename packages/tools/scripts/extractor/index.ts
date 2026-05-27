@@ -207,8 +207,14 @@ export class TranslationExtractor {
             includeFilePaths: this.config.includeFilePaths,
             includeLineNumbers: this.config.includeLineNumbers,
           });
-          if (extractedKey) {
-            this.addExtractedKey(extractedKey, namespace);
+          const extractedKeys = Array.isArray(extractedKey)
+            ? extractedKey
+            : extractedKey
+              ? [extractedKey]
+              : [];
+
+          for (const key of extractedKeys) {
+            this.addExtractedKey(key, namespace);
           }
         },
       });
