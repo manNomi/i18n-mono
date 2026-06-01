@@ -76,6 +76,27 @@ npx i18n-extractor -l "en,ko,ja,zh,es,fr"
 npx i18n-extractor -l "en"
 ```
 
+### `--source-language <lang>`
+
+Language file that should receive extracted source strings for new keys.
+
+**Default:** `sourceLanguage` from config, or `defaultLanguage` when
+`sourceLanguage` is omitted.
+
+**Examples:**
+
+```bash
+# English-source app: put extracted source strings in en.json
+npx i18n-extractor --source-language en
+
+# Korean-source app: keep legacy Korean-source initialization
+npx i18n-extractor --source-language ko
+```
+
+With `--source-language en`, a newly extracted key such as `t("Dashboard")`
+initializes `en.json` with `"Dashboard"` and initializes target language files
+such as `ko.json` with `""`.
+
 ### `--force`
 
 Force mode - overwrites all existing translations.
@@ -176,6 +197,27 @@ Fail type generation when a language file is missing keys or contains empty valu
 npx i18n-extractor --strict-types
 ```
 
+### `--static-key-extraction <mode>`
+
+Controls how aggressively the extractor resolves static constants passed to
+`t(...)`.
+
+**Default:** `"safe"`
+
+**Modes:**
+
+- `off`: extract direct literals only, for example `t("home.title")`.
+- `safe`: extract direct literals, const string aliases, and explicit i18n key
+  containers such as `I18N_KEYS` or `HOME_TRANSLATION_KEYS`.
+- `aggressive`: extract any statically resolvable const object/array member.
+
+**Usage:**
+
+```bash
+npx i18n-extractor --static-key-extraction safe
+npx i18n-extractor --static-key-extraction aggressive
+```
+
 ### `-f, --format csv`
 
 Export translations as CSV format instead of JSON.
@@ -189,10 +231,10 @@ npx i18n-extractor -f csv -o translations.csv
 **Output:**
 
 ```csv
-Key,Korean,English
-안녕하세요,안녕하세요,
-환영합니다,환영합니다,
-감사합니다,감사합니다,
+Key,English,Korean
+안녕하세요,,안녕하세요
+환영합니다,,환영합니다
+감사합니다,,감사합니다
 ```
 
 ### `--dry-run`
@@ -247,16 +289,17 @@ Identifies translation keys:
 - `"안녕하세요"`
 - `"환영합니다"`
 
-The extractor also resolves safe static constants when the value is visible in
-the same source file:
+The extractor also resolves static constants according to
+`staticKeyExtraction`. The default `safe` mode only follows values that are
+clearly translation-key constants:
 
 ```tsx
 const titleKey = "title";
-const labels = {
+const HOME_I18N_KEYS = {
   subtitle: "subtitle",
   cta: "cta",
 } as const;
-const navKeys = ["nav.home", "nav.settings"] as const;
+const NAV_I18N_KEYS = ["nav.home", "nav.settings"] as const;
 
 function Home() {
   const { t } = useTranslation("home");
@@ -264,8 +307,8 @@ function Home() {
   return (
     <>
       {t(titleKey)}
-      {t(labels.subtitle)}
-      {navKeys.map((item) => (
+      {t(HOME_I18N_KEYS.subtitle)}
+      {NAV_I18N_KEYS.map((item) => (
         <span key={item}>{t(item)}</span>
       ))}
     </>
@@ -273,8 +316,32 @@ function Home() {
 }
 ```
 
-Dynamic values from functions, props, state, API data, or arrays mixed with
-dynamic entries are skipped to avoid false positives.
+General data objects are skipped in `safe` mode even when they are written as
+const object literals:
+
+```tsx
+const response = {
+  label: "home.title",
+} as const;
+
+t(response.label); // skipped in safe mode
+```
+
+Use `aggressive` only when your codebase intentionally stores translation keys
+in general const objects. Dynamic values from functions, props, state, API data,
+or arrays mixed with dynamic entries are always skipped to avoid false positives.
+
+| Pattern                                 | safe | aggressive |
+| --------------------------------------- | ---- | ---------- |
+| `t("home.title")`                       | yes  | yes        |
+| `const key = "home.title"; t(key)`      | yes  | yes        |
+| `t(I18N_KEYS.title)`                    | yes  | yes        |
+| `I18N_KEYS.map((key) => t(key))`        | yes  | yes        |
+| `t(response.label)` from a const object | no   | yes        |
+| `t(props.label)`                        | no   | no         |
+| `t(getKey())`                           | no   | no         |
+| ``t(`${namespace}.${key}`)``            | no   | no         |
+| array with dynamic entries              | no   | no         |
 
 ### 3. Generates Translation Files
 
@@ -321,9 +388,9 @@ locales/
 ### CSV Format
 
 ```csv
-Key,Korean,English,Japanese
-key1,value1,,,
-key2,value2,,,
+Key,English,Korean,Japanese
+key1,,value1,
+key2,,value2,
 ```
 
 **File:**
@@ -506,7 +573,16 @@ The extractor reads from `i18nexus.config.json`:
 {
   "languages": ["en", "ko"],
   "localesDir": "./locales",
-  "sourcePattern": "src/**/*.{ts,tsx}"
+  "sourcePattern": "src/**/*.{ts,tsx}",
+  "staticKeyExtraction": "safe",
+  "staticKeyContainerPatterns": [
+    "^I18N_KEYS$",
+    "_I18N_KEYS$",
+    "^TRANSLATION_KEYS$",
+    "_TRANSLATION_KEYS$",
+    "^translationKeys$",
+    "TranslationKeys$"
+  ]
 }
 ```
 
@@ -678,13 +754,14 @@ npx i18n-extractor
 
 **Solutions:**
 
-1. Check `defaultLanguage` in config
+1. Check `sourceLanguage` and `defaultLanguage` in config
 2. Verify language codes
 3. Re-extract with correct config
 
 ```json
 {
   "defaultLanguage": "ko",
+  "sourceLanguage": "ko",
   "languages": ["en", "ko"]
 }
 ```

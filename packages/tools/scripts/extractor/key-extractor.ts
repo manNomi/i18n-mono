@@ -15,14 +15,26 @@ export interface ExtractedKey {
   columnNumber?: number;
 }
 
+export type StaticKeyExtractionMode = "off" | "safe" | "aggressive";
+
 export interface ExtractorConfig {
   includeFilePaths?: boolean;
   includeLineNumbers?: boolean;
+  staticKeyExtraction?: StaticKeyExtractionMode;
+  staticKeyContainerPatterns?: string[];
 }
 
 type ExtractedKeyResult = ExtractedKey | ExtractedKey[] | null;
 
 const ITERABLE_CALLBACK_METHODS = new Set(["map", "forEach", "flatMap"]);
+const DEFAULT_STATIC_KEY_CONTAINER_PATTERNS = [
+  "^I18N_KEYS$",
+  "_I18N_KEYS$",
+  "^TRANSLATION_KEYS$",
+  "_TRANSLATION_KEYS$",
+  "^translationKeys$",
+  "TranslationKeys$",
+];
 
 /**
  * t() 호출에서 번역 키 추출
@@ -48,7 +60,11 @@ export function extractTranslationKey(
     return null;
   }
 
-  const keys = resolveStaticTranslationKeys(firstArg, path);
+  const keys = resolveStaticTranslationKeys(
+    firstArg,
+    path,
+    createStaticKeyResolverOptions(config),
+  );
   if (!keys || keys.length === 0) {
     return null;
   }
@@ -63,6 +79,7 @@ export function extractTranslationKey(
 function resolveStaticTranslationKeys(
   expression: t.Expression,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings = new Set<string>(),
 ): string[] | null {
   const unwrapped = unwrapExpression(expression);
@@ -72,14 +89,23 @@ function resolveStaticTranslationKeys(
     return [unwrapped.value];
   }
 
+  if (options.mode === "off") {
+    return null;
+  }
+
   // Case 2: const TITLE = "title"; t(TITLE)
   if (t.isIdentifier(unwrapped)) {
-    return resolveIdentifierKeys(unwrapped, callPath, visitedBindings);
+    return resolveIdentifierKeys(unwrapped, callPath, options, visitedBindings);
   }
 
   // Case 3: const KEYS = { title: "title" } as const; t(KEYS.title)
   if (t.isMemberExpression(unwrapped)) {
-    return resolveMemberExpressionKeys(unwrapped, callPath, visitedBindings);
+    return resolveMemberExpressionKeys(
+      unwrapped,
+      callPath,
+      options,
+      visitedBindings,
+    );
   }
 
   return null;
@@ -88,6 +114,7 @@ function resolveStaticTranslationKeys(
 function resolveIdentifierKeys(
   identifier: t.Identifier,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings: Set<string>,
 ): string[] | null {
   const binding = callPath.scope.getBinding(identifier.name);
@@ -98,6 +125,7 @@ function resolveIdentifierKeys(
   const callbackKeys = resolveIterableCallbackParamKeys(
     identifier,
     callPath,
+    options,
     visitedBindings,
   );
   if (callbackKeys) {
@@ -114,12 +142,13 @@ function resolveIdentifierKeys(
   }
 
   visitedBindings.add(identifier.name);
-  return resolveStaticTranslationKeys(init, callPath, visitedBindings);
+  return resolveStaticTranslationKeys(init, callPath, options, visitedBindings);
 }
 
 function resolveIterableCallbackParamKeys(
   identifier: t.Identifier,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings: Set<string>,
 ): string[] | null {
   const binding = callPath.scope.getBinding(identifier.name);
@@ -167,12 +196,17 @@ function resolveIterableCallbackParamKeys(
     return null;
   }
 
-  return resolveStaticStringArray(iterable, callPath, visitedBindings);
+  if (!canResolveStructuredStaticKeys(iterable, callPath, options)) {
+    return null;
+  }
+
+  return resolveStaticStringArray(iterable, callPath, options, visitedBindings);
 }
 
 function resolveMemberExpressionKeys(
   memberExpression: t.MemberExpression,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings: Set<string>,
 ): string[] | null {
   const propertyName = getStaticPropertyName(
@@ -183,9 +217,16 @@ function resolveMemberExpressionKeys(
     return null;
   }
 
+  if (
+    !canResolveStructuredStaticKeys(memberExpression.object, callPath, options)
+  ) {
+    return null;
+  }
+
   const objectExpression = resolveStaticObjectExpression(
     memberExpression.object,
     callPath,
+    options,
     visitedBindings,
   );
   if (objectExpression) {
@@ -194,13 +235,19 @@ function resolveMemberExpressionKeys(
       propertyName,
     );
     return propertyValue
-      ? resolveStaticTranslationKeys(propertyValue, callPath, visitedBindings)
+      ? resolveStaticTranslationKeys(
+          propertyValue,
+          callPath,
+          options,
+          visitedBindings,
+        )
       : null;
   }
 
   const arrayValues = resolveStaticStringArray(
     memberExpression.object,
     callPath,
+    options,
     visitedBindings,
   );
   if (arrayValues && /^\d+$/.test(propertyName)) {
@@ -214,6 +261,7 @@ function resolveMemberExpressionKeys(
 function resolveStaticStringArray(
   expression: t.Expression,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings: Set<string>,
 ): string[] | null {
   const unwrapped = unwrapExpression(expression);
@@ -229,6 +277,7 @@ function resolveStaticStringArray(
       const resolved = resolveStaticTranslationKeys(
         element,
         callPath,
+        options,
         visitedBindings,
       );
       if (!resolved || resolved.length !== 1) {
@@ -252,7 +301,7 @@ function resolveStaticStringArray(
     }
 
     visitedBindings.add(unwrapped.name);
-    return resolveStaticStringArray(init, callPath, visitedBindings);
+    return resolveStaticStringArray(init, callPath, options, visitedBindings);
   }
 
   return null;
@@ -261,6 +310,7 @@ function resolveStaticStringArray(
 function resolveStaticObjectExpression(
   expression: t.Expression,
   callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
   visitedBindings: Set<string>,
 ): t.ObjectExpression | null {
   const unwrapped = unwrapExpression(expression);
@@ -279,7 +329,12 @@ function resolveStaticObjectExpression(
   }
 
   visitedBindings.add(unwrapped.name);
-  return resolveStaticObjectExpression(init, callPath, visitedBindings);
+  return resolveStaticObjectExpression(
+    init,
+    callPath,
+    options,
+    visitedBindings,
+  );
 }
 
 function getConstBindingInit(
@@ -302,6 +357,90 @@ function getConstBindingInit(
 
   const init = declaratorPath.node.init;
   return init && t.isExpression(init) ? init : null;
+}
+
+interface StaticKeyResolverOptions {
+  mode: StaticKeyExtractionMode;
+  containerPatterns: RegExp[];
+}
+
+function createStaticKeyResolverOptions(
+  config?: ExtractorConfig,
+): StaticKeyResolverOptions {
+  const requestedMode = config?.staticKeyExtraction ?? "safe";
+  const mode: StaticKeyExtractionMode = isStaticKeyExtractionMode(requestedMode)
+    ? requestedMode
+    : "safe";
+
+  return {
+    mode,
+    containerPatterns: compileStaticKeyContainerPatterns(
+      config?.staticKeyContainerPatterns,
+    ),
+  };
+}
+
+function isStaticKeyExtractionMode(
+  mode: string,
+): mode is StaticKeyExtractionMode {
+  return mode === "off" || mode === "safe" || mode === "aggressive";
+}
+
+function compileStaticKeyContainerPatterns(patterns?: string[]): RegExp[] {
+  const patternSources =
+    patterns && patterns.length > 0
+      ? patterns
+      : DEFAULT_STATIC_KEY_CONTAINER_PATTERNS;
+
+  return patternSources.flatMap((pattern) => {
+    try {
+      return [new RegExp(pattern)];
+    } catch {
+      return [];
+    }
+  });
+}
+
+function canResolveStructuredStaticKeys(
+  expression: t.Expression,
+  callPath: NodePath<t.CallExpression>,
+  options: StaticKeyResolverOptions,
+): boolean {
+  if (options.mode === "aggressive") {
+    return true;
+  }
+
+  if (options.mode !== "safe") {
+    return false;
+  }
+
+  const rootIdentifier = getRootIdentifier(expression);
+  if (!rootIdentifier) {
+    return false;
+  }
+
+  const binding = callPath.scope.getBinding(rootIdentifier.name);
+  if (!binding || binding.kind !== "const" || !binding.constant) {
+    return false;
+  }
+
+  return options.containerPatterns.some((pattern) =>
+    pattern.test(rootIdentifier.name),
+  );
+}
+
+function getRootIdentifier(expression: t.Expression): t.Identifier | null {
+  const unwrapped = unwrapExpression(expression);
+
+  if (t.isIdentifier(unwrapped)) {
+    return unwrapped;
+  }
+
+  if (t.isMemberExpression(unwrapped) && t.isExpression(unwrapped.object)) {
+    return getRootIdentifier(unwrapped.object);
+  }
+
+  return null;
 }
 
 function getObjectPropertyValue(

@@ -11,6 +11,8 @@ const config: Partial<ExtractorConfig> = {
   sourcePattern: projectConfig.sourcePattern,
   outputDir: projectConfig.localesDir,
   languages: projectConfig.languages,
+  defaultLanguage: projectConfig.defaultLanguage,
+  sourceLanguage: projectConfig.sourceLanguage,
   fallbackNamespace: projectConfig.fallbackNamespace,
   translationImportSource: projectConfig.translationImportSource,
   useNamespaceStructure: projectConfig.useNamespaceStructure,
@@ -19,6 +21,8 @@ const config: Partial<ExtractorConfig> = {
   generateTypes: projectConfig.generateTypes,
   typesOutputPath: projectConfig.typesOutputPath,
   strictTypeGeneration: projectConfig.strictTypeGeneration,
+  staticKeyExtraction: projectConfig.staticKeyExtraction,
+  staticKeyContainerPatterns: projectConfig.staticKeyContainerPatterns,
 };
 
 for (let i = 0; i < args.length; i++) {
@@ -48,6 +52,9 @@ for (let i = 0; i < args.length; i++) {
     case "-l":
       config.languages = args[++i].split(",").map((l) => l.trim());
       break;
+    case "--source-language":
+      config.sourceLanguage = args[++i];
+      break;
     case "--force":
       config.force = true;
       break;
@@ -71,6 +78,16 @@ for (let i = 0; i < args.length; i++) {
     case "--strict-types":
       config.strictTypeGeneration = true;
       break;
+    case "--static-key-extraction":
+      const mode = args[++i];
+      if (mode !== "off" && mode !== "safe" && mode !== "aggressive") {
+        console.error(
+          `Invalid static key extraction mode: ${mode}. Use 'off', 'safe', or 'aggressive'`,
+        );
+        process.exit(1);
+      }
+      config.staticKeyExtraction = mode;
+      break;
     case "--help":
     case "-h":
       console.log(`
@@ -84,12 +101,15 @@ Options:
   -d, --output-dir <dir>      출력 디렉토리 (기본값: "./locales")
   -f, --format <format>       출력 형식: json|csv (기본값: "json")
   -l, --languages <langs>     언어 목록 (쉼표로 구분, 기본값: "en,ko")
+  --source-language <lang>     추출된 원문 문자열을 채울 언어 (기본값: defaultLanguage)
   --force                     Force 모드: 기존 번역을 모두 덮어씀 (기본: 새 키만 추가)
   --flat                      legacy flat 구조(locales/en.json)를 사용
   --dry-run                   실제 파일 생성 없이 미리보기
   --no-types                  타입 자동 생성을 건너뜀
   --types-output <path>       타입 정의 출력 경로 (기본: locales/types/i18nexus.d.ts)
   --strict-types              타입 생성 시 누락/빈 번역을 오류로 처리
+  --static-key-extraction <mode>
+                              정적 상수 키 추출: off|safe|aggressive (기본값: safe)
   -h, --help                  도움말 표시
 
 Examples:
@@ -98,15 +118,17 @@ Examples:
   i18n-extractor --force                          # 모든 키를 덮어쓰기
   i18n-extractor -p "app/**/*.tsx"                # App 디렉토리에서 추출
   i18n-extractor -l "en,ko,ja"                    # 3개 언어 파일 생성
+  i18n-extractor --source-language en             # 영어 원문 앱은 en.json에 원문 채움
   i18n-extractor -f csv -o "translations.csv"     # 구글 시트용 CSV 형식으로 출력
   i18n-extractor --dry-run                        # 추출 결과 미리보기
+  i18n-extractor --static-key-extraction aggressive # 정적 const 객체/배열까지 적극 추출
   
 Features:
   - t() 함수 호출에서 번역 키 자동 추출
   - JSON: core v4 권장 네임스페이스 구조 생성 (locales/[namespace]/[lang].json)
   - 기본 모드: 기존 번역 유지하며 새 키만 추가
   - Force 모드: 모든 번역을 새로 추출된 키로 덮어씀
-  - CSV: 구글 시트 호환 형식 출력 (Key, English, Korean)
+  - CSV: 언어 설정 순서에 맞는 구글 시트 호환 형식 출력
   - 중복 키 감지 및 보고
   - i18nexus core v4용 locales/index.ts 및 타입 자동 생성
       `);

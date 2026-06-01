@@ -6,10 +6,17 @@ import {
   COMMON_DEFAULTS,
   GOOGLE_SHEETS_DEFAULTS,
 } from "./common/default-config";
+import type { StaticKeyExtractionMode } from "./extractor/key-extractor";
 
 export interface I18nexusConfig {
   languages: string[];
   defaultLanguage: string;
+  /**
+   * Source language of extracted strings.
+   * When omitted, defaults to defaultLanguage so English-source projects fill
+   * en.json instead of the legacy Korean-source behavior.
+   */
+  sourceLanguage?: string;
   localesDir: string;
   sourcePattern: string;
   translationImportSource: string;
@@ -117,11 +124,25 @@ export interface I18nexusConfig {
    * @default "{localesDir}/types/i18nexus.d.ts"
    */
   typesOutputPath?: string;
+  /**
+   * 정적 상수 번역 키 추출 강도
+   * - "off": 직접 문자열 t("key")만 추출
+   * - "safe": 직접 문자열, const string, 명시적 번역 키 컨테이너만 추출
+   * - "aggressive": 정적으로 해석 가능한 const 객체/배열까지 추출
+   * @default "safe"
+   */
+  staticKeyExtraction?: StaticKeyExtractionMode;
+  /**
+   * staticKeyExtraction="safe"에서 번역 키 컨테이너로 인정할 변수명 정규식 목록
+   * @default ["^I18N_KEYS$", "_I18N_KEYS$", "^TRANSLATION_KEYS$", "_TRANSLATION_KEYS$", "^translationKeys$", "TranslationKeys$"]
+   */
+  staticKeyContainerPatterns?: string[];
 }
 
 const DEFAULT_CONFIG: I18nexusConfig = {
   languages: [...COMMON_DEFAULTS.languages],
   defaultLanguage: COMMON_DEFAULTS.defaultLanguage,
+  sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
   localesDir: COMMON_DEFAULTS.localesDir,
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
@@ -135,6 +156,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   useNamespaceStructure: true,
   strictTypeGeneration: false,
   generateTypes: true,
+  staticKeyExtraction: "safe",
 };
 
 function isHelpOrVersionCommand(): boolean {
@@ -182,15 +204,21 @@ export function loadConfig(
       };
     }
 
-    // 기본값과 병합
-    return {
+    const mergedConfig = {
       ...DEFAULT_CONFIG,
       ...finalConfig,
+      sourceLanguage:
+        finalConfig.sourceLanguage ||
+        finalConfig.defaultLanguage ||
+        DEFAULT_CONFIG.sourceLanguage,
       googleSheets: {
         ...DEFAULT_CONFIG.googleSheets,
         ...(finalConfig.googleSheets || {}),
       },
     };
+
+    // 기본값과 병합
+    return mergedConfig;
   } catch (error) {
     if (shouldLog) {
       console.warn(

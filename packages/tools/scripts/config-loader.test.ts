@@ -100,6 +100,39 @@ describe("config-loader", () => {
     });
   });
 
+  describe("sourceLanguage", () => {
+    it("sourceLanguage이 없으면 defaultLanguage를 사용해야 함", () => {
+      const testConfig = {
+        languages: ["en", "ko"],
+        defaultLanguage: "en",
+        localesDir: "./locales",
+        sourcePattern: "app/**/*.tsx",
+        translationImportSource: "i18nexus",
+      };
+
+      fs.writeFileSync(testConfigPath, JSON.stringify(testConfig));
+
+      const config = loadConfig(testConfigPath, { silent: true });
+      expect(config.sourceLanguage).toBe("en");
+    });
+
+    it("sourceLanguage 설정을 명시적으로 로드해야 함", () => {
+      const testConfig = {
+        languages: ["en", "ko"],
+        defaultLanguage: "en",
+        sourceLanguage: "ko",
+        localesDir: "./locales",
+        sourcePattern: "app/**/*.tsx",
+        translationImportSource: "i18nexus",
+      };
+
+      fs.writeFileSync(testConfigPath, JSON.stringify(testConfig));
+
+      const config = loadConfig(testConfigPath, { silent: true });
+      expect(config.sourceLanguage).toBe("ko");
+    });
+  });
+
   describe("core v4 type generation defaults", () => {
     it("generateTypes는 기본적으로 true", () => {
       const config = loadConfig(testConfigPath, { silent: true });
@@ -119,6 +152,27 @@ describe("config-loader", () => {
       const config = loadConfig(testConfigPath, { silent: true });
       expect(config.generateTypes).toBe(false);
       expect(config.typesOutputPath).toBe("./src/i18n/types.d.ts");
+    });
+  });
+
+  describe("staticKeyExtraction", () => {
+    it("staticKeyExtraction은 기본적으로 safe", () => {
+      const config = loadConfig(testConfigPath, { silent: true });
+
+      expect(config.staticKeyExtraction).toBe("safe");
+    });
+
+    it("staticKeyExtraction과 staticKeyContainerPatterns 설정을 로드해야 함", () => {
+      const testConfig = {
+        staticKeyExtraction: "aggressive",
+        staticKeyContainerPatterns: ["Keys$", "^I18N_"],
+      };
+
+      fs.writeFileSync(testConfigPath, JSON.stringify(testConfig));
+
+      const config = loadConfig(testConfigPath, { silent: true });
+      expect(config.staticKeyExtraction).toBe("aggressive");
+      expect(config.staticKeyContainerPatterns).toEqual(["Keys$", "^I18N_"]);
     });
   });
 

@@ -66,6 +66,41 @@ describe("TranslationExtractor", () => {
       expect(data["welcome.title"]).toBeDefined();
     });
 
+    it("defaultLanguage가 en이면 en.json에 추출 원문을 채워야 함", async () => {
+      createTempFile(
+        sourceDir,
+        "page.tsx",
+        `
+        import { useTranslation } from "i18nexus";
+
+        export default function Page() {
+          const { t } = useTranslation();
+          return <h1>{t("Dashboard")}</h1>;
+        }
+      `,
+      );
+
+      const extractor = new TranslationExtractor({
+        sourcePattern: path.join(sourceDir, "**/*.tsx"),
+        outputDir,
+        languages: ["en", "ko"],
+        defaultLanguage: "en",
+        namespacing: {
+          enabled: false,
+          basePath: "",
+          defaultNamespace: "common",
+        },
+        dryRun: false,
+      });
+
+      await extractor.extract();
+
+      const enData = readJsonFile(path.join(outputDir, "en.json"));
+      const koData = readJsonFile(path.join(outputDir, "ko.json"));
+      expect(enData["Dashboard"]).toBe("Dashboard");
+      expect(koData["Dashboard"]).toBe("");
+    });
+
     it("config에서 지정한 네임스페이스를 사용해야 함", async () => {
       createTempFile(
         sourceDir,
@@ -98,13 +133,13 @@ describe("TranslationExtractor", () => {
         `
         import { useTranslation } from "i18nexus";
 
-        const navKeys = ["nav.home", "nav.settings"] as const;
+        const NAV_I18N_KEYS = ["nav.home", "nav.settings"] as const;
 
         export default function Page() {
           const { t } = useTranslation();
           return (
             <nav>
-              {navKeys.map((item) => (
+              {NAV_I18N_KEYS.map((item) => (
                 <span key={item}>{t(item)}</span>
               ))}
             </nav>

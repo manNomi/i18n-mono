@@ -65,10 +65,31 @@ npx i18n-sheets init
 
 ### 2. Provider 설정 (Next.js App Router)
 
+`I18nProvider`는 클라이언트 컴포넌트이므로 서버 `layout.tsx`에 직접 두지 말고 작은 클라이언트 래퍼로 감싸세요.
+
+```tsx
+// app/i18n-provider.tsx
+"use client";
+
+import { I18nProvider } from "i18nexus";
+
+export function I18nClientProvider({
+  children,
+  initialLanguage,
+}: {
+  children: React.ReactNode;
+  initialLanguage?: string;
+}) {
+  return (
+    <I18nProvider initialLanguage={initialLanguage}>{children}</I18nProvider>
+  );
+}
+```
+
 ```tsx
 // app/layout.tsx
 import { getTranslation } from "i18nexus/server";
-import { I18nProvider } from "i18nexus";
+import { I18nClientProvider } from "./i18n-provider";
 
 export default async function RootLayout({ children }) {
   const { language } = await getTranslation("common", {
@@ -79,12 +100,16 @@ export default async function RootLayout({ children }) {
   return (
     <html lang={language}>
       <body>
-        <I18nProvider initialLanguage={language}>{children}</I18nProvider>
+        <I18nClientProvider initialLanguage={language}>
+          {children}
+        </I18nClientProvider>
       </body>
     </html>
   );
 }
 ```
+
+`i18nexus/server`를 사용하는 Next.js 프로젝트는 TypeScript가 package subpath exports를 해석할 수 있도록 `tsconfig.json`에 `"moduleResolution": "bundler"`를 권장합니다.
 
 ### 3. 번역 사용
 

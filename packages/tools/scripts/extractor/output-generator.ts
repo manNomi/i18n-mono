@@ -19,8 +19,37 @@ export interface OutputConfig {
   languages?: string[];
   outputDir?: string;
   outputFile?: string;
+  sourceLanguage?: string;
   force?: boolean;
   dryRun?: boolean;
+}
+
+const LANGUAGE_COLUMN_LABELS: Record<string, string> = {
+  en: "English",
+  ko: "Korean",
+};
+
+function getSourceLanguage(config: OutputConfig): string {
+  return config.sourceLanguage || STRING_CONSTANTS.DEFAULT_LANG_KO;
+}
+
+function getSourceValue(key: string, value: string | undefined): string {
+  return value || key;
+}
+
+function getInitialTranslationValue(
+  key: string,
+  value: string | undefined,
+  language: string,
+  config: OutputConfig,
+): string {
+  return language === getSourceLanguage(config)
+    ? getSourceValue(key, value)
+    : STRING_CONSTANTS.EMPTY_STRING;
+}
+
+function getCsvColumnLabel(language: string): string {
+  return LANGUAGE_COLUMN_LABELS[language] || language;
 }
 
 /**
@@ -35,7 +64,7 @@ export function generateOutputData(
     : keys;
 
   if (config.outputFormat === "csv") {
-    return generateGoogleSheetsCSV(sortedKeys);
+    return generateGoogleSheetsCSV(sortedKeys, config);
   }
 
   // JSON 형식 - 단순화된 구조
@@ -52,23 +81,25 @@ export function generateOutputData(
 /**
  * Google Sheets CSV 생성
  */
-export function generateGoogleSheetsCSV(keys: ExtractedKey[]): string {
-  // CSV 헤더: Key, English, Korean
-  const csvLines: string[] = [CSV_CONSTANTS.HEADER];
+export function generateGoogleSheetsCSV(
+  keys: ExtractedKey[],
+  config: OutputConfig = {},
+): string {
+  const languages = config.languages || [
+    STRING_CONSTANTS.DEFAULT_LANG_EN,
+    STRING_CONSTANTS.DEFAULT_LANG_KO,
+  ];
+  const header = ["Key", ...languages.map(getCsvColumnLabel)]
+    .map(escapeCsvValue)
+    .join(CSV_CONSTANTS.SEPARATOR);
+  const csvLines: string[] = [header];
 
   keys.forEach(({ key, defaultValue }) => {
-    // CSV 라인: key, 빈값(영어), defaultValue 또는 key(한국어)
-    const englishValue = STRING_CONSTANTS.EMPTY_STRING;
-    const koreanValue = defaultValue || key;
-
-    // CSV 이스케이프 처리
-    const escapedKey = escapeCsvValue(key);
-    const escapedEnglish = escapeCsvValue(englishValue);
-    const escapedKorean = escapeCsvValue(koreanValue);
-
-    csvLines.push(
-      `${escapedKey}${CSV_CONSTANTS.SEPARATOR}${escapedEnglish}${CSV_CONSTANTS.SEPARATOR}${escapedKorean}`,
+    const values = languages.map((language) =>
+      getInitialTranslationValue(key, defaultValue, language, config),
     );
+    const escapedValues = [key, ...values].map(escapeCsvValue);
+    csvLines.push(escapedValues.join(CSV_CONSTANTS.SEPARATOR));
   });
 
   return csvLines.join(CSV_CONSTANTS.NEWLINE);
@@ -149,11 +180,27 @@ export function generateNamespaceIndexFile(
     typesOutputPath,
   );
   const generatedTypeImport = useGeneratedTypes
-    ? `import type { I18nexusGeneratedTranslations } from "${generatedTypeImportPath}";\n`
+    ? `import type {
+  I18nexusGeneratedClientTranslationFunction,
+  I18nexusGeneratedTranslationFunction,
+  I18nexusGeneratedTranslationKeys,
+  I18nexusGeneratedTranslations,
+} from "${generatedTypeImportPath}";\n`
     : "";
   const generatedTypeFallback = useGeneratedTypes
     ? ""
-    : `type I18nexusGeneratedTranslations = Record<AppNamespace, Record<AppLanguage, Record<string, string>>>;\n`;
+    : `type I18nexusGeneratedTranslations = Record<AppNamespace, Record<AppLanguage, Record<string, string>>>;
+type I18nexusGeneratedTranslationKeys<NS extends AppNamespace = AppNamespace> = string;
+type I18nexusGeneratedTranslationFunction<NS extends AppNamespace = AppNamespace> = (
+  key: string,
+  variables?: Record<string, string | number>,
+  fallback?: string
+) => string;
+type I18nexusGeneratedClientTranslationFunction<NS extends AppNamespace = AppNamespace> = (
+  key: string,
+  variables?: Record<string, string | number>
+) => string;
+`;
 
   // v3: core v4와 직접 맞물리는 lazy + typed entrypoint 생성
   const content = `/**
@@ -167,7 +214,11 @@ export function generateNamespaceIndexFile(
  * Regenerate with:
  *   npx i18n-extractor
  */
-import { createI18n, type NamespaceLoader } from "i18nexus";
+import {
+  createI18n,
+  type CreateI18nUseTranslationReturn,
+  type NamespaceLoader,
+} from "i18nexus";
 ${generatedTypeImport}
 export const languages = [${languagesLiteral}] as const;
 export const namespaces = [${namespacesLiteral}] as const;
@@ -176,6 +227,17 @@ export const fallbackNamespace = "${fallbackNamespace}" as const;
 export type AppLanguage = ${languageUnion || "string"};
 export type AppNamespace = ${namespaceUnion || "string"};
 ${generatedTypeFallback}
+export type AppTranslationKeys<NS extends AppNamespace = AppNamespace> =
+  I18nexusGeneratedTranslationKeys<NS>;
+export type AppTranslationFunction<NS extends AppNamespace = AppNamespace> =
+  I18nexusGeneratedTranslationFunction<NS>;
+export type AppServerTranslationFunction<NS extends AppNamespace = AppNamespace> =
+  I18nexusGeneratedTranslationFunction<NS>;
+export type AppClientTranslationFunction<NS extends AppNamespace = AppNamespace> =
+  I18nexusGeneratedClientTranslationFunction<NS>;
+export type AppUseTranslationReturn<NS extends AppNamespace = AppNamespace> =
+  CreateI18nUseTranslationReturn<AppTranslationKeys<NS>>;
+
 export const loadNamespace: NamespaceLoader = async (namespace, language) => {
   const module = await import(\`./\${namespace}/\${language}.json\`);
   return module.default;
@@ -195,6 +257,11 @@ export const useTranslation = i18n.useTranslation;
  *
  * Advanced typed API:
  *   import { I18nProvider, useTranslation } from "./locales";
+ *
+ * Next.js App Router:
+ *   Keep I18nProvider in a "use client" wrapper.
+ *   Call router.refresh() after changeLanguage() when server components
+ *   also use getTranslation().
  */
 `;
 
@@ -285,16 +352,12 @@ export function writeOutputFileWithNamespace(
         mergedTranslations = {};
 
         Object.keys(data).forEach((key) => {
-          if (lang === STRING_CONSTANTS.DEFAULT_LANG_KO) {
-            // 한국어는 키를 그대로 또는 defaultValue 사용
-            mergedTranslations[key] = data[key] || key;
-          } else if (lang === STRING_CONSTANTS.DEFAULT_LANG_EN) {
-            // 영어는 빈 문자열
-            mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-          } else {
-            // 기타 언어도 빈 문자열
-            mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-          }
+          mergedTranslations[key] = getInitialTranslationValue(
+            key,
+            data[key],
+            lang,
+            config,
+          );
         });
       } else {
         // 기본 모드: 기존 번역을 유지하고 새로운 키만 추가
@@ -304,16 +367,12 @@ export function writeOutputFileWithNamespace(
         Object.keys(data).forEach((key) => {
           if (!mergedTranslations.hasOwnProperty(key)) {
             newKeysCount++;
-            if (lang === STRING_CONSTANTS.DEFAULT_LANG_KO) {
-              // 한국어는 키를 그대로 또는 defaultValue 사용
-              mergedTranslations[key] = data[key] || key;
-            } else if (lang === STRING_CONSTANTS.DEFAULT_LANG_EN) {
-              // 영어는 빈 문자열
-              mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-            } else {
-              // 기타 언어도 빈 문자열
-              mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-            }
+            mergedTranslations[key] = getInitialTranslationValue(
+              key,
+              data[key],
+              lang,
+              config,
+            );
           }
         });
       }
@@ -371,16 +430,12 @@ export function writeOutputFile(data: any, config: OutputConfig): void {
         mergedTranslations = {};
 
         Object.keys(data).forEach((key) => {
-          if (lang === STRING_CONSTANTS.DEFAULT_LANG_KO) {
-            // 한국어는 키를 그대로 또는 defaultValue 사용
-            mergedTranslations[key] = data[key] || key;
-          } else if (lang === STRING_CONSTANTS.DEFAULT_LANG_EN) {
-            // 영어는 빈 문자열
-            mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-          } else {
-            // 기타 언어도 빈 문자열
-            mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-          }
+          mergedTranslations[key] = getInitialTranslationValue(
+            key,
+            data[key],
+            lang,
+            config,
+          );
         });
       } else {
         // 기본 모드: 기존 번역을 유지하고 새로운 키만 추가
@@ -390,16 +445,12 @@ export function writeOutputFile(data: any, config: OutputConfig): void {
         Object.keys(data).forEach((key) => {
           if (!mergedTranslations.hasOwnProperty(key)) {
             newKeysCount++;
-            if (lang === STRING_CONSTANTS.DEFAULT_LANG_KO) {
-              // 한국어는 키를 그대로 또는 defaultValue 사용
-              mergedTranslations[key] = data[key] || key;
-            } else if (lang === STRING_CONSTANTS.DEFAULT_LANG_EN) {
-              // 영어는 빈 문자열
-              mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-            } else {
-              // 기타 언어도 빈 문자열
-              mergedTranslations[key] = STRING_CONSTANTS.EMPTY_STRING;
-            }
+            mergedTranslations[key] = getInitialTranslationValue(
+              key,
+              data[key],
+              lang,
+              config,
+            );
           }
         });
       }

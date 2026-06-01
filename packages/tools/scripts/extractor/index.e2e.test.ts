@@ -325,17 +325,20 @@ export function App() {
     expect(fs.existsSync(typesFile)).toBe(true);
 
     const indexContent = fs.readFileSync(indexFile, "utf-8");
-    expect(indexContent).toContain(
-      'import { createI18n, type NamespaceLoader } from "i18nexus";',
-    );
+    expect(indexContent).toContain("createI18n");
+    expect(indexContent).toContain("type NamespaceLoader");
+    expect(indexContent).toContain("type CreateI18nUseTranslationReturn");
     expect(indexContent).toContain(
       'export const namespaces = ["home"] as const;',
     );
     expect(indexContent).toContain("export const loadNamespace");
     expect(indexContent).toContain("export const i18n = createI18n");
+    expect(indexContent).toContain("export type AppTranslationFunction");
+    expect(indexContent).toContain("export type AppClientTranslationFunction");
 
     const typesContent = fs.readFileSync(typesFile, "utf-8");
     expect(typesContent).toContain("export type I18nexusGeneratedTranslations");
+    expect(typesContent).toContain("I18nexusGeneratedTranslationFunction");
     expect(typesContent).toContain('readonly "home"');
     expect(typesContent).toContain('readonly "title": string');
   });
@@ -378,9 +381,9 @@ export function App() {
     expect(fs.existsSync(typesFile)).toBe(true);
 
     const indexContent = fs.readFileSync(indexFile, "utf-8");
-    expect(indexContent).toContain(
-      'import type { I18nexusGeneratedTranslations } from "../src/i18n/types";',
-    );
+    expect(indexContent).toContain('} from "../src/i18n/types";');
+    expect(indexContent).toContain("I18nexusGeneratedTranslations");
+    expect(indexContent).toContain("I18nexusGeneratedTranslationFunction");
     expect(indexContent).not.toContain("./types/i18nexus");
   });
 });

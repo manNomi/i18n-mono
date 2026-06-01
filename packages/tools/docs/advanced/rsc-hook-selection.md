@@ -20,7 +20,7 @@
 {
   "sourcePattern": "src/**/*.{ts,tsx}",
   "translationImportSource": "i18nexus",
-  "constantPatterns": ["_ITEMS", "_MENU"],
+  "staticKeyExtraction": "safe",
   "clientTranslationHook": "useTranslation", // 기본값
   "serverTranslationFunction": "getTranslation", // 신규 옵션
 }

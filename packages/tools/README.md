@@ -86,6 +86,7 @@ Create `i18nexus.config.json` in your project root:
   "translationImportSource": "i18nexus",
   "languages": ["en", "ko"],
   "defaultLanguage": "en",
+  "sourceLanguage": "en",
   "localesDir": "./locales",
   "fallbackNamespace": "common",
   "useNamespaceStructure": true,
@@ -135,21 +136,26 @@ Options:
   -d, --output-dir <dir>      Output directory
   -f, --format <format>       Output format: json|csv
   -l, --languages <langs>     Comma-separated languages
+  --source-language <lang>     Language that receives extracted source text
   --flat                      Use legacy flat files (locales/en.json)
   --no-types                  Skip automatic type generation
   --types-output <path>       Custom generated type output path
   --strict-types              Fail type generation on missing/empty translations
+  --static-key-extraction <mode>
+                              Static constant extraction: off|safe|aggressive
   -h, --help                  Display help
 ```
 
 **Features:**
 
 - Scans codebase for `t()` function calls
-- Resolves safe static constants used as keys (`const key = "title"; t(key)`, `t(keys.title)`, `keys.map((item) => t(item))`)
+- Resolves static constants with explicit safety modes (`off`, `safe`, `aggressive`)
+- In default `safe` mode, follows const strings and clear i18n key containers such as `I18N_KEYS`, while skipping general data objects like API responses
 - Extracts translation keys and variables
 - Generates `locales/index.ts` with `loadNamespace`, `fallbackNamespace`, and typed `createI18n`
 - Generates `locales/types/i18nexus.d.ts` by default
 - Creates namespace-specific types (`CommonKeys`, `ConstantKeys`, etc.)
+- Creates prop-friendly `t` helper types such as `AppTranslationFunction`
 - Detects unused and missing translations
 
 **Example:**
@@ -207,6 +213,15 @@ function HomeTitle() {
 }
 ```
 
+```tsx
+// Passing a typed server t function through props
+import type { AppTranslationFunction } from "./locales";
+
+function Nav({ t }: { t: AppTranslationFunction<"common"> }) {
+  return <span>{t("Dashboard")}</span>;
+}
+```
+
 ### `i18n-doctor`
 
 Diagnose whether a project is aligned with `i18nexus@4` and the generated tools workflow.
@@ -218,6 +233,8 @@ i18n-doctor
 **Checks:**
 
 - Installed `i18nexus` core version
+- Installed `i18nexus` package exports
+- `tsconfig.json` module resolution for `i18nexus/server`
 - `i18nexus.config.json` import source
 - Locale namespace folders and fallback namespace
 - Generated `locales/index.ts`
@@ -233,12 +250,14 @@ i18n-wrapper [options]
 
 Options:
   -p, --pattern <pattern>  Source file pattern (default: "src/**/*.{js,jsx,ts,tsx}")
+  --source-language <lang> Source language for wrapping: ko|en|auto
   -h, --help              Display help
 ```
 
 **Features:**
 
-- Detects Korean/English text in JSX
+- Detects Korean text by default
+- Detects conservative English UI text when `sourceLanguage` is `en` or `auto`
 - Wraps text with `t()` function
 - Automatically adds `useTranslation()` import
 - Preserves existing `t()` calls
@@ -252,6 +271,9 @@ npx i18n-wrapper
 
 # Custom pattern
 npx i18n-wrapper -p "app/**/*.tsx"
+
+# English-source app
+npx i18n-wrapper --source-language en
 ```
 
 **Before:**
@@ -453,8 +475,18 @@ npx i18n-sheets share "spreadsheet-id" "user@example.com"
   "translationImportSource": "i18nexus",
   "languages": ["en", "ko"],
   "defaultLanguage": "en",
+  "sourceLanguage": "en",
   "localesDir": "./locales",
   "fallbackNamespace": "common",
+  "staticKeyExtraction": "safe",
+  "staticKeyContainerPatterns": [
+    "^I18N_KEYS$",
+    "_I18N_KEYS$",
+    "^TRANSLATION_KEYS$",
+    "_TRANSLATION_KEYS$",
+    "^translationKeys$",
+    "TranslationKeys$"
+  ],
 
   "googleSheets": {
     "spreadsheetId": "your-spreadsheet-id",
@@ -469,8 +501,11 @@ npx i18n-sheets share "spreadsheet-id" "user@example.com"
 - `translationImportSource` - Import path for hooks (e.g., `"i18nexus"`, `"@/app/i18n/client"`, `"react-i18next"`)
 - `languages` - Array of language codes
 - `defaultLanguage` - Default language code
+- `sourceLanguage` - Language file that receives extracted source strings; defaults to `defaultLanguage`
 - `localesDir` - Directory for translation files
 - `fallbackNamespace` - Default namespace used for fallback keys
+- `staticKeyExtraction` - Static constant extraction mode: `"off"`, `"safe"` (default), or `"aggressive"`
+- `staticKeyContainerPatterns` - Regex patterns for object/array constant names allowed in safe mode
 - `googleSheets.spreadsheetId` - Google Spreadsheet ID
 - `googleSheets.credentialsPath` - Path to Google credentials JSON
 

@@ -82,6 +82,20 @@ describe("output-generator", () => {
       expect(csv).toContain("안녕하세요");
     });
 
+    it("sourceLanguage가 en이면 English 컬럼에 원문을 채워야 함", () => {
+      const keys: ExtractedKey[] = [
+        { key: "welcome.title", defaultValue: "Welcome" },
+      ];
+
+      const csv = generateGoogleSheetsCSV(keys, {
+        languages: ["en", "ko"],
+        sourceLanguage: "en",
+      });
+
+      expect(csv).toContain("Key,English,Korean");
+      expect(csv).toContain("welcome.title,Welcome,");
+    });
+
     it("쉼표가 포함된 값은 이스케이프 처리해야 함", () => {
       const keys: ExtractedKey[] = [
         { key: "test", defaultValue: "안녕,하세요" },
@@ -168,10 +182,12 @@ describe("output-generator", () => {
       const content = readFileContent(indexPath);
       expect(content).toContain("loadNamespace");
       expect(content).toContain("fallbackNamespace");
-      expect(content).toContain("import { createI18n, type NamespaceLoader }");
-      expect(content).toContain(
-        'import type { I18nexusGeneratedTranslations } from "./types/i18nexus"',
-      );
+      expect(content).toContain("createI18n");
+      expect(content).toContain("type NamespaceLoader");
+      expect(content).toContain("type CreateI18nUseTranslationReturn");
+      expect(content).toContain("I18nexusGeneratedTranslations");
+      expect(content).toContain("I18nexusGeneratedTranslationFunction");
+      expect(content).toContain("I18nexusGeneratedClientTranslationFunction");
       expect(content).toContain(
         'export const languages = ["en", "ko"] as const',
       );
@@ -185,6 +201,9 @@ describe("output-generator", () => {
       expect(content).toContain(
         "export const useTranslation = i18n.useTranslation",
       );
+      expect(content).toContain("export type AppTranslationFunction");
+      expect(content).toContain("export type AppClientTranslationFunction");
+      expect(content).toContain("export type AppUseTranslationReturn");
     });
 
     it("custom typesOutputPath를 기준으로 타입 import 경로를 생성해야 함", () => {
@@ -202,9 +221,7 @@ describe("output-generator", () => {
 
       const content = readFileContent(path.join(tempDir, "index.ts"));
 
-      expect(content).toContain(
-        'import type { I18nexusGeneratedTranslations } from "./src/i18n/types"',
-      );
+      expect(content).toContain('} from "./src/i18n/types"');
       expect(content).not.toContain("./types/i18nexus");
     });
 
@@ -224,6 +241,9 @@ describe("output-generator", () => {
       expect(content).not.toContain("./types/i18nexus");
       expect(content).toContain(
         "type I18nexusGeneratedTranslations = Record<AppNamespace",
+      );
+      expect(content).toContain(
+        "type I18nexusGeneratedTranslationFunction<NS extends AppNamespace",
       );
     });
 
@@ -289,6 +309,26 @@ describe("output-generator", () => {
 
       const koData = readJsonFile(koFile);
       expect(koData["welcome.title"]).toBe("환영합니다");
+    });
+
+    it("sourceLanguage가 en이면 en.json에 원문을 채워야 함", () => {
+      const data = {
+        "welcome.title": "Welcome",
+      };
+
+      writeOutputFile(data, {
+        outputFormat: "json",
+        languages: ["en", "ko"],
+        outputDir: tempDir,
+        outputFile: "translations.json",
+        sourceLanguage: "en",
+        dryRun: false,
+      });
+
+      const enData = readJsonFile(path.join(tempDir, "en.json"));
+      const koData = readJsonFile(path.join(tempDir, "ko.json"));
+      expect(enData["welcome.title"]).toBe("Welcome");
+      expect(koData["welcome.title"]).toBe("");
     });
 
     it("force 모드에서는 기존 번역을 덮어써야 함", () => {
@@ -409,6 +449,26 @@ describe("output-generator", () => {
 
       const koData = readJsonFile(koFile);
       expect(koData["welcome.title"]).toBe("환영합니다");
+    });
+
+    it("sourceLanguage가 en이면 네임스페이스 en.json에 원문을 채워야 함", () => {
+      const data = {
+        "welcome.title": "Welcome",
+      };
+
+      writeOutputFileWithNamespace(data, {
+        outputFormat: "json",
+        languages: ["en", "ko"],
+        outputDir: tempDir,
+        namespace: "common",
+        sourceLanguage: "en",
+        dryRun: false,
+      });
+
+      const enData = readJsonFile(path.join(tempDir, "common", "en.json"));
+      const koData = readJsonFile(path.join(tempDir, "common", "ko.json"));
+      expect(enData["welcome.title"]).toBe("Welcome");
+      expect(koData["welcome.title"]).toBe("");
     });
 
     it("force 모드에서는 기존 번역을 덮어써야 함", () => {

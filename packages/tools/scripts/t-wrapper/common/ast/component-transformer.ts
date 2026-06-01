@@ -1,5 +1,6 @@
 import { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
+import type { ScriptConfig } from "../../../common/default-config";
 import { isReactComponent, isReactCustomHook } from "./ast-helpers";
 import { transformFunctionBody } from "./ast-transformers";
 
@@ -11,6 +12,7 @@ export function tryTransformComponent(
   path: NodePath<t.Function>,
   code: string,
   modifiedComponentPaths: NodePath<t.Function>[],
+  config: Pick<ScriptConfig, "sourceLanguage"> = {},
 ): boolean {
   let functionName: string | null | undefined;
 
@@ -31,7 +33,9 @@ export function tryTransformComponent(
     functionName &&
     (isReactComponent(functionName) || isReactCustomHook(functionName))
   ) {
-    const transformResult = transformFunctionBody(path, code);
+    const transformResult = transformFunctionBody(path, code, {
+      sourceLanguage: config.sourceLanguage,
+    });
     if (transformResult.wasModified) {
       modifiedComponentPaths.push(path);
       return true;

@@ -43,7 +43,9 @@ export async function wrapTranslations(
       });
 
       // i18nexus.config.json 로드 (네임스페이스 설정 확인)
-      const i18nexusConfig = loadConfig("i18nexus.config.json", { silent: true });
+      const i18nexusConfig = loadConfig("i18nexus.config.json", {
+        silent: true,
+      });
       const namespacingEnabled = i18nexusConfig.namespacing?.enabled ?? false;
 
       // 네임스페이스 업데이트 시도
@@ -52,10 +54,14 @@ export async function wrapTranslations(
         const correctNamespace = inferNamespaceFromFile(
           filePath,
           code,
-          i18nexusConfig.namespacing
+          i18nexusConfig.namespacing,
         );
         if (correctNamespace) {
-          namespaceUpdated = updateExistingUseTranslation(ast, correctNamespace, code);
+          namespaceUpdated = updateExistingUseTranslation(
+            ast,
+            correctNamespace,
+            code,
+          );
         }
       }
 
@@ -63,7 +69,14 @@ export async function wrapTranslations(
 
       traverse(ast, {
         FunctionDeclaration: (path) => {
-          if (tryTransformComponent(path, code, modifiedComponentPaths)) {
+          if (
+            tryTransformComponent(
+              path,
+              code,
+              modifiedComponentPaths,
+              fullConfig,
+            )
+          ) {
             isFileModified = true;
           }
         },
@@ -72,7 +85,14 @@ export async function wrapTranslations(
             t.isVariableDeclarator(path.parent) &&
             t.isIdentifier(path.parent.id)
           ) {
-            if (tryTransformComponent(path, code, modifiedComponentPaths)) {
+            if (
+              tryTransformComponent(
+                path,
+                code,
+                modifiedComponentPaths,
+                fullConfig,
+              )
+            ) {
               isFileModified = true;
             }
           }

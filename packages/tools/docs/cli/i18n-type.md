@@ -59,6 +59,9 @@ This file contains:
 
 - Type definitions for all translation keys
 - Namespace-specific type exports (`CommonKeys`, `HomeKeys`, etc.)
+- Prop-friendly translation function helpers
+  (`I18nexusGeneratedTranslationFunction`,
+  `I18nexusGeneratedClientTranslationFunction`)
 - Fallback namespace type unions (if configured)
 - Module augmentation for the specified `translationImportSource`
 
@@ -130,6 +133,24 @@ import type { CommonKeys, HomeKeys } from "@/locales/types/i18nexus";
 const commonKey: CommonKeys = "welcome"; // ✅ Type-safe
 const homeKey: HomeKeys = "title"; // ✅ Type-safe
 ```
+
+### Passing `t` Through Props
+
+Generated helper types make it easier to pass typed translation functions into
+smaller components without widening them to `(key: string) => string`.
+
+```typescript
+import type { I18nexusGeneratedTranslationFunction } from "@/locales/types/i18nexus";
+
+type CommonT = I18nexusGeneratedTranslationFunction<"common">;
+
+function DesktopNav({ t }: { t: CommonT }) {
+  return t("Dashboard");
+}
+```
+
+For client components that receive `useTranslation(namespace).t`, use
+`I18nexusGeneratedClientTranslationFunction<"namespace">`.
 
 ### Fallback Namespace Support
 
