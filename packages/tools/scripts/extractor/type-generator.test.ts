@@ -116,6 +116,38 @@ describe("Type Generator", () => {
       );
     });
 
+    it("should include configured fallback namespace even when no fallback keys were extracted", () => {
+      const extractedData: ExtractedTranslations = {
+        home: {
+          en: {
+            title: "Home",
+          },
+          ko: {
+            title: "홈",
+          },
+        },
+      };
+
+      const config: TypeGeneratorConfig = {
+        outputPath,
+        fallbackNamespace: "common",
+        translationImportSource: "i18nexus",
+      };
+
+      generateTypeDefinitions(extractedData, config);
+
+      const content = readFileContent(outputPath);
+
+      expect(content).toContain(
+        'declare type TranslationNamespace = "common" | "home";',
+      );
+      expect(content).toContain("declare type CommonKeys = never;");
+      expect(content).toContain('readonly "common"');
+      expect(content).toContain(
+        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys",
+      );
+    });
+
     it("should extract interpolation variables from translation values", () => {
       const extractedData: ExtractedTranslations = {
         common: {

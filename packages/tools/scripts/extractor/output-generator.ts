@@ -165,7 +165,9 @@ export function generateNamespaceIndexFile(
   }
 
   const indexPath = pathLib.join(outputDir, "index.ts");
-  const sortedNamespaces = [...new Set(namespaces)].sort();
+  const sortedNamespaces = [...new Set([...namespaces, fallbackNamespace])]
+    .filter((namespace) => namespace.trim().length > 0)
+    .sort();
   const sortedLanguages = [...new Set(languages)].sort();
   const namespaceUnion = sortedNamespaces.map((ns) => `"${ns}"`).join(" | ");
   const languageUnion = sortedLanguages.map((lang) => `"${lang}"`).join(" | ");

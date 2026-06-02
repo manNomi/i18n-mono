@@ -240,4 +240,34 @@ describe("getTranslation server namespace fallback", () => {
     expect(translations.common.save).toBe("Save");
     expect(translations.dashboard.title).toBe("Dashboard title");
   });
+
+  it("should warn when i18nexus/server finds an unsupported JS config", async () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+    fs.writeFileSync(
+      path.join(tempDir, "i18nexus.config.js"),
+      `export default { localesDir: "./messages" };`,
+    );
+    fs.mkdirSync(path.join(tempDir, "locales", "common"), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(tempDir, "locales", "common", "en.json"),
+      JSON.stringify({
+        title: "Common title",
+      }),
+    );
+
+    const { t } = await getTranslation("common", {
+      language: "en",
+      disableCache: true,
+    });
+
+    expect(t("title")).toBe("Common title");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("i18nexus.config.js is ignored"),
+    );
+
+    warnSpy.mockRestore();
+  });
 });

@@ -20,6 +20,28 @@ type ConfigWithPath = {
   configDir: string;
 };
 
+const UNSUPPORTED_SERVER_CONFIG_FILES = [
+  "i18nexus.config.js",
+  "i18nexus.config.mjs",
+  "i18nexus.config.cjs",
+  "i18nexus.config.ts",
+];
+
+let hasWarnedUnsupportedServerConfig = false;
+
+function warnUnsupportedServerConfig(configPath: string): void {
+  if (hasWarnedUnsupportedServerConfig) {
+    return;
+  }
+
+  hasWarnedUnsupportedServerConfig = true;
+  console.warn(
+    `[i18nexus] ${path.basename(
+      configPath,
+    )} is ignored by i18nexus/server to avoid Next.js dynamic import warnings. Use i18nexus.config.json or pass getTranslation() options instead.`,
+  );
+}
+
 /** 프로젝트 루트에서 i18nexus 설정 파일 로드 (조용히) - config 디렉토리 경로도 반환 */
 async function loadConfigSilently(): Promise<ConfigWithPath> {
   try {
@@ -36,6 +58,14 @@ async function loadConfigSilently(): Promise<ConfigWithPath> {
 
     // Server utilities intentionally avoid importing JS/TS config files.
     // Expression-based dynamic imports trigger Next.js bundler warnings.
+    const unsupportedConfigPath = UNSUPPORTED_SERVER_CONFIG_FILES.map(
+      (fileName) => path.resolve(process.cwd(), fileName),
+    ).find((candidate) => fs.existsSync(candidate));
+
+    if (unsupportedConfigPath) {
+      warnUnsupportedServerConfig(unsupportedConfigPath);
+    }
+
     return { config: null, configDir: process.cwd() };
   } catch {
     return { config: null, configDir: process.cwd() };

@@ -61,7 +61,7 @@ npx i18n-sheets init
 }
 ```
 
-**참고:** `i18nexus.config.json`이 권장되는 설정 형식입니다. TypeScript 설정 파일(`.ts`)은 레거시 방식이며 새 프로젝트에는 권장하지 않습니다.
+**참고:** `i18nexus.config.json`이 권장되는 설정 형식입니다. JavaScript/TypeScript 설정 파일은 CLI 도구에서는 사용할 수 있지만, `i18nexus/server` 런타임은 Next.js 동적 import 경고를 피하기 위해 읽지 않습니다. JSON 설정 없이 JS/TS 설정만 있으면 경고를 출력하고 해당 파일을 무시합니다.
 
 ### 2. Provider 설정 (Next.js App Router)
 

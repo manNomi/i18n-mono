@@ -225,6 +225,24 @@ describe("output-generator", () => {
       expect(content).not.toContain("./types/i18nexus");
     });
 
+    it("fallback namespace가 추출된 namespace에 없어도 AppNamespace에 포함해야 함", () => {
+      generateNamespaceIndexFile(
+        ["home"],
+        ["en", "ko"],
+        tempDir,
+        "common",
+        false,
+        true,
+      );
+
+      const content = readFileContent(path.join(tempDir, "index.ts"));
+
+      expect(content).toContain(
+        'export const namespaces = ["common", "home"] as const',
+      );
+      expect(content).toContain('export type AppNamespace = "common" | "home"');
+    });
+
     it("타입 생성을 끄면 loose translation shape를 생성해야 함", () => {
       generateNamespaceIndexFile(
         ["common"],

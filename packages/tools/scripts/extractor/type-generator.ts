@@ -163,18 +163,33 @@ export function generateTypeDefinitions(
   // Step 1: Extract all namespace keys
   const namespaceKeys = extractNamespaceKeys(extractedData);
   const namespaceKeysWithInfo = extractNamespaceKeysWithInfo(extractedData);
+  const fallbackNamespace = config.fallbackNamespace?.trim();
 
   if (Object.keys(namespaceKeys).length === 0) {
     console.warn("⚠️  No translation keys found. Skipping type generation.");
     return;
   }
 
+  const extractedDataForTypes: ExtractedTranslations = {
+    ...extractedData,
+  };
+
+  if (fallbackNamespace && !namespaceKeys[fallbackNamespace]) {
+    namespaceKeys[fallbackNamespace] = [];
+    namespaceKeysWithInfo[fallbackNamespace] = [];
+    extractedDataForTypes[fallbackNamespace] =
+      extractedDataForTypes[fallbackNamespace] || {};
+  }
+
   // Step 2: Generate type definition content
   const typeContent = generateTypeContent(
-    extractedData,
+    extractedDataForTypes,
     namespaceKeys,
     namespaceKeysWithInfo,
-    config,
+    {
+      ...config,
+      fallbackNamespace,
+    },
   );
 
   // Step 3: Ensure output directory exists
@@ -338,7 +353,7 @@ function generateTypeContent(
     const typeName = `${capitalize(toCamelCase(namespace))}Keys`;
 
     if (keys.length === 0) {
-      content += `declare type ${typeName} = string;\n`;
+      content += `declare type ${typeName} = never;\n\n`;
       continue;
     }
 

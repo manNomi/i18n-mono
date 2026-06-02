@@ -527,7 +527,8 @@ Create a configuration file in your project root:
 For `i18nexus/server`, `i18nexus.config.json` is the runtime-supported config
 format. JavaScript/TypeScript config files are supported by the CLI tools, but
 the server runtime avoids importing them so Next.js builds do not emit dynamic
-import warnings.
+import warnings. If `i18nexus/server` finds a JS/TS config without a JSON
+config, it logs a warning and ignores that file.
 
 If TypeScript cannot resolve `i18nexus/server`, set modern package export
 resolution:

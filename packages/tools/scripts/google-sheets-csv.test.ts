@@ -90,6 +90,21 @@ button.save,Save,저장`;
       expect(translations[0].ko).toBe("환영합니다");
     });
 
+    it("CSV 헤더 순서에 따라 언어 컬럼을 매핑해야 함", async () => {
+      const csvPath = path.join(tempDir, "translations.csv");
+      const csvContent = `Key,Korean,English
+welcome.title,환영합니다,Welcome`;
+
+      fs.writeFileSync(csvPath, csvContent, "utf-8");
+
+      const translations = await manager.readTranslationsFromCSV(csvPath);
+
+      expect(translations).toHaveLength(1);
+      expect(translations[0].key).toBe("welcome.title");
+      expect(translations[0].ko).toBe("환영합니다");
+      expect(translations[0].en).toBe("Welcome");
+    });
+
     it("CSV 파일이 없으면 에러를 발생시켜야 함", async () => {
       const csvPath = path.join(tempDir, "nonexistent.csv");
 
