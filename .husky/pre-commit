@@ -7,9 +7,6 @@ fi
 echo "🔍 Running linter on staged files..."
 
 # lint-staged로 변경된 파일 포맷팅
-npx lint-staged || {
-  echo "⚠️  Lint-staged failed, but continuing..."
-  echo "💡 Files can be formatted manually with: npm run format"
-}
+npx lint-staged
 
 echo "✅ Pre-commit checks completed!"

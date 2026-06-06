@@ -7,7 +7,7 @@ describe("getDownloadStats", () => {
 
   it("throws for unknown package", async () => {
     await expect(getDownloadStats("unknown")).rejects.toThrow(
-      "Package not found",
+      "Package not found"
     );
   });
 
@@ -17,7 +17,7 @@ describe("getDownloadStats", () => {
       .mockResolvedValue({ ok: false } as unknown as Response);
 
     await expect(getDownloadStats("i18nexus")).rejects.toThrow(
-      "Failed to fetch npm data",
+      "Failed to fetch npm data"
     );
   });
 
@@ -39,7 +39,7 @@ describe("getDownloadStats", () => {
     expect(result).toEqual(payload);
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("api.npmjs.org/downloads/point/2025-09-28"),
-      { next: { revalidate: 3600 } },
+      { next: { revalidate: 3600 } }
     );
   });
 });

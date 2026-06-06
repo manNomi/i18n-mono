@@ -42,7 +42,7 @@ export default [
       "react/no-unescaped-entities": "off",
       "react/self-closing-comp": ["error", { component: true, html: true }],
       "react/jsx-first-prop-new-line": "error",
-      quotes: ["error", "double"],
+      quotes: ["error", "double", { avoidEscape: true }],
       "eol-last": "error",
       semi: ["error", "always"],
       "simple-import-sort/imports": "error",
