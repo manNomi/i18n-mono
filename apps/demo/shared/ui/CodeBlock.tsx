@@ -18,7 +18,7 @@ export function CodeBlock({
 }: CodeBlockProps) {
   return (
     <div
-      className={`overflow-x-auto rounded-lg border border-slate-200 bg-white ${className}`}
+      className={`overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 shadow-[0_1px_2px_rgba(0,12,30,0.04)] ${className}`}
     >
       <SyntaxHighlighter
         language={language}
@@ -28,7 +28,7 @@ export function CodeBlock({
         customStyle={{
           margin: 0,
           padding: "1rem",
-          background: "#ffffff",
+          background: "#f9fafb",
           fontSize: "0.875rem",
           minWidth: "100%",
         }}

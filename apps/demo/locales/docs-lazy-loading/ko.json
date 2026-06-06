@@ -1,0 +1,14 @@
+{
+  "관련 문서": "관련 문서",
+  "문서로 돌아가기": "문서로 돌아가기",
+  "설정 순서": "설정 순서",
+  "컴포넌트에서 namespace 요청": "컴포넌트에서 namespace 요청",
+  "현재 API 기준": "현재 API 기준",
+  "fallback namespace는 공통 문구를 위해 미리 로드합니다.": "fallback namespace는 공통 문구를 위해 미리 로드합니다.",
+  "I18nProvider에 연결": "I18nProvider에 연결",
+  "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다.": "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다.",
+  "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다.": "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다.",
+  "namespace loader 작성": "namespace loader 작성",
+  "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다.": "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다.",
+  "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다.": "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다."
+}

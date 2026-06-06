@@ -8,6 +8,12 @@ export default function UseLanguageSwitcherPage() {
   const { currentLanguage, changeLanguage, availableLanguages } =
     useLanguageSwitcher();
 
+  const getLanguageLabel = (langCode: string, fallbackName: string) => {
+    if (langCode === "ko") return t("한국어");
+    if (langCode === "en") return t("English");
+    return fallbackName;
+  };
+
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Breadcrumb */}
@@ -59,7 +65,7 @@ export default function UseLanguageSwitcherPage() {
                       : "bg-slate-700 text-slate-300 hover:bg-slate-600"
                   }`}
                 >
-                  {lang.flag} {lang.name}
+                  {lang.flag} {getLanguageLabel(lang.code, lang.name)}
                 </button>
               ))}
             </div>

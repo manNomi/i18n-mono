@@ -1,8 +1,11 @@
 {
+  "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}": "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}",
   "간단한 파일 구조: locales/en.json, locales/ko.json": "Simple file structure: locales/en.json, locales/ko.json",
   "개발자 경험": "Developer Experience",
   "공백을 유지한 스마트 키 생성": "Smart key generation preserving whitespace",
+  "기본 워크플로우": "Basic Workflow",
   "기존 번역 보존": "Preserve existing translations",
+  "도구 목록": "Tool List",
   "동기화 및 협업": "Synchronization & Collaboration",
   "또는 설치 없이 사용": "Or use without installation",
   "래핑된 텍스트에서 번역 파일을 생성하고 기존 번역과 병합": "Generate translation files from wrapped text and merge with existing translations",
@@ -22,12 +25,14 @@
   "영어 번역 추가": "Add English translations",
   "자동 import 주입": "Automatic import injection",
   "자동화": "Automation",
+  "자세히 알아보기": "Learn more",
   "전역 설치 (권장)": "Global installation (recommended)",
   "전체 덮어쓰기를 위한 강제 동기화": "Force sync for complete overwrite",
   "주요 기능": "Key Features",
   "증분 업데이트 (안전)": "Incremental update (safe)",
   "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": "Powerful CLI tool that automates i18n workflow from code conversion to Google Sheets integration",
   "코드에 하드코딩된 한국어 문자열을 t()로 자동 감싸기": "Automatically wrap hardcoded Korean strings in code with t()",
+  "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": "Run each step from text wrapping to Google Sheets synchronization in order.",
   "팀 협업을 위해 번역을 Google Sheets로 업로드": "Upload translations to Google Sheets for team collaboration",
   "팁": "Tips",
   "파일 관리": "File Management",
@@ -51,10 +56,5 @@
   "i18nexus-tools": "i18nexus-tools",
   "i18nexus-tools 문서": "i18nexus-tools Documentation",
   "TypeScript 지원": "TypeScript Support",
-  "Upload local translations to Google Sheets": "Upload local translations to Google Sheets",
-  "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}": "",
-  "기본 워크플로우": "",
-  "도구 목록": "",
-  "자세히 알아보기": "",
-  "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": ""
+  "Upload local translations to Google Sheets": "Upload local translations to Google Sheets"
 }

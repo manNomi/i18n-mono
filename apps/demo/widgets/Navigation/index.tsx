@@ -50,7 +50,7 @@ function NavLink({
     <Link
       href={item.href}
       onClick={onClick}
-      className={`block rounded-md px-3 py-2 text-sm font-medium ${
+      className={`block rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
         active
           ? "bg-blue-50 text-blue-700"
           : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
@@ -148,7 +148,7 @@ export default function Navigation() {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-200 bg-white transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-200 bg-white shadow-[8px_0_24px_rgba(0,12,30,0.06)] transition-transform duration-200 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -215,12 +215,12 @@ export default function Navigation() {
         </div>
       </aside>
 
-      <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/95">
+      <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
               aria-label={String(sidebarOpen ? t("닫기") : t("메뉴 열기"))}
-              className="shrink-0 rounded-md border border-slate-200 p-2 text-slate-700 hover:bg-slate-50"
+              className="shrink-0 rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-[0_1px_2px_rgba(0,12,30,0.04)] transition-colors hover:bg-slate-50"
               onClick={() => setSidebarOpen((open) => !open)}
             >
               <MenuIcon open={sidebarOpen} />

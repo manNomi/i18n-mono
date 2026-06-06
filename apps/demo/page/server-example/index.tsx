@@ -1,25 +1,57 @@
-import { getTranslation } from "i18nexus/server";
+import { createServerTranslation, getServerLanguage } from "i18nexus/server";
+import { headers } from "next/headers";
 
+import commonEn from "@/locales/common/en.json";
+import commonKo from "@/locales/common/ko.json";
+import serverExampleEn from "@/locales/server-example/en.json";
+import serverExampleKo from "@/locales/server-example/ko.json";
 import { CodeBlock, PageShell, Section } from "@/shared/ui";
 
-const serverCode = `import { getTranslation } from "i18nexus/server";
+const serverExampleTranslations = {
+  common: {
+    en: commonEn,
+    ko: commonKo,
+  },
+  "server-example": {
+    en: serverExampleEn,
+    ko: serverExampleKo,
+  },
+};
+
+const serverCode = `import { headers } from "next/headers";
+import { createServerTranslation, getServerLanguage } from "i18nexus/server";
+
+import commonEn from "@/locales/common/en.json";
+import commonKo from "@/locales/common/ko.json";
+import serverExampleEn from "@/locales/server-example/en.json";
+import serverExampleKo from "@/locales/server-example/ko.json";
+
+const translations = {
+  common: { en: commonEn, ko: commonKo },
+  "server-example": { en: serverExampleEn, ko: serverExampleKo },
+};
 
 export default async function Page() {
-  const { t, language } = await getTranslation<"server-example">(
-    "server-example"
-  );
+  const language = getServerLanguage(await headers(), {
+    defaultLanguage: "ko",
+    availableLanguages: ["en", "ko"],
+  });
+  const t = createServerTranslation(language, translations);
 
   return (
     <main>
-      <h1>{t("서버 컴포넌트 예제")}</h1>
+      <h1>{t("Server Component Example")}</h1>
       <p>{language}</p>
     </main>
   );
 }`;
 
 export default async function ServerExamplePage() {
-  const { t, language } =
-    await getTranslation<"server-example">("server-example");
+  const language = getServerLanguage(await headers(), {
+    defaultLanguage: "ko",
+    availableLanguages: ["en", "ko"],
+  });
+  const t = createServerTranslation(language, serverExampleTranslations);
 
   return (
     <PageShell
@@ -77,7 +109,7 @@ export default async function ServerExamplePage() {
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <dt className="font-medium text-slate-500">{t("번역 방법")}</dt>
             <dd className="mt-1 font-semibold text-slate-950">
-              getTranslation()
+              createServerTranslation()
             </dd>
           </div>
         </dl>

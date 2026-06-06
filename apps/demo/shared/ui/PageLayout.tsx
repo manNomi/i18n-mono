@@ -24,11 +24,11 @@ export function PageShell({
 }: PageShellProps) {
   return (
     <main className={size === "narrow" ? "demo-narrow-shell" : "demo-shell"}>
-      <header className="mb-8 border-b border-slate-200 pb-6">
+      <header className="mb-8 rounded-[28px] border border-slate-200 bg-white px-5 py-6 shadow-[0_1px_2px_rgba(0,12,30,0.04)] sm:px-8 sm:py-8">
         {backHref ? (
           <Link
             href={backHref}
-            className="mb-4 inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
+            className="mb-5 inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
           >
             <span className="mr-2" aria-hidden="true">
               &larr;
@@ -37,13 +37,13 @@ export function PageShell({
           </Link>
         ) : null}
         {eyebrow ? (
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-blue-600">
             {eyebrow}
           </p>
         ) : null}
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-4xl">
               {title}
             </h1>
             {description ? (
@@ -79,7 +79,9 @@ export function Section({
     <section className={`demo-section mb-6 ${className}`}>
       {title ? (
         <div className="mb-5">
-          <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
+          <h2 className="text-xl font-bold tracking-[-0.02em] text-slate-950">
+            {title}
+          </h2>
           {description ? (
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {description}
@@ -106,7 +108,7 @@ const calloutToneClass = {
 
 export function Callout({ children, title, tone = "info" }: CalloutProps) {
   return (
-    <div className={`rounded-lg border p-4 ${calloutToneClass[tone]}`}>
+    <div className={`rounded-2xl border p-4 ${calloutToneClass[tone]}`}>
       {title ? <p className="mb-2 font-semibold">{title}</p> : null}
       <div className="text-sm leading-6">{children}</div>
     </div>
@@ -127,9 +129,9 @@ export function StepCard({
   description,
 }: StepCardProps) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5">
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(0,12,30,0.04)]">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-semibold text-slate-700">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-700">
           {step}
         </span>
         <div>

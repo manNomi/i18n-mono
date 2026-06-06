@@ -79,7 +79,7 @@ export default function LoginForm() {
       >
         <div className="mb-6">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
-            이메일
+            {t("이메일")}
           </label>
           <input
             type="email"
@@ -93,7 +93,7 @@ export default function LoginForm() {
 
         <div className="mb-6">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
-            비밀번호
+            {t("비밀번호")}
           </label>
           <input
             type="password"
@@ -116,7 +116,7 @@ export default function LoginForm() {
           disabled={loading}
           className="w-full rounded-md border border-blue-600 bg-blue-600 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-blue-700"
         >
-          {loading ? "로그인 중..." : "로그인"}
+          {loading ? t("로그인 중...") : t("로그인")}
         </button>
       </form>
 
@@ -142,7 +142,7 @@ export default function LoginForm() {
           </li>
           <li className="flex items-start">
             <span className="mr-2 text-slate-400">2.</span>
-            <span>{t("Sign-in method에서 \"Email/Password\" 활성화")}</span>
+            <span>{t('Sign-in method에서 "Email/Password" 활성화')}</span>
           </li>
           <li className="flex items-start">
             <span className="mr-2 text-slate-400">3.</span>

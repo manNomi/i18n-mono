@@ -55,16 +55,36 @@ export default function Page() {
   return <div>{t("안녕하세요")}</div>;
 }`;
 
-const serverExample = `import { getTranslation } from "i18nexus/server";
+const serverExample = `import { headers } from "next/headers";
+import { createServerTranslation, getServerLanguage } from "i18nexus/server";
+
+import commonEn from "@/locales/common/en.json";
+import commonKo from "@/locales/common/ko.json";
+import gettingStartedEn from "@/locales/getting-started/en.json";
+import gettingStartedKo from "@/locales/getting-started/ko.json";
+
+const translations = {
+  common: { en: commonEn, ko: commonKo },
+  "getting-started": { en: gettingStartedEn, ko: gettingStartedKo },
+};
 
 export default async function Page() {
-  const { t } = await getTranslation<"getting-started">("getting-started");
+  const lang = getServerLanguage(await headers(), {
+    defaultLanguage: "ko",
+    availableLanguages: ["en", "ko"],
+  });
+  const t = createServerTranslation(lang, translations);
 
   return <div>{t("안녕하세요")}</div>;
 }`;
 
 export default function GettingStartedPage() {
   const { t } = useTranslation("getting-started");
+  const actions = (
+    <Link href="/cli" className="demo-button">
+      {t("CLI 도구 살펴보기")}
+    </Link>
+  );
 
   return (
     <PageShell
@@ -72,11 +92,7 @@ export default function GettingStartedPage() {
       backLabel={t("홈으로 돌아가기")}
       title={t("시작하기")}
       description={t("프로젝트에 i18nexus를 설정하는 완벽한 단계별 가이드")}
-      actions={(
-        <Link href="/cli" className="demo-button">
-          {t("CLI 도구 살펴보기")}
-        </Link>
-      )}
+      actions={actions}
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <StepCard
@@ -112,7 +128,9 @@ export default function GettingStartedPage() {
 
       <Section
         title={t("i18n 설정")}
-        description="Lazy loading은 createI18n 옵션이 아니라 I18nProvider props로 설정합니다."
+        description={t(
+          "Lazy loading은 createI18n 옵션이 아니라 I18nProvider props로 설정합니다."
+        )}
       >
         <div className="grid gap-4">
           <CodeBlock language="typescript">{namespaceLoaderExample}</CodeBlock>
@@ -124,8 +142,10 @@ export default function GettingStartedPage() {
         <CodeBlock language="bash">npx i18n-wrapper</CodeBlock>
         <Callout title={t("중요: 서버 컴포넌트 확인")} tone="warning">
           <p>
-            클라이언트 컴포넌트는 <code>useTranslation()</code>을 사용하고, 서버
-            컴포넌트는 <code>getTranslation()</code>을 사용합니다.
+            {t("클라이언트 컴포넌트는")} <code>useTranslation()</code>
+            {t("을 사용하고, 서버 컴포넌트는")}{" "}
+            <code>createServerTranslation()</code>
+            {t("을 사용합니다.")}
           </p>
         </Callout>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
