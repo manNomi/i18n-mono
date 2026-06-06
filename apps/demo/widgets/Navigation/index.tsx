@@ -90,6 +90,7 @@ export default function Navigation() {
     { href: "/", label: t("홈") },
     { href: "/getting-started", label: t("시작하기") },
     { href: "/server-example", label: t("서버 예제") },
+    { href: "/dx-lab", label: t("DX Lab") },
     { href: "/showcase", label: t("쇼케이스") },
     { href: "/showcase/submit", label: t("프로젝트 등록") },
   ];
@@ -131,44 +132,6 @@ export default function Navigation() {
         { href: "/admin/login", label: t("관리자 로그인") },
         { href: "/admin/dashboard", label: t("대시보드") },
       ],
-    },
-    {
-      href: "/dx-lab",
-      label: t("DX Lab"),
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5.16 14.34a6.75 6.75 0 109.55 0l-3.93-3.93a2.25 2.25 0 01-.659-1.591V3.104m-2.25 0h4.5"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: "/dx-lab",
-      label: t("DX Lab"),
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5.16 14.34a6.75 6.75 0 109.55 0l-3.93-3.93a2.25 2.25 0 01-.659-1.591V3.104m-2.25 0h4.5"
-          />
-        </svg>
-      ),
     },
   ];
 

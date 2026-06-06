@@ -11,7 +11,7 @@ describe("approveProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(payload),
-    } as Response);
+    } as unknown as Response);
 
     const result = await approveProject("p1");
 
@@ -27,7 +27,7 @@ describe("approveProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: jest.fn().mockResolvedValue({ error: "Failed to approve" }),
-    } as Response);
+    } as unknown as Response);
 
     await expect(approveProject("p1")).rejects.toThrow("Failed to approve");
   });

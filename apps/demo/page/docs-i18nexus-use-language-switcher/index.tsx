@@ -1,13 +1,12 @@
 "use client";
 
-import { useTranslation } from "i18nexus";
+import { useLanguageSwitcher, useTranslation } from "i18nexus";
 import Link from "next/link";
 
 export default function UseLanguageSwitcherPage() {
   const { t } = useTranslation("docs-i18nexus-use-language-switcher");
-  const currentLanguage = getCurrentLanguage();
-  const changeLanguage = changeLanguage;
-  const availableLanguages = getAvailableLanguages();
+  const { currentLanguage, changeLanguage, availableLanguages } =
+    useLanguageSwitcher();
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -127,11 +126,8 @@ export default function UseLanguageSwitcherPage() {
                 {t("현재 활성화된 언어 코드입니다.")}
               </p>
               <pre className="bg-slate-950 rounded-lg p-3 overflow-x-auto">
-                <code className="text-sm text-slate-400">
-                  {t(
-                    "// \u2705 \uC0C8\uB85C\uC6B4 \uBC29\uC2DD (\uAD8C\uC7A5)\nconst currentLanguage = getCurrentLanguage();\nconsole.log(currentLanguage); // \"ko\" or \"en\"\n\n// \u274C \uB808\uAC70\uC2DC \uBC29\uC2DD (deprecated)\nconst { currentLanguage } = useLanguageSwitcher();"
-                  )}
-                </code>
+                <code className="text-sm text-slate-400">{`const { currentLanguage } = useLanguageSwitcher();
+console.log(currentLanguage); // "ko" or "en"`}</code>
               </pre>
             </div>
 
@@ -147,11 +143,10 @@ export default function UseLanguageSwitcherPage() {
                 )}
               </p>
               <pre className="bg-slate-950 rounded-lg p-3 overflow-x-auto">
-                <code className="text-sm text-slate-400">
-                  {t(
-                    "// \u2705 \uC0C8\uB85C\uC6B4 \uBC29\uC2DD (\uAD8C\uC7A5)\nchangeLanguage(\"en\");\nchangeLanguage(\"ko\");\n\n// \u274C \uB808\uAC70\uC2DC \uBC29\uC2DD (deprecated)\nconst { changeLanguage } = useLanguageSwitcher();"
-                  )}
-                </code>
+                <code className="text-sm text-slate-400">{`const { changeLanguage } = useLanguageSwitcher();
+
+await changeLanguage("en");
+await changeLanguage("ko");`}</code>
               </pre>
             </div>
 
@@ -165,11 +160,16 @@ export default function UseLanguageSwitcherPage() {
                 {t("사용 가능한 언어 목록입니다.")}
               </p>
               <pre className="bg-slate-950 rounded-lg p-3 overflow-x-auto">
-                <code className="text-sm text-slate-400">
-                  {t(
-                    "// \u2705 \uC0C8\uB85C\uC6B4 \uBC29\uC2DD (\uAD8C\uC7A5)\nconst availableLanguages = getAvailableLanguages();\n\n// Language \uD0C0\uC785:\n// { code: string, name: string, flag?: string }\n\navailableLanguages.map(lang => (\n  <button onClick={() => changeLanguage(lang.code)}>\n    {lang.flag} {lang.name}\n  </button>\n))\n\n// \u274C \uB808\uAC70\uC2DC \uBC29\uC2DD (deprecated)\nconst { availableLanguages } = useLanguageSwitcher();"
-                  )}
-                </code>
+                <code className="text-sm text-slate-400">{`const { availableLanguages, changeLanguage } = useLanguageSwitcher();
+
+// Language:
+// { code: string, name: string, flag?: string }
+
+availableLanguages.map((lang) => (
+  <button onClick={() => changeLanguage(lang.code)}>
+    {lang.flag} {lang.name}
+  </button>
+));`}</code>
               </pre>
             </div>
           </div>
@@ -187,9 +187,29 @@ export default function UseLanguageSwitcherPage() {
           </h3>
           <pre className="bg-slate-950 rounded-lg p-6 overflow-x-auto border border-slate-800">
             <code className="text-sm text-slate-300">
-              {t(
-                "\"use client\";\n\nimport { useTranslation, useLanguageSwitcher } from \"i18nexus\";\n\nexport default function LanguageSelector() {\n  const currentLanguage = getCurrentLanguage();\n  const availableLanguages = getAvailableLanguages();\n\n  return (\n    <div>\n      <p>\uD604\uC7AC \uC5B8\uC5B4: {currentLanguage}</p>\n\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}"
-              )}
+              {`"use client";
+
+import { useLanguageSwitcher } from "i18nexus";
+
+export default function LanguageSelector() {
+  const { currentLanguage, availableLanguages, changeLanguage } =
+    useLanguageSwitcher();
+
+  return (
+    <div>
+      <p>현재 언어: {currentLanguage}</p>
+
+      {availableLanguages.map((lang) => (
+        <button
+          key={lang.code}
+          onClick={() => changeLanguage(lang.code)}
+        >
+          {lang.name}
+        </button>
+      ))}
+    </div>
+  );
+}`}
             </code>
           </pre>
         </div>
@@ -202,11 +222,11 @@ export default function UseLanguageSwitcherPage() {
           <pre className="bg-slate-950 rounded-lg p-6 overflow-x-auto border border-slate-800">
             <code className="text-sm text-slate-300">{`"use client";
 
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
+import { useLanguageSwitcher } from "i18nexus";
 
 export default function LanguageDropdown() {
-  const currentLanguage = getCurrentLanguage();
-  const availableLanguages = getAvailableLanguages();
+  const { currentLanguage, availableLanguages, changeLanguage } =
+    useLanguageSwitcher();
 
   return (
     <select
@@ -234,11 +254,11 @@ export default function LanguageDropdown() {
             <code className="text-sm text-slate-300">
               {`"use client";
 
-import { useTranslation, useLanguageSwitcher } from "i18nexus";
+import { useLanguageSwitcher } from "i18nexus";
 
 export default function FancyLanguageSwitcher() {
-  const currentLanguage = getCurrentLanguage();
-  const availableLanguages = getAvailableLanguages();
+  const { currentLanguage, availableLanguages, changeLanguage } =
+    useLanguageSwitcher();
 
   return (
     <div className="flex gap-2">

@@ -82,16 +82,16 @@ describe("root exports", () => {
   });
 
   it("declares devtools and server as explicit package subpaths", () => {
-    expect(packageJson.version).toBe("4.0.0");
+    expect(packageJson.version).toBe("4.0.1");
     expect(packageJson.files).toContain("CHANGELOG.md");
     expect(Object.prototype.hasOwnProperty.call(packageJson.exports, ".")).toBe(
-      true,
+      true
     );
     expect(
-      Object.prototype.hasOwnProperty.call(packageJson.exports, "./server"),
+      Object.prototype.hasOwnProperty.call(packageJson.exports, "./server")
     ).toBe(true);
     expect(
-      Object.prototype.hasOwnProperty.call(packageJson.exports, "./devtools"),
+      Object.prototype.hasOwnProperty.call(packageJson.exports, "./devtools")
     ).toBe(true);
     expect(typeof I18NexusDevtools).toBe("function");
   });

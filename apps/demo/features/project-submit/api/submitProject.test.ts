@@ -21,7 +21,7 @@ describe("submitProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(mockResponse),
-    } as Response);
+    } as unknown as Response);
 
     const result = await submitProject(payload);
 
@@ -37,7 +37,7 @@ describe("submitProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: jest.fn().mockResolvedValue({ error: "Failed to submit" }),
-    } as Response);
+    } as unknown as Response);
 
     await expect(submitProject(payload)).rejects.toThrow("Failed to submit");
   });
@@ -46,7 +46,7 @@ describe("submitProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: jest.fn().mockResolvedValue({}),
-    } as Response);
+    } as unknown as Response);
 
     await expect(submitProject(payload)).rejects.toThrow("Failed to submit");
   });
