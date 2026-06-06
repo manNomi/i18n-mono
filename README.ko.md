@@ -4,45 +4,45 @@
 [![i18nexus-tools](https://img.shields.io/npm/v/i18nexus-tools?label=i18nexus-tools)](https://www.npmjs.com/package/i18nexus-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./packages/core/LICENSE)
 
-[한국어 README](./README.ko.md)
+[English README](./README.md)
 
-Type-safe, AI-agent-friendly i18n toolkit for React and Next.js.
+React와 Next.js를 위한 타입 안전하고 AI 에이전트 친화적인 i18n 툴킷입니다.
 
-i18nexus helps teams manage multilingual React/Next.js applications by combining a lightweight runtime, namespace-based resources, generated TypeScript types, server translation helpers, and CLI automation for extraction, type generation, legacy cleanup, and translation sync.
+i18nexus는 가벼운 런타임, 네임스페이스 기반 JSON 리소스, 생성된 TypeScript 타입, 서버 번역 헬퍼, 그리고 추출/타입 생성/레거시 정리/번역 동기화를 위한 CLI 자동화를 함께 제공합니다.
 
-This repository is the monorepo for the i18nexus runtime and companion tooling.
+이 저장소는 i18nexus 런타임과 companion CLI 도구를 함께 관리하는 모노레포입니다.
 
-## Why i18nexus
+## 왜 i18nexus인가
 
-Most i18n bugs are not caused by slow translation functions. They happen because code, locale files, generated types, lazy loading, and fallback rules drift apart.
+대부분의 i18n 버그는 번역 함수가 느려서 생기지 않습니다. 코드, locale 파일, 생성된 타입, lazy loading, fallback 규칙이 서로 어긋나면서 생깁니다.
 
-i18nexus is designed to keep those pieces connected:
+i18nexus는 이 조각들이 같은 계약을 공유하도록 설계되었습니다.
 
-- type-safe React translation APIs
-- namespace-based JSON resources
+- 타입 안전한 React 번역 API
+- 네임스페이스 기반 JSON 리소스
 - lazy namespace loading
-- SSR/server translation support
-- CLI tools for wrapping text, extracting keys, generating types, cleaning legacy translation keys, and syncing translations
-- AI coding agent workflows for Codex, Claude, and other autonomous tools
+- SSR/server translation 지원
+- 텍스트 래핑, key 추출, 타입 생성, 레거시 번역 key 정리, 번역 동기화를 위한 CLI 도구
+- Codex, Claude 같은 AI coding agent를 위한 설치/검증 workflow
 
-## Packages
+## 패키지 구성
 
-| Package          | Role                                                                                                     |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| `i18nexus`       | Type-safe React i18n runtime with provider, hooks, lazy namespace loading, and server helpers            |
-| `i18nexus-tools` | CLI companion for wrapping text, extracting keys, generating types, legacy cleanup, and translation sync |
-| `apps/demo`      | Example app for validating runtime and CLI workflows                                                     |
+| Package          | Role                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `i18nexus`       | Provider, hook, lazy namespace loading, server helper를 제공하는 타입 안전 React i18n 런타임 |
+| `i18nexus-tools` | 텍스트 래핑, key 추출, 타입 생성, 레거시 정리, 번역 동기화를 위한 CLI companion              |
+| `apps/demo`      | 런타임과 CLI workflow를 검증하기 위한 예제 앱                                                |
 
 ## Quick Start
 
-Install the runtime and CLI companion:
+런타임과 CLI companion을 설치합니다.
 
 ```bash
 npm install i18nexus
 npm install -D i18nexus-tools
 ```
 
-Create `i18nexus.config.json`:
+`i18nexus.config.json`을 생성합니다.
 
 ```json
 {
@@ -57,7 +57,7 @@ Create `i18nexus.config.json`:
 }
 ```
 
-Use translations in React:
+React에서 번역을 사용합니다.
 
 ```tsx
 import { useTranslation } from "i18nexus";
@@ -71,7 +71,7 @@ export function HomeTitle() {
 }
 ```
 
-Run the tools:
+도구를 실행합니다.
 
 ```bash
 npx i18n-extractor
@@ -80,22 +80,22 @@ npx i18n-type
 
 ## CLI Workflow
 
-`i18nexus-tools` can help automate the repetitive parts of localization:
+`i18nexus-tools`는 현지화 작업에서 반복되는 부분을 자동화합니다.
 
 ```bash
-npx i18n-wrapper       # wrap hard-coded UI text with t(...)
-npx i18n-extractor     # extract translation keys into locale files
-npx i18n-type          # generate TypeScript translation key types
-npx i18n-sheets        # sync translations with Google Sheets workflows
-npx i18n-clean-legacy  # remove obsolete translation keys from locale files
+npx i18n-wrapper       # 하드코딩된 UI 텍스트를 t(...)로 래핑
+npx i18n-extractor     # 번역 key를 locale 파일로 추출
+npx i18n-type          # TypeScript 번역 key 타입 생성
+npx i18n-sheets        # Google Sheets 기반 번역 workflow 동기화
+npx i18n-clean-legacy  # locale 파일에서 더 이상 쓰지 않는 번역 key 정리
 ```
 
 ## AI Agent Setup Prompt
 
-The project keeps an agent-ready setup prompt because i18n setup is often a multi-file migration. Copy this section into Codex, Claude, or another coding agent when you want it to install and validate i18nexus in an existing project.
+i18n 설정은 여러 파일을 함께 바꾸는 migration인 경우가 많습니다. 그래서 이 저장소는 Codex, Claude 같은 coding agent에 바로 붙여넣을 수 있는 설치 프롬프트를 유지합니다.
 
 <details>
-<summary>Open the full agent prompt</summary>
+<summary>전체 agent prompt 열기</summary>
 
 ```text
 You are an autonomous coding agent.
@@ -195,7 +195,7 @@ D) commands run + results
 E) remaining issues and next immediate action
 ```
 
-Quick message to send with this prompt:
+agent에게 함께 보낼 짧은 메시지:
 
 ```text
 Set up i18nexus in <TARGET_PROJECT_PATH> by following the prompt exactly. Execute all steps, not just explanation.
@@ -203,20 +203,20 @@ Set up i18nexus in <TARGET_PROJECT_PATH> by following the prompt exactly. Execut
 
 </details>
 
-## Maintainer Workflow with Codex
+## Codex를 활용한 maintainer workflow
 
-Codex can help maintain this project by:
+Codex는 이 프로젝트 유지보수에서 다음 작업을 도울 수 있습니다.
 
-- reviewing PRs for i18n key safety and namespace consistency
-- generating regression tests for CLI transforms
-- validating React/Next.js SSR compatibility
-- checking generated type definitions before releases
-- preparing release notes from changesets and tags
-- diagnosing edge cases in user projects through reproducible fixtures
+- PR에서 i18n key 안전성과 namespace 일관성 리뷰
+- CLI transform 회귀 테스트 생성
+- React/Next.js SSR 호환성 검증
+- 릴리즈 전 generated type definition 확인
+- changeset, tag 기반 릴리즈 노트 준비
+- 사용자 프로젝트의 edge case를 재현 가능한 fixture로 진단
 
-The goal is to turn i18n maintenance into a repeatable workflow: source code changes, generated locale resources, generated types, runtime behavior, and release validation should all agree.
+목표는 i18n 유지보수를 반복 가능한 workflow로 만드는 것입니다. source code 변경, 생성된 locale 리소스, 생성된 타입, 런타임 동작, 릴리즈 검증이 모두 같은 계약을 따라야 합니다.
 
-## Repository Layout
+## 저장소 구조
 
 ```text
 packages/core    # i18nexus runtime
@@ -224,7 +224,7 @@ packages/tools   # i18nexus-tools CLI companion
 apps/demo        # demo and validation app
 ```
 
-## Development
+## 개발
 
 ```bash
 npm install
@@ -232,18 +232,18 @@ npm run build
 npm test
 ```
 
-Run package-specific checks when working in a package:
+패키지별 작업 시에는 해당 패키지에서 테스트를 실행합니다.
 
 ```bash
 cd packages/core && npm test
 cd packages/tools && npm test
 ```
 
-## Documentation
+## 문서
 
 - Runtime docs: [`packages/core`](./packages/core)
 - Tools docs: [`packages/tools`](./packages/tools)
-- Korean README: [`README.ko.md`](./README.ko.md)
+- English README: [`README.md`](./README.md)
 
 ## License
 
