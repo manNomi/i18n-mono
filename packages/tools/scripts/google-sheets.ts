@@ -17,6 +17,33 @@ export interface TranslationRow {
   [language: string]: string;
 }
 
+const CSV_LANGUAGE_HEADER_TO_CODE: Record<string, string> = {
+  english: "en",
+  korean: "ko",
+  japanese: "ja",
+  chinese: "zh",
+  spanish: "es",
+  french: "fr",
+  german: "de",
+};
+
+function normalizeCsvHeader(header: string): string {
+  return header
+    .trim()
+    .replace(/^\uFEFF/, "")
+    .toLowerCase();
+}
+
+function getLanguageCodeFromCsvHeader(header: string): string | null {
+  const normalized = normalizeCsvHeader(header);
+
+  if (!normalized || normalized === "key") {
+    return null;
+  }
+
+  return CSV_LANGUAGE_HEADER_TO_CODE[normalized] || normalized;
+}
+
 export class GoogleSheetsManager {
   private sheets: sheets_v4.Sheets | null = null;
   private config: Required<GoogleSheetsConfig>;
@@ -921,15 +948,26 @@ export class GoogleSheetsManager {
         return [];
       }
 
-      // 헤더 확인 (Key, English, Korean 순서 기대)
-      const header = lines[0];
-      if (
-        !header.toLowerCase().includes("key") ||
-        !header.toLowerCase().includes("english") ||
-        !header.toLowerCase().includes("korean")
-      ) {
+      const headers = this.parseCSVLine(lines[0]);
+      const keyHeader = normalizeCsvHeader(headers[0] || "");
+      const languageColumns = headers
+        .slice(1)
+        .map((header, index) => ({
+          language: getLanguageCodeFromCsvHeader(header),
+          valueIndex: index + 1,
+        }))
+        .filter(
+          (
+            column,
+          ): column is {
+            language: string;
+            valueIndex: number;
+          } => Boolean(column.language),
+        );
+
+      if (keyHeader !== "key" || languageColumns.length === 0) {
         console.warn(
-          "⚠️ CSV header format might not be correct. Expected: Key, English, Korean",
+          "⚠️ CSV header format might not be correct. Expected: Key plus one or more language columns",
         );
       }
 
@@ -942,12 +980,16 @@ export class GoogleSheetsManager {
 
         const values = this.parseCSVLine(line);
 
-        if (values.length >= 3 && values[0]) {
-          translations.push({
+        if (values[0]) {
+          const row: TranslationRow = {
             key: values[0],
-            en: values[1] || "",
-            ko: values[2] || "",
-          });
+          };
+
+          for (const { language, valueIndex } of languageColumns) {
+            row[language] = values[valueIndex] || "";
+          }
+
+          translations.push(row);
         }
       }
 

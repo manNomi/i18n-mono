@@ -74,7 +74,7 @@ function processFile(task: WorkerTask): WorkerResult {
 
     traverse(ast, {
       FunctionDeclaration: (path) => {
-        if (tryTransformComponent(path, code, modifiedComponentPaths)) {
+        if (tryTransformComponent(path, code, modifiedComponentPaths, config)) {
           isFileModified = true;
         }
       },
@@ -83,7 +83,9 @@ function processFile(task: WorkerTask): WorkerResult {
           t.isVariableDeclarator(path.parent) &&
           t.isIdentifier(path.parent.id)
         ) {
-          if (tryTransformComponent(path, code, modifiedComponentPaths)) {
+          if (
+            tryTransformComponent(path, code, modifiedComponentPaths, config)
+          ) {
             isFileModified = true;
           }
         }

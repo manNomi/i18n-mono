@@ -66,6 +66,41 @@ describe("TranslationExtractor", () => {
       expect(data["welcome.title"]).toBeDefined();
     });
 
+    it("defaultLanguage가 en이면 en.json에 추출 원문을 채워야 함", async () => {
+      createTempFile(
+        sourceDir,
+        "page.tsx",
+        `
+        import { useTranslation } from "i18nexus";
+
+        export default function Page() {
+          const { t } = useTranslation();
+          return <h1>{t("Dashboard")}</h1>;
+        }
+      `,
+      );
+
+      const extractor = new TranslationExtractor({
+        sourcePattern: path.join(sourceDir, "**/*.tsx"),
+        outputDir,
+        languages: ["en", "ko"],
+        defaultLanguage: "en",
+        namespacing: {
+          enabled: false,
+          basePath: "",
+          defaultNamespace: "common",
+        },
+        dryRun: false,
+      });
+
+      await extractor.extract();
+
+      const enData = readJsonFile(path.join(outputDir, "en.json"));
+      const koData = readJsonFile(path.join(outputDir, "ko.json"));
+      expect(enData["Dashboard"]).toBe("Dashboard");
+      expect(koData["Dashboard"]).toBe("");
+    });
+
     it("config에서 지정한 네임스페이스를 사용해야 함", async () => {
       createTempFile(
         sourceDir,
@@ -89,6 +124,48 @@ describe("TranslationExtractor", () => {
 
       const koFile = path.join(outputDir, "ko.json");
       expect(fileExists(koFile)).toBe(true);
+    });
+
+    it("const 배열 map 콜백의 t(item) 키를 추출해야 함", async () => {
+      createTempFile(
+        sourceDir,
+        "page.tsx",
+        `
+        import { useTranslation } from "i18nexus";
+
+        const NAV_I18N_KEYS = ["nav.home", "nav.settings"] as const;
+
+        export default function Page() {
+          const { t } = useTranslation();
+          return (
+            <nav>
+              {NAV_I18N_KEYS.map((item) => (
+                <span key={item}>{t(item)}</span>
+              ))}
+            </nav>
+          );
+        }
+      `,
+      );
+
+      const extractor = new TranslationExtractor({
+        sourcePattern: path.join(sourceDir, "**/*.tsx"),
+        outputDir,
+        languages: ["en", "ko"],
+        namespacing: {
+          enabled: false,
+          basePath: "",
+          defaultNamespace: "common",
+        },
+        dryRun: false,
+      });
+
+      await extractor.extract();
+
+      const koFile = path.join(outputDir, "ko.json");
+      const data = readJsonFile(koFile);
+      expect(data["nav.home"]).toBeDefined();
+      expect(data["nav.settings"]).toBeDefined();
     });
   });
 

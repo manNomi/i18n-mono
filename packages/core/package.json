@@ -31,12 +31,14 @@
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.{ts,tsx} --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
+    "prepack": "npm run build",
     "prepublishOnly": "npm run build",
+    "smoke:pack": "node scripts/smoke-packed-package.mjs",
     "version": "(npm run format || true) && git add -A src || true",
     "postversion": "echo '✅ Version updated successfully'",
     "validate": "npm run build && npm run test",
     "publish:dry": "npm pack --dry-run",
-    "publish:check": "npm run validate && npm run publish:dry"
+    "publish:check": "npm run validate && npm run smoke:pack && npm run publish:dry"
   },
   "keywords": [
     "react",

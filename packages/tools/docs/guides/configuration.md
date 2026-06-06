@@ -26,9 +26,11 @@ i18nexus.config.ts > i18nexus.config.js > i18nexus.config.json
 {
   "languages": ["en", "ko"],
   "defaultLanguage": "ko",
+  "sourceLanguage": "ko",
   "localesDir": "./locales",
   "sourcePattern": "src/**/*.{js,jsx,ts,tsx}",
   "translationImportSource": "i18nexus",
+  "staticKeyExtraction": "safe",
   "mode": "server",
   "serverTranslationFunction": "getTranslation",
   "googleSheets": {
@@ -47,10 +49,19 @@ import { defineConfig } from "i18nexus";
 export const config = defineConfig({
   languages: ["en", "ko"] as const,
   defaultLanguage: "ko",
+  sourceLanguage: "ko",
   localesDir: "./locales",
   sourcePattern: "src/**/*.{ts,tsx,js,jsx}",
   translationImportSource: "i18nexus",
-  constantPatterns: ["_ITEMS", "_MENU", "_CONFIG"],
+  staticKeyExtraction: "safe",
+  staticKeyContainerPatterns: [
+    "^I18N_KEYS$",
+    "_I18N_KEYS$",
+    "^TRANSLATION_KEYS$",
+    "_TRANSLATION_KEYS$",
+    "^translationKeys$",
+    "TranslationKeys$",
+  ],
   googleSheets: {
     spreadsheetId: "your-spreadsheet-id",
     credentialsPath: "./credentials.json",
@@ -79,6 +90,14 @@ export type AppLanguages = (typeof config.languages)[number];
 - **Description**: Default language code
 - **Example**: `"en"`
 
+#### `sourceLanguage`
+
+- **Type**: `string`
+- **Default**: `defaultLanguage`
+- **Description**: Language file that receives extracted source strings when `i18n-extractor` adds new keys
+- **Example**: `"en"` for English-source apps
+- **Note**: Target languages start with empty values unless they already have translations. For example, with `sourceLanguage: "en"`, new keys fill `en.json` and leave `ko.json` empty.
+
 #### `localesDir`
 
 - **Type**: `string`
@@ -106,15 +125,24 @@ export type AppLanguages = (typeof config.languages)[number];
   - `"react-i18next"` - Direct react-i18next
   - `"@/lib/i18n"` - Custom path
 
-#### `constantPatterns`
+#### `staticKeyExtraction`
+
+- **Type**: `"off" | "safe" | "aggressive"`
+- **Default**: `"safe"`
+- **Description**: Controls how strongly `i18n-extractor` resolves static constants passed to `t(...)`
+- **Examples**:
+  - `"off"` - Extract direct literals only, such as `t("home.title")`
+  - `"safe"` - Extract direct literals, const string aliases, and explicit i18n key containers
+  - `"aggressive"` - Extract any statically resolvable const object/array member
+
+#### `staticKeyContainerPatterns`
 
 - **Type**: `string[]`
-- **Default**: `[]`
-- **Description**: Patterns for constant detection
+- **Default**: `["^I18N_KEYS$", "_I18N_KEYS$", "^TRANSLATION_KEYS$", "_TRANSLATION_KEYS$", "^translationKeys$", "TranslationKeys$"]`
+- **Description**: Regex patterns for object/array constant names that are allowed in `staticKeyExtraction: "safe"` mode
 - **Examples**:
-  - `["_ITEMS", "_MENU"]` - Suffix patterns
-  - `["UI_", "RENDER_"]` - Prefix patterns
-  - `["NAV", "MENU", "BUTTON"]` - Contains patterns
+  - `["Keys$"]` - Allow names like `navKeys`
+  - `["^APP_I18N_"]` - Allow names prefixed with `APP_I18N_`
 
 ### Google Sheets Settings
 
@@ -150,7 +178,7 @@ export type AppLanguages = (typeof config.languages)[number];
   "localesDir": "./locales",
   "sourcePattern": "app/**/*.{ts,tsx}",
   "translationImportSource": "i18nexus",
-  "constantPatterns": ["_ITEMS", "_MENU"]
+  "staticKeyExtraction": "safe"
 }
 ```
 
@@ -373,7 +401,7 @@ export const config = defineConfig({
   localesDir: "./locales",
   sourcePattern: "src/**/*.{ts,tsx}",
   translationImportSource: "i18nexus",
-  constantPatterns: ["_ITEMS", "_MENU", "_CONFIG"],
+  staticKeyExtraction: "safe",
   googleSheets: isProduction
     ? {
         spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,

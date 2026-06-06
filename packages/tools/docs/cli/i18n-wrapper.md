@@ -69,6 +69,30 @@ npx i18n-wrapper -p "src/components/**/*.tsx"
 npx i18n-wrapper -p "{app,components}/**/*.{ts,tsx}"
 ```
 
+### `--source-language <lang>`
+
+Controls which source text language the wrapper detects.
+
+**Default:** `sourceLanguage` from config, or `defaultLanguage` when
+`sourceLanguage` is omitted.
+
+**Values:**
+
+- `ko`: wrap Korean text. This preserves the legacy behavior.
+- `en`: wrap conservative English UI text in JSX text nodes and user-facing JSX
+  attributes such as `placeholder`, `title`, `aria-label`, `alt`, and `label`.
+- `auto`: wrap Korean text plus conservative English UI text.
+
+**Examples:**
+
+```bash
+# English-source app
+npx i18n-wrapper --source-language en
+
+# Korean-source app
+npx i18n-wrapper --source-language ko
+```
+
 ### `--dry-run`
 
 Preview changes without modifying any files.
@@ -115,16 +139,28 @@ npx i18n-wrapper --help
 
 ### ✅ Automatically Wrapped
 
-**Korean/English Strings:**
+**Korean Strings:**
 
 ```tsx
 // Before
 <h1>안녕하세요</h1>
-<p>Hello World</p>
 
 // After
 <h1>{t("안녕하세요")}</h1>
-<p>{t("Hello World")}</p>
+```
+
+**English UI Strings when `--source-language en` or `sourceLanguage: "en"` is configured:**
+
+```tsx
+// Before
+<input placeholder="Search..." />
+<button>Add Product</button>
+<div className="flex items-center">Products</div>
+
+// After
+<input placeholder={t("Search...")} />
+<button>{t("Add Product")}</button>
+<div className="flex items-center">{t("Products")}</div>
 ```
 
 **Template Literals:**

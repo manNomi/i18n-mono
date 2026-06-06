@@ -54,6 +54,13 @@ export interface ScriptConfig {
   sourcePattern?: string;
   translationImportSource?: string;
   /**
+   * 원문 문자열 언어.
+   * - "ko": 한국어 텍스트 감지 (기존 기본값)
+   * - "en": 영어 JSX 텍스트/사용자 노출 attribute 감지
+   * - "auto": 한국어 + 보수적인 영어 UI 텍스트 감지
+   */
+  sourceLanguage?: string;
+  /**
    * 서버 변환 시 사용할 함수명 (라이브러리별 상이)
    * 기본값: "getTranslation"
    */
@@ -99,6 +106,7 @@ export interface ScriptConfig {
 export const SCRIPT_CONFIG_DEFAULTS: Required<ScriptConfig> = {
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
+  sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
   serverTranslationFunction: "getTranslation",
   mode: undefined as unknown as "client" | "server",
   framework: undefined as unknown as "nextjs" | "react" | "other",

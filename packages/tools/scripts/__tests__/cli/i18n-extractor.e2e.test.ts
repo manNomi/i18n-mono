@@ -77,6 +77,36 @@ describe("i18n-extractor CLI E2E", () => {
       expect(koData["welcome.title"]).toBeDefined();
     });
 
+    it("defaultLanguage가 en이면 en.json에 원문을 채워야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return <div>{t("Dashboard")}</div>;
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir, {
+        sourcePattern: "src/**/*.{ts,tsx}",
+        localesDir: "./locales",
+        defaultLanguage: "en",
+        languages: ["en", "ko"],
+      });
+
+      const result = await runCLICommand("i18n-extractor", [], projectDir);
+
+      expect(result.exitCode).toBe(0);
+      const enData = readJsonFile(path.join(projectDir, "locales", "en.json"));
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+      expect(enData["Dashboard"]).toBe("Dashboard");
+      expect(koData["Dashboard"]).toBe("");
+    });
+
     it("여러 키를 추출해야 함", async () => {
       const projectDir = createTestProject(tempDir, {
         src: {
@@ -104,6 +134,148 @@ describe("i18n-extractor CLI E2E", () => {
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
       expect(koData).toHaveProperty("greeting");
       expect(koData).toHaveProperty("farewell");
+    });
+
+    it("safe 모드에서 명시적인 const 문자열/객체/배열 map 정적 번역 키를 추출해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            const titleKey = "home.title";
+            const HOME_I18N_KEYS = {
+              subtitle: "home.subtitle",
+              cta: "home.cta",
+            } as const;
+            const NAV_I18N_KEYS = ["nav.home", "nav.settings"] as const;
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return (
+                <div>
+                  <h1>{t(titleKey)}</h1>
+                  <p>{t(HOME_I18N_KEYS.subtitle)}</p>
+                  <button>{t(HOME_I18N_KEYS["cta"])}</button>
+                  {NAV_I18N_KEYS.map((item) => (
+                    <span key={item}>{t(item)}</span>
+                  ))}
+                </div>
+              );
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir);
+
+      const result = await runCLICommand("i18n-extractor", [], projectDir);
+
+      if (result.exitCode !== 0) {
+        console.log("STDOUT:", result.stdout);
+        console.log("STDERR:", result.stderr);
+      }
+
+      expect(result.exitCode).toBe(0);
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+
+      expect(getValueByDotOrLiteral(koData, "home.title")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "home.subtitle")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "home.cta")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "nav.home")).toBeDefined();
+      expect(getValueByDotOrLiteral(koData, "nav.settings")).toBeDefined();
+    });
+
+    it("safe 모드에서 일반 객체 property는 정적이어도 추출하지 않아야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            const response = {
+              label: "home.fromResponse",
+            } as const;
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return <div>{t(response.label)}</div>;
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir);
+
+      const result = await runCLICommand("i18n-extractor", [], projectDir);
+
+      expect(result.exitCode).toBe(0);
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+      expect(
+        getValueByDotOrLiteral(koData, "home.fromResponse"),
+      ).toBeUndefined();
+    });
+
+    it("aggressive 모드에서 정적 일반 객체 property를 추출해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            const response = {
+              label: "home.fromResponse",
+            } as const;
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return <div>{t(response.label)}</div>;
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir, {
+        staticKeyExtraction: "aggressive",
+      });
+
+      const result = await runCLICommand("i18n-extractor", [], projectDir);
+
+      expect(result.exitCode).toBe(0);
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+      expect(getValueByDotOrLiteral(koData, "home.fromResponse")).toBeDefined();
+    });
+
+    it("--static-key-extraction off는 const 문자열 키를 추출하지 않아야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            const titleKey = "home.title";
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return (
+                <div>
+                  {t(titleKey)}
+                  {t("home.subtitle")}
+                </div>
+              );
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir);
+
+      const result = await runCLICommand(
+        "i18n-extractor",
+        ["--static-key-extraction", "off"],
+        projectDir,
+      );
+
+      expect(result.exitCode).toBe(0);
+      const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
+      expect(getValueByDotOrLiteral(koData, "home.title")).toBeUndefined();
+      expect(getValueByDotOrLiteral(koData, "home.subtitle")).toBeDefined();
     });
   });
 

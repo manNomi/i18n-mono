@@ -17,6 +17,7 @@ import {
   extractTranslationKey,
   createExtractedKey,
   ExtractedKey,
+  StaticKeyExtractionMode,
 } from "./key-extractor";
 import {
   generateOutputData,
@@ -52,6 +53,8 @@ export interface ExtractorConfig {
   fallbackNamespace?: string;
   outputFormat?: "json" | "csv";
   languages?: string[]; // 언어 목록 추가
+  defaultLanguage?: string; // 기본 언어
+  sourceLanguage?: string; // 추출된 원문 문자열이 들어갈 언어
   force?: boolean; // force 모드: 기존 값을 덮어씀
   useNamespaceStructure?: boolean; // core v4 권장 네임스페이스 폴더 구조 사용
   namespacing?: NamespacingConfig; // 네임스페이스 자동화 설정
@@ -60,6 +63,8 @@ export interface ExtractorConfig {
   generateTypes?: boolean; // 추출 후 타입 자동 생성
   typesOutputPath?: string; // 타입 출력 경로
   strictTypeGeneration?: boolean; // 타입 생성 시 엄격 검증
+  staticKeyExtraction?: StaticKeyExtractionMode; // 정적 상수 키 추출 강도
+  staticKeyContainerPatterns?: string[]; // safe 모드에서 허용할 객체/배열 상수 이름 패턴
 }
 
 const DEFAULT_CONFIG: Required<ExtractorConfig> = {
@@ -73,6 +78,8 @@ const DEFAULT_CONFIG: Required<ExtractorConfig> = {
   dryRun: false,
   outputFormat: OUTPUT_FORMATS.JSON,
   languages: [...COMMON_DEFAULTS.languages], // 기본 언어
+  defaultLanguage: COMMON_DEFAULTS.defaultLanguage,
+  sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
   fallbackNamespace: COMMON_DEFAULTS.fallbackNamespace,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
   force: false, // 기본값: 기존 번역 유지
@@ -89,6 +96,8 @@ const DEFAULT_CONFIG: Required<ExtractorConfig> = {
   generateTypes: true,
   typesOutputPath: "",
   strictTypeGeneration: false,
+  staticKeyExtraction: "safe",
+  staticKeyContainerPatterns: [],
 };
 
 // ExtractedKey는 key-extractor.ts에서 import
@@ -113,6 +122,16 @@ export class TranslationExtractor {
       config.fallbackNamespace ||
       projectConfig.fallbackNamespace ||
       DEFAULT_CONFIG.fallbackNamespace;
+    const defaultLanguage =
+      config.defaultLanguage ||
+      projectConfig.defaultLanguage ||
+      DEFAULT_CONFIG.defaultLanguage;
+    const hasExplicitDefaultLanguage = config.defaultLanguage !== undefined;
+    const sourceLanguage =
+      config.sourceLanguage ||
+      (hasExplicitDefaultLanguage ? defaultLanguage : undefined) ||
+      projectConfig.sourceLanguage ||
+      defaultLanguage;
     const explicitNamespacingConfig =
       config.namespacing || projectConfig.namespacing;
     const namespacingConfig = explicitNamespacingConfig
@@ -131,6 +150,8 @@ export class TranslationExtractor {
       ...DEFAULT_CONFIG,
       ...config,
       fallbackNamespace,
+      defaultLanguage,
+      sourceLanguage,
       useNamespaceStructure,
       namespacing: namespacingConfig,
       skipValidation: config.skipValidation || false,
@@ -146,6 +167,14 @@ export class TranslationExtractor {
         config.strictTypeGeneration ??
         projectConfig.strictTypeGeneration ??
         false,
+      staticKeyExtraction:
+        config.staticKeyExtraction ??
+        projectConfig.staticKeyExtraction ??
+        DEFAULT_CONFIG.staticKeyExtraction,
+      staticKeyContainerPatterns:
+        config.staticKeyContainerPatterns ??
+        projectConfig.staticKeyContainerPatterns ??
+        DEFAULT_CONFIG.staticKeyContainerPatterns,
       translationImportSource:
         translationImportSource || DEFAULT_CONFIG.translationImportSource,
     };
@@ -206,9 +235,17 @@ export class TranslationExtractor {
           const extractedKey = extractTranslationKey(path, filePath, {
             includeFilePaths: this.config.includeFilePaths,
             includeLineNumbers: this.config.includeLineNumbers,
+            staticKeyExtraction: this.config.staticKeyExtraction,
+            staticKeyContainerPatterns: this.config.staticKeyContainerPatterns,
           });
-          if (extractedKey) {
-            this.addExtractedKey(extractedKey, namespace);
+          const extractedKeys = Array.isArray(extractedKey)
+            ? extractedKey
+            : extractedKey
+              ? [extractedKey]
+              : [];
+
+          for (const key of extractedKeys) {
+            this.addExtractedKey(key, namespace);
           }
         },
       });
@@ -313,6 +350,7 @@ export class TranslationExtractor {
             languages: this.config.languages,
             outputDir: this.config.outputDir,
             outputFile: this.config.outputFile,
+            sourceLanguage: this.config.sourceLanguage,
             force: this.config.force,
             dryRun: this.config.dryRun,
           });
@@ -323,6 +361,7 @@ export class TranslationExtractor {
             languages: this.config.languages!,
             outputDir: this.config.outputDir,
             namespace,
+            sourceLanguage: this.config.sourceLanguage,
             force: this.config.force,
             dryRun: this.config.dryRun,
           });
@@ -357,6 +396,7 @@ export class TranslationExtractor {
           languages: this.config.languages,
           outputDir: this.config.outputDir,
           outputFile: this.config.outputFile,
+          sourceLanguage: this.config.sourceLanguage,
           force: this.config.force,
           dryRun: this.config.dryRun,
         });
@@ -367,6 +407,7 @@ export class TranslationExtractor {
           languages: this.config.languages,
           outputDir: this.config.outputDir,
           outputFile: this.config.outputFile,
+          sourceLanguage: this.config.sourceLanguage,
           force: this.config.force,
           dryRun: this.config.dryRun,
         });

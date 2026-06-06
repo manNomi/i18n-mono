@@ -163,18 +163,33 @@ export function generateTypeDefinitions(
   // Step 1: Extract all namespace keys
   const namespaceKeys = extractNamespaceKeys(extractedData);
   const namespaceKeysWithInfo = extractNamespaceKeysWithInfo(extractedData);
+  const fallbackNamespace = config.fallbackNamespace?.trim();
 
   if (Object.keys(namespaceKeys).length === 0) {
     console.warn("⚠️  No translation keys found. Skipping type generation.");
     return;
   }
 
+  const extractedDataForTypes: ExtractedTranslations = {
+    ...extractedData,
+  };
+
+  if (fallbackNamespace && !namespaceKeys[fallbackNamespace]) {
+    namespaceKeys[fallbackNamespace] = [];
+    namespaceKeysWithInfo[fallbackNamespace] = [];
+    extractedDataForTypes[fallbackNamespace] =
+      extractedDataForTypes[fallbackNamespace] || {};
+  }
+
   // Step 2: Generate type definition content
   const typeContent = generateTypeContent(
-    extractedData,
+    extractedDataForTypes,
     namespaceKeys,
     namespaceKeysWithInfo,
-    config,
+    {
+      ...config,
+      fallbackNamespace,
+    },
   );
 
   // Step 3: Ensure output directory exists
@@ -319,6 +334,8 @@ function generateTypeContent(
   // TranslationNamespace type (global)
   const sortedNamespaces = Object.keys(namespaceKeys).sort();
   const namespaceUnion = sortedNamespaces.map((ns) => `"${ns}"`).join(" | ");
+  const fallbackNs = config.fallbackNamespace;
+  const hasFallback = fallbackNs && sortedNamespaces.includes(fallbackNs);
 
   if (includeJsDocs) {
     content += `/**\n`;
@@ -336,7 +353,7 @@ function generateTypeContent(
     const typeName = `${capitalize(toCamelCase(namespace))}Keys`;
 
     if (keys.length === 0) {
-      content += `declare type ${typeName} = string;\n`;
+      content += `declare type ${typeName} = never;\n\n`;
       continue;
     }
 
@@ -377,7 +394,11 @@ function generateTypeContent(
   }
   content += `};\n\n`;
 
-  content += generateTranslationsShapeType(extractedData, namespaceKeys);
+  content += generateTranslationsShapeType(
+    extractedData,
+    namespaceKeys,
+    hasFallback ? fallbackNs : undefined,
+  );
 
   // Module augmentation
   const importSource = config.translationImportSource || "i18nexus";
@@ -401,9 +422,6 @@ function generateTypeContent(
   content += `declare module "${importSource}" {\n`;
 
   // useTranslation: Use original type with narrowed generics
-  const fallbackNs = config.fallbackNamespace;
-  const hasFallback = fallbackNs && sortedNamespaces.includes(fallbackNs);
-
   if (includeJsDocs) {
     content += `  /**\n`;
     content += `   * Type-safe translation hook (Client Component)\n`;
@@ -559,8 +577,12 @@ function generateTypeContent(
 function generateTranslationsShapeType(
   extractedData: ExtractedTranslations,
   namespaceKeys: Record<string, string[]>,
+  fallbackNamespace?: string,
 ): string {
   const sortedNamespaces = Object.keys(namespaceKeys).sort();
+  const keyTypeExpression = fallbackNamespace
+    ? `TranslationKeys[NS] | ${capitalize(toCamelCase(fallbackNamespace))}Keys`
+    : `TranslationKeys[NS]`;
   const lines: string[] = [
     `/**`,
     ` * Translation shape for createI18n().`,
@@ -593,6 +615,29 @@ function generateTranslationsShapeType(
   lines.push(`};`, ``);
   lines.push(
     `export type I18nexusGeneratedNamespace = keyof I18nexusGeneratedTranslations & string;`,
+    ``,
+    `export type I18nexusGeneratedTranslationKeys<`,
+    `  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace`,
+    `> = ${keyTypeExpression};`,
+    ``,
+    `export type I18nexusGeneratedServerTranslationFunction<`,
+    `  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace`,
+    `> = (`,
+    `  key: I18nexusGeneratedTranslationKeys<NS>,`,
+    `  variables?: Record<string, string | number>,`,
+    `  fallback?: string`,
+    `) => string;`,
+    ``,
+    `export type I18nexusGeneratedClientTranslationFunction<`,
+    `  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace`,
+    `> = (`,
+    `  key: I18nexusGeneratedTranslationKeys<NS>,`,
+    `  variables?: Record<string, string | number>`,
+    `) => string;`,
+    ``,
+    `export type I18nexusGeneratedTranslationFunction<`,
+    `  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace`,
+    `> = I18nexusGeneratedServerTranslationFunction<NS>;`,
     ``,
   );
 

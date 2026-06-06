@@ -6,6 +6,7 @@ export interface I18nexusConfig<
 > {
   languages: TLanguages;
   defaultLanguage: TLanguages[number];
+  sourceLanguage?: TLanguages[number];
   localesDir?: string;
   sourcePattern?: string;
   translationImportSource?: string;

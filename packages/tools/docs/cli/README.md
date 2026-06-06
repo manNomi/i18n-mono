@@ -52,7 +52,9 @@ npx i18n-extractor [options]
 - Safe mode (preserves existing translations)
 - Force mode (complete regeneration)
 - Multi-language support
+- Source language selection for English-source or Korean-source apps
 - CSV export option
+- Static key extraction modes: `off`, `safe`, `aggressive`
 
 [→ Full Documentation](./i18n-extractor.md)
 
@@ -293,6 +295,9 @@ Specify languages:
 
 # Multiple languages
 -l "en,ko,ja,zh,es,fr"
+
+# Fill extracted source strings into en.json
+--source-language en
 ```
 
 ### Help

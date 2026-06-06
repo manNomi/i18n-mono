@@ -20,6 +20,28 @@ type ConfigWithPath = {
   configDir: string;
 };
 
+const UNSUPPORTED_SERVER_CONFIG_FILES = [
+  "i18nexus.config.js",
+  "i18nexus.config.mjs",
+  "i18nexus.config.cjs",
+  "i18nexus.config.ts",
+];
+
+let hasWarnedUnsupportedServerConfig = false;
+
+function warnUnsupportedServerConfig(configPath: string): void {
+  if (hasWarnedUnsupportedServerConfig) {
+    return;
+  }
+
+  hasWarnedUnsupportedServerConfig = true;
+  console.warn(
+    `[i18nexus] ${path.basename(
+      configPath,
+    )} is ignored by i18nexus/server to avoid Next.js dynamic import warnings. Use i18nexus.config.json or pass getTranslation() options instead.`,
+  );
+}
+
 /** 프로젝트 루트에서 i18nexus 설정 파일 로드 (조용히) - config 디렉토리 경로도 반환 */
 async function loadConfigSilently(): Promise<ConfigWithPath> {
   try {
@@ -34,20 +56,14 @@ async function loadConfigSilently(): Promise<ConfigWithPath> {
       }
     }
 
-    const altPath = path.resolve(process.cwd(), "i18nexus.config.js");
-    if (fs.existsSync(altPath)) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const mod = await import(altPath);
-        const config =
-          mod && mod.default
-            ? (mod.default as LocalConfig)
-            : (mod as LocalConfig);
-        return { config, configDir: path.dirname(altPath) };
-      } catch {
-        return { config: null, configDir: process.cwd() };
-      }
+    // Server utilities intentionally avoid importing JS/TS config files.
+    // Expression-based dynamic imports trigger Next.js bundler warnings.
+    const unsupportedConfigPath = UNSUPPORTED_SERVER_CONFIG_FILES.map(
+      (fileName) => path.resolve(process.cwd(), fileName),
+    ).find((candidate) => fs.existsSync(candidate));
+
+    if (unsupportedConfigPath) {
+      warnUnsupportedServerConfig(unsupportedConfigPath);
     }
 
     return { config: null, configDir: process.cwd() };
@@ -309,21 +325,79 @@ export function getServerTranslations<T extends Record<string, unknown>>(
   return mergedFlat;
 }
 
-/** 디렉토리에서 번역 파일 동적 로드 */
+type LoadedTranslations = Record<
+  string,
+  Record<string, string> | Record<string, Record<string, string>>
+>;
+
+async function readJsonFile<T>(filePath: string): Promise<T | null> {
+  try {
+    const fileContent = await fs.promises.readFile(filePath, "utf8");
+    return JSON.parse(fileContent) as T;
+  } catch (error) {
+    console.warn(`Failed to load translation file ${filePath}:`, error);
+    return null;
+  }
+}
+
+/** 디렉토리에서 번역 JSON 파일 로드 */
 export async function loadTranslations(
   localesDir: string,
 ): Promise<Record<string, Record<string, string>>> {
-  try {
-    const indexPath = path.resolve(process.cwd(), localesDir, "index");
-    const module = await import(indexPath);
-    return module.translations || {};
-  } catch (error) {
-    console.warn(
-      `Failed to load translations from ${localesDir}/index:`,
-      error,
-    );
+  const resolvedLocalesDir = localesDir.startsWith("/")
+    ? localesDir
+    : path.resolve(process.cwd(), localesDir);
+
+  if (!fs.existsSync(resolvedLocalesDir)) {
     return {};
   }
+
+  const translations: LoadedTranslations = {};
+  const entries = await fs.promises.readdir(resolvedLocalesDir, {
+    withFileTypes: true,
+  });
+
+  for (const entry of entries) {
+    const entryPath = path.join(resolvedLocalesDir, entry.name);
+
+    if (entry.isFile() && entry.name.endsWith(".json")) {
+      const language = path.basename(entry.name, ".json");
+      const data = await readJsonFile<Record<string, string>>(entryPath);
+      if (data) {
+        translations[language] = data;
+      }
+      continue;
+    }
+
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const languageFiles = await fs.promises.readdir(entryPath, {
+      withFileTypes: true,
+    });
+    const namespaceTranslations: Record<string, Record<string, string>> = {};
+
+    for (const languageFile of languageFiles) {
+      if (!languageFile.isFile() || !languageFile.name.endsWith(".json")) {
+        continue;
+      }
+
+      const language = path.basename(languageFile.name, ".json");
+      const data = await readJsonFile<Record<string, string>>(
+        path.join(entryPath, languageFile.name),
+      );
+      if (data) {
+        namespaceTranslations[language] = data;
+      }
+    }
+
+    if (Object.keys(namespaceTranslations).length > 0) {
+      translations[entry.name] = namespaceTranslations;
+    }
+  }
+
+  return translations as Record<string, Record<string, string>>;
 }
 
 async function readNamespaceTranslationFile(

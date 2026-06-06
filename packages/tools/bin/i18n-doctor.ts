@@ -18,7 +18,9 @@ Examples:
 
 What it checks:
   - i18nexus core dependency version
+  - installed i18nexus package exports
   - i18nexus.config.json compatibility
+  - tsconfig moduleResolution for i18nexus/server
   - locales directory and fallback namespace
   - generated locales/index.ts entrypoint
   - generated TypeScript declaration file

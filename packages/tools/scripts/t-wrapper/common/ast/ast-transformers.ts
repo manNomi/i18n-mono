@@ -12,12 +12,118 @@ export interface TransformResult {
   wasModified: boolean;
 }
 
+export interface TransformOptions {
+  sourceLanguage?: string;
+}
+
+const TRANSLATABLE_JSX_ATTRIBUTES = new Set([
+  "alt",
+  "aria-description",
+  "aria-label",
+  "aria-roledescription",
+  "label",
+  "placeholder",
+  "title",
+]);
+
+function getSourceLanguage(options?: TransformOptions): string {
+  return options?.sourceLanguage || "ko";
+}
+
+function hasEnglishText(value: string): boolean {
+  return /[A-Za-z]/.test(value);
+}
+
+function hasKoreanText(value: string): boolean {
+  return REGEX_PATTERNS.KOREAN_TEXT.test(value);
+}
+
+function isEnglishSourceLanguage(sourceLanguage: string): boolean {
+  return sourceLanguage === "en" || sourceLanguage === "auto";
+}
+
+function isKoreanSourceLanguage(sourceLanguage: string): boolean {
+  return sourceLanguage === "ko" || sourceLanguage === "auto";
+}
+
+function getJsxAttributeName(attribute: t.JSXAttribute): string | null {
+  if (t.isJSXIdentifier(attribute.name)) {
+    return attribute.name.name;
+  }
+
+  if (t.isJSXNamespacedName(attribute.name)) {
+    return `${attribute.name.namespace.name}:${attribute.name.name.name}`;
+  }
+
+  return null;
+}
+
+function isTranslatableJsxAttribute(path: NodePath<t.StringLiteral>): boolean {
+  if (!t.isJSXAttribute(path.parent)) {
+    return false;
+  }
+
+  const attributeName = getJsxAttributeName(path.parent);
+  return attributeName ? TRANSLATABLE_JSX_ATTRIBUTES.has(attributeName) : false;
+}
+
+function isUiStringLiteralPath(path: NodePath<t.StringLiteral>): boolean {
+  return (
+    isTranslatableJsxAttribute(path) || t.isJSXExpressionContainer(path.parent)
+  );
+}
+
+function shouldWrapText(value: string, options?: TransformOptions): boolean {
+  const sourceLanguage = getSourceLanguage(options);
+  return (
+    (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(value)) ||
+    (isEnglishSourceLanguage(sourceLanguage) && hasEnglishText(value))
+  );
+}
+
+function shouldWrapStringLiteral(
+  path: NodePath<t.StringLiteral>,
+  options?: TransformOptions,
+): boolean {
+  const value = path.node.value;
+  const sourceLanguage = getSourceLanguage(options);
+
+  if (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(value)) {
+    return true;
+  }
+
+  return (
+    isEnglishSourceLanguage(sourceLanguage) &&
+    hasEnglishText(value) &&
+    isUiStringLiteralPath(path)
+  );
+}
+
+function shouldWrapTemplateLiteral(
+  path: NodePath<t.TemplateLiteral>,
+  options?: TransformOptions,
+): boolean {
+  const sourceLanguage = getSourceLanguage(options);
+  const rawText = path.node.quasis.map((quasi) => quasi.value.raw).join("");
+
+  if (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(rawText)) {
+    return true;
+  }
+
+  return (
+    isEnglishSourceLanguage(sourceLanguage) &&
+    hasEnglishText(rawText) &&
+    t.isJSXExpressionContainer(path.parent)
+  );
+}
+
 /**
  * 함수 body 내의 AST 노드들을 변환
  */
 export function transformFunctionBody(
   path: NodePath<t.Function>,
   sourceCode: string,
+  options: TransformOptions = {},
 ): TransformResult {
   let wasModified = false;
 
@@ -36,8 +142,7 @@ export function transformFunctionBody(
         return;
       }
 
-      // 한국어 텍스트가 포함된 문자열만 처리
-      if (REGEX_PATTERNS.KOREAN_TEXT.test(subPath.node.value)) {
+      if (shouldWrapStringLiteral(subPath, options)) {
         wasModified = true;
         const replacement = t.callExpression(
           t.identifier(STRING_CONSTANTS.TRANSLATION_FUNCTION),
@@ -70,12 +175,7 @@ export function transformFunctionBody(
         return;
       }
 
-      // 템플릿 리터럴의 모든 부분에 하나라도 한국어가 있는지 확인
-      const hasKorean = subPath.node.quasis.some((quasi) =>
-        REGEX_PATTERNS.KOREAN_TEXT.test(quasi.value.raw),
-      );
-
-      if (!hasKorean) {
+      if (!shouldWrapTemplateLiteral(subPath, options)) {
         return;
       }
 
@@ -170,8 +270,7 @@ export function transformFunctionBody(
         return;
       }
 
-      // 한국어가 포함된 텍스트만 처리
-      if (REGEX_PATTERNS.KOREAN_TEXT.test(text)) {
+      if (shouldWrapText(text, options)) {
         wasModified = true;
 
         // t() 함수 호출로 감싸기

@@ -40,6 +40,34 @@ describe("t-wrapper (Babel)", () => {
       expect(result.processedFiles).toContain(testFile);
     });
 
+    it("sourceLanguage가 en이면 영어 JSX 텍스트를 처리해야 함", async () => {
+      const testFile = path.join(tempDir, "english.tsx");
+      writeFile(
+        testFile,
+        `function ProductActions() {
+  return (
+    <div>
+      <input placeholder="Search..." />
+      <button>Add Product</button>
+      <span className="flex items-center">Products</span>
+    </div>
+  );
+}`,
+      );
+
+      const result = await wrapTranslations({
+        sourcePattern: path.join(tempDir, "**/*.tsx"),
+        sourceLanguage: "en",
+      });
+
+      const modifiedContent = readFile(testFile);
+      expect(result.processedFiles).toContain(testFile);
+      expect(modifiedContent).toContain('t("Search...")');
+      expect(modifiedContent).toContain('t("Add Product")');
+      expect(modifiedContent).toContain('t("Products")');
+      expect(modifiedContent).toContain('className="flex items-center"');
+    });
+
     it("여러 파일을 병렬로 처리해야 함", async () => {
       // 5개의 테스트 파일 생성
       for (let i = 0; i < 5; i++) {

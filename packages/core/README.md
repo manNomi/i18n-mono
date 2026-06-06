@@ -90,11 +90,27 @@ locales/
 
 ### 2. Setup Provider
 
-For Next.js App Router, add Provider to your root layout:
+For Next.js App Router, keep the Provider behind a small Client Component
+wrapper:
+
+```tsx
+// app/i18n-provider.tsx
+"use client";
+
+import { I18nProvider } from "i18nexus";
+
+export function I18nClientProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <I18nProvider initialLanguage="en">{children}</I18nProvider>;
+}
+```
 
 ```tsx
 // app/layout.tsx
-import { I18nProvider } from "i18nexus";
+import { I18nClientProvider } from "./i18n-provider";
 
 export default function RootLayout({
   children,
@@ -104,7 +120,7 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <I18nProvider initialLanguage="en">{children}</I18nProvider>
+        <I18nClientProvider>{children}</I18nClientProvider>
       </body>
     </html>
   );
@@ -507,6 +523,23 @@ Create a configuration file in your project root:
 - `defaultLanguage` - Default language
 - `localesDir` - Directory for translation files
 - `fallbackNamespace` - Default namespace used for fallback keys
+
+For `i18nexus/server`, `i18nexus.config.json` is the runtime-supported config
+format. JavaScript/TypeScript config files are supported by the CLI tools, but
+the server runtime avoids importing them so Next.js builds do not emit dynamic
+import warnings. If `i18nexus/server` finds a JS/TS config without a JSON
+config, it logs a warning and ignores that file.
+
+If TypeScript cannot resolve `i18nexus/server`, set modern package export
+resolution:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
 
 ## 🛠️ CLI Tools
 

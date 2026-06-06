@@ -107,6 +107,84 @@ describe("ast-transformers", () => {
       expect(wasModified).toBe(true);
     });
 
+    it("sourceLanguage가 en이면 영어 JSXText를 t() 호출로 변환해야 함", () => {
+      const code = `function Component() {
+  return <button>Add Product</button>;
+}`;
+      const ast = parse(code, {
+        sourceType: "module",
+        plugins: ["typescript", "jsx"],
+      });
+      let wasModified = false;
+      traverse(ast, {
+        FunctionDeclaration(path) {
+          const result = transformFunctionBody(path, code, {
+            sourceLanguage: "en",
+          });
+          wasModified = result.wasModified;
+        },
+      });
+      expect(wasModified).toBe(true);
+    });
+
+    it("sourceLanguage가 en이면 번역 가능한 JSX attribute를 변환해야 함", () => {
+      const code = `function Component() {
+  return <input placeholder="Search..." />;
+}`;
+      const ast = parse(code, {
+        sourceType: "module",
+        plugins: ["typescript", "jsx"],
+      });
+      let wasModified = false;
+      traverse(ast, {
+        FunctionDeclaration(path) {
+          const result = transformFunctionBody(path, code, {
+            sourceLanguage: "en",
+          });
+          wasModified = result.wasModified;
+        },
+      });
+      expect(wasModified).toBe(true);
+    });
+
+    it("sourceLanguage가 en이어도 className 같은 기술 attribute는 변환하지 않아야 함", () => {
+      const code = `function Component() {
+  return <div className="flex items-center" />;
+}`;
+      const ast = parse(code, {
+        sourceType: "module",
+        plugins: ["typescript", "jsx"],
+      });
+      let wasModified = false;
+      traverse(ast, {
+        FunctionDeclaration(path) {
+          const result = transformFunctionBody(path, code, {
+            sourceLanguage: "en",
+          });
+          wasModified = result.wasModified;
+        },
+      });
+      expect(wasModified).toBe(false);
+    });
+
+    it("기본 sourceLanguage에서는 영어 JSXText를 변환하지 않아야 함", () => {
+      const code = `function Component() {
+  return <button>Add Product</button>;
+}`;
+      const ast = parse(code, {
+        sourceType: "module",
+        plugins: ["typescript", "jsx"],
+      });
+      let wasModified = false;
+      traverse(ast, {
+        FunctionDeclaration(path) {
+          const result = transformFunctionBody(path, code);
+          wasModified = result.wasModified;
+        },
+      });
+      expect(wasModified).toBe(false);
+    });
+
     it("이미 t()로 래핑된 문자열은 변환하지 않아야 함", () => {
       const code = `function Component() {
   return <div>{t("key")}</div>;

@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### ✨ Features
+
+- Added `sourceLanguage` support for extractor and wrapper workflows, including English-source project initialization.
+- Generated locale entrypoints now export typed `AppTranslationFunction` helpers for passing `t` through props.
+- `i18n-doctor` now checks installed core package exports and TypeScript module resolution for `i18nexus/server`.
+
+### 📚 Documentation
+
+- Reworked the Next.js App Router guide around a client Provider wrapper, server/client language sync, and `router.refresh()`.
+
+## [3.1.0] - 2026-05-27
+
+### ✨ Features
+
+- **Static constant key extraction**:
+  - `i18n-extractor` now resolves safe static constants used as translation keys.
+  - Added `staticKeyExtraction` modes: `off`, `safe` (default), and `aggressive`.
+  - Safe mode supports `const key = "title"; t(key)` and explicit i18n key containers such as `I18N_KEYS.title` or `I18N_KEYS.map((item) => t(item))`.
+  - General data objects such as API response-shaped constants are skipped in safe mode; use `aggressive` to opt into broad static object/array extraction.
+  - Dynamic values from functions, props, state, API data, or arrays mixed with dynamic entries are intentionally skipped to avoid false positives.
+
 ## [3.0.0] - 2026-05-26
 
 ### ✨ Features

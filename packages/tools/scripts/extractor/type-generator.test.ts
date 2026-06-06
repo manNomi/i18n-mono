@@ -65,6 +65,9 @@ describe("Type Generator", () => {
       expect(content).toContain("welcome.title");
       expect(content).toContain("button.save");
       expect(content).toContain("export type I18nexusGeneratedTranslations");
+      expect(content).toContain("I18nexusGeneratedTranslationKeys");
+      expect(content).toContain("I18nexusGeneratedTranslationFunction");
+      expect(content).toContain("I18nexusGeneratedClientTranslationFunction");
       expect(content).toContain('readonly "common"');
       expect(content).toContain('readonly "en"');
     });
@@ -107,6 +110,41 @@ describe("Type Generator", () => {
       );
       expect(content).toContain(
         "Promise<GetTranslationReturn<NS, TranslationKeys[NS] | CommonKeys>>",
+      );
+      expect(content).toContain(
+        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys",
+      );
+    });
+
+    it("should include configured fallback namespace even when no fallback keys were extracted", () => {
+      const extractedData: ExtractedTranslations = {
+        home: {
+          en: {
+            title: "Home",
+          },
+          ko: {
+            title: "홈",
+          },
+        },
+      };
+
+      const config: TypeGeneratorConfig = {
+        outputPath,
+        fallbackNamespace: "common",
+        translationImportSource: "i18nexus",
+      };
+
+      generateTypeDefinitions(extractedData, config);
+
+      const content = readFileContent(outputPath);
+
+      expect(content).toContain(
+        'declare type TranslationNamespace = "common" | "home";',
+      );
+      expect(content).toContain("declare type CommonKeys = never;");
+      expect(content).toContain('readonly "common"');
+      expect(content).toContain(
+        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys",
       );
     });
 
@@ -434,16 +472,40 @@ declare module "i18nexus/server" {
         `
 import { useLanguageSwitcher, useTranslation } from "i18nexus";
 import { getTranslation } from "i18nexus/server";
+import type {
+  I18nexusGeneratedClientTranslationFunction,
+  I18nexusGeneratedTranslationFunction,
+} from "./types/i18nexus";
+
+function ServerChild({
+  t,
+}: {
+  t: I18nexusGeneratedTranslationFunction<"home">;
+}) {
+  t("title");
+  t("save");
+}
+
+function ClientChild({
+  t,
+}: {
+  t: I18nexusGeneratedClientTranslationFunction<"home">;
+}) {
+  t("title");
+  t("save");
+}
 
 const { t } = useTranslation("home");
 t("title");
 t("save");
+ClientChild({ t });
 useLanguageSwitcher().currentLanguage;
 
 async function run() {
   const server = await getTranslation("home");
   server.t("title");
   server.t("save");
+  ServerChild({ t: server.t });
 }
 
 void run();
