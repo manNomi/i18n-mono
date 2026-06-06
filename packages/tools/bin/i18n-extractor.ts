@@ -2,6 +2,10 @@
 
 import { runTranslationExtractor, ExtractorConfig } from "../scripts/extractor";
 import { loadConfig } from "../scripts/config-loader";
+import {
+  isTranslationImportSourceOption,
+  readRequiredOptionValue,
+} from "./cli-option-utils";
 
 const args = process.argv.slice(2);
 
@@ -26,7 +30,15 @@ const config: Partial<ExtractorConfig> = {
 };
 
 for (let i = 0; i < args.length; i++) {
-  switch (args[i]) {
+  const option = args[i];
+
+  if (isTranslationImportSourceOption(option)) {
+    config.translationImportSource = readRequiredOptionValue(args, i, option);
+    i++;
+    continue;
+  }
+
+  switch (option) {
     case "--pattern":
     case "-p":
       config.sourcePattern = args[++i];
@@ -82,7 +94,7 @@ for (let i = 0; i < args.length; i++) {
       const mode = args[++i];
       if (mode !== "off" && mode !== "safe" && mode !== "aggressive") {
         console.error(
-          `Invalid static key extraction mode: ${mode}. Use 'off', 'safe', or 'aggressive'`,
+          `Invalid static key extraction mode: ${mode}. Use 'off', 'safe', or 'aggressive'`
         );
         process.exit(1);
       }
@@ -108,6 +120,9 @@ Options:
   --no-types                  타입 자동 생성을 건너뜀
   --types-output <path>       타입 정의 출력 경로 (기본: locales/types/i18nexus.d.ts)
   --strict-types              타입 생성 시 누락/빈 번역을 오류로 처리
+  --translation-import-source <source>
+                              생성 타입이 보강할 라이브러리 모듈 (기본값: i18nexus)
+  --library, --lib <source>   --translation-import-source 별칭
   --static-key-extraction <mode>
                               정적 상수 키 추출: off|safe|aggressive (기본값: safe)
   -h, --help                  도움말 표시
@@ -121,6 +136,7 @@ Examples:
   i18n-extractor --source-language en             # 영어 원문 앱은 en.json에 원문 채움
   i18n-extractor -f csv -o "translations.csv"     # 구글 시트용 CSV 형식으로 출력
   i18n-extractor --dry-run                        # 추출 결과 미리보기
+  i18n-extractor --library react-i18next          # react-i18next용 타입 생성
   i18n-extractor --static-key-extraction aggressive # 정적 const 객체/배열까지 적극 추출
   
 Features:

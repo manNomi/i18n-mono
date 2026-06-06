@@ -1,21 +1,46 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": ["TURBO_TOKEN", "TURBO_TEAM"],
+  "globalDependencies": [
+    "package-lock.json",
+    "package.json",
+    "tsconfig.json",
+    "turbo.json"
+  ],
   "remoteCache": {
     "signature": true
   },
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "tsconfig*.json",
+        "next.config.*",
+        "postcss.config.*",
+        "tailwind.config.*"
+      ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "cache": true
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": ["coverage/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "jest.config.*",
+        "jest.setup.*",
+        "tsconfig*.json"
+      ],
+      "outputs": [],
       "cache": true
     },
     "lint": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "eslint.config.*",
+        ".eslintrc*",
+        "tsconfig*.json"
+      ],
       "outputs": [],
       "cache": true
     },

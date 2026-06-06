@@ -33,12 +33,12 @@ describe("i18n-type CLI E2E", () => {
             "en.json": JSON.stringify(
               { "welcome.title": "Welcome", "button.save": "Save" },
               null,
-              2,
+              2
             ),
             "ko.json": JSON.stringify(
               { "welcome.title": "환영합니다", "button.save": "저장" },
               null,
-              2,
+              2
             ),
           },
         },
@@ -56,7 +56,7 @@ describe("i18n-type CLI E2E", () => {
         projectDir,
         "locales",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
       expect(fileExists(typeFile)).toBe(true);
 
@@ -77,12 +77,12 @@ describe("i18n-type CLI E2E", () => {
             "en.json": JSON.stringify(
               { "dashboard.title": "Dashboard" },
               null,
-              2,
+              2
             ),
             "ko.json": JSON.stringify(
               { "dashboard.title": "대시보드" },
               null,
-              2,
+              2
             ),
           },
         },
@@ -100,13 +100,63 @@ describe("i18n-type CLI E2E", () => {
         projectDir,
         "locales",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
       const typeContent = readFileContent(typeFile);
 
       expect(typeContent).toContain("CommonKeys");
       expect(typeContent).toContain("DashboardKeys");
       expect(typeContent).toContain("TranslationNamespace");
+    });
+
+    it("--library 옵션으로 타입 보강 대상 라이브러리를 지정해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        locales: {
+          common: {
+            "en.json": JSON.stringify({ "common.key": "Common" }, null, 2),
+            "ko.json": JSON.stringify({ "common.key": "공통" }, null, 2),
+          },
+        },
+      });
+
+      createTestConfig(projectDir, {
+        localesDir: "./locales",
+        fallbackNamespace: "common",
+      });
+
+      const result = await runCLICommand(
+        "i18n-type",
+        ["--library", "react-i18next"],
+        projectDir
+      );
+
+      expect(result.exitCode).toBe(0);
+
+      const typeFile = path.join(
+        projectDir,
+        "locales",
+        "types",
+        "i18nexus.d.ts"
+      );
+      const typeContent = readFileContent(typeFile);
+
+      expect(typeContent).toContain('declare module "react-i18next"');
+      expect(typeContent).not.toContain("from 'i18nexus'");
+    });
+
+    it("--library 옵션 값이 없으면 실패해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {});
+
+      const result = await runCLICommand(
+        "i18n-type",
+        ["--library"],
+        projectDir
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr || result.stdout).toContain(
+        "Missing value for option: --library"
+      );
     });
   });
 
@@ -122,12 +172,12 @@ describe("i18n-type CLI E2E", () => {
             "en.json": JSON.stringify(
               { "dashboard.title": "Dashboard" },
               null,
-              2,
+              2
             ),
             "ko.json": JSON.stringify(
               { "dashboard.title": "대시보드" },
               null,
-              2,
+              2
             ),
           },
         },
@@ -145,7 +195,7 @@ describe("i18n-type CLI E2E", () => {
         projectDir,
         "locales",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
       const typeContent = readFileContent(typeFile);
 
@@ -194,7 +244,7 @@ describe("i18n-type CLI E2E", () => {
             "ko.json": JSON.stringify(
               { "welcome.title": "환영합니다", "button.save": "저장" },
               null,
-              2,
+              2
             ),
           },
         },
@@ -209,7 +259,7 @@ describe("i18n-type CLI E2E", () => {
 
       expect(result.exitCode).toBe(1);
       expect(result.stderr || result.stdout).toContain(
-        "Translation validation failed",
+        "Translation validation failed"
       );
       expect(result.stderr || result.stdout).toContain("Missing key");
     });
@@ -222,7 +272,7 @@ describe("i18n-type CLI E2E", () => {
             "ko.json": JSON.stringify(
               { "welcome.title": "환영합니다" },
               null,
-              2,
+              2
             ),
           },
         },
@@ -237,7 +287,7 @@ describe("i18n-type CLI E2E", () => {
 
       expect(result.exitCode).toBe(1);
       expect(result.stderr || result.stdout).toContain(
-        "Translation validation failed",
+        "Translation validation failed"
       );
       expect(result.stderr || result.stdout).toContain("value is empty");
     });
@@ -265,7 +315,7 @@ describe("i18n-type CLI E2E", () => {
         projectDir,
         "locales",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
       const typeContent = readFileContent(typeFile);
 
@@ -296,7 +346,7 @@ describe("i18n-type CLI E2E", () => {
         projectDir,
         "locales",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
       const typeContent = readFileContent(typeFile);
 

@@ -376,6 +376,39 @@ export function LanguageSwitcher() {
 }
 ```
 
+### URL Localization Helpers
+
+Use the URL helpers when your app needs language-aware links without coupling
+routing code to React state.
+
+```tsx
+import {
+  getLanguageFromUrl,
+  localizeUrl,
+  removeLanguageFromUrl,
+} from "i18nexus";
+
+const options = {
+  languages: ["en", "ko", "ja"],
+  defaultLanguage: "ko",
+};
+
+localizeUrl("/docs?tab=api", "en", options); // "/en/docs?tab=api"
+localizeUrl("/en/docs", "ko", options); // "/docs"
+getLanguageFromUrl("/ja/docs", options); // "ja"
+removeLanguageFromUrl("/en/docs", options); // "/docs"
+```
+
+The default strategy uses path prefixes. For query-based apps, use
+`strategy: "query"` and optionally set `queryParam`.
+
+```tsx
+localizeUrl("/profile", "en", {
+  strategy: "query",
+  queryParam: "lng",
+}); // "/profile?lng=en"
+```
+
 ## 🎨 Advanced Usage
 
 ### Namespace Organization

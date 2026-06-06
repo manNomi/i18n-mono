@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   detect-changes:
     name: 🔍 Detect Changed Packages
@@ -27,16 +31,22 @@ jobs:
               - 'packages/core/**'
               - 'turbo.json'
               - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
             tools:
               - 'packages/tools/**'
               - 'turbo.json'
               - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
             demo:
               - 'apps/demo/**'
               - 'packages/core/**'
               - 'packages/tools/**'
               - 'turbo.json'
               - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
 
   core:
     name: 🧩 Core Package
@@ -52,6 +62,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: 🔧 Enable Corepack
         run: corepack enable
@@ -91,6 +103,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: 🔧 Enable Corepack
         run: corepack enable
@@ -130,6 +144,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: 🔧 Enable Corepack
         run: corepack enable

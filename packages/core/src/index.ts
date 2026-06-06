@@ -37,6 +37,14 @@ export type {
 export { defineConfig } from "./utils/types.js";
 export type { ExtractLanguages } from "./utils/types.js";
 
+// URL localization helpers
+export {
+  getLanguageFromUrl,
+  localizeUrl,
+  removeLanguageFromUrl,
+} from "./utils/url.js";
+export type { LocalizedUrlOptions, LocalizedUrlStrategy } from "./utils/url.js";
+
 // Devtools are available from "i18nexus/devtools".
 // Server utilities are available only from "i18nexus/server".
 // import { getTranslation } from "i18nexus/server";

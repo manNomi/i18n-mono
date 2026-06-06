@@ -29,6 +29,19 @@ Display help information.
 npx i18n-type --help
 ```
 
+### `--translation-import-source <source>`
+
+Override the module that receives generated type augmentation. This is useful
+when a project uses `react-i18next` or a local wrapper instead of importing
+hooks directly from `i18nexus`.
+
+Aliases: `--library`, `--lib`
+
+```bash
+npx i18n-type --translation-import-source react-i18next
+npx i18n-type --library react-i18next
+```
+
 ## Configuration
 
 The command uses settings from `i18nexus.config.json`:
@@ -179,6 +192,12 @@ t("welcome"); // ✅ Type-safe
 import { useTranslation } from "react-i18next";
 const { t } = useTranslation("common");
 t("welcome"); // ✅ Type-safe
+```
+
+For one-off generation, the CLI flag takes precedence over config:
+
+```bash
+npx i18n-type --library react-i18next
 ```
 
 ## Error Handling
