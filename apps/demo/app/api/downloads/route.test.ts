@@ -26,7 +26,7 @@ describe("GET /api/downloads", () => {
   it("returns 500 when npm api response is not ok", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
-    } as Response);
+    } as unknown as Response);
 
     const req = new Request("http://localhost/api/downloads?package=i18nexus");
     const res = await GET(req);
@@ -48,14 +48,14 @@ describe("GET /api/downloads", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(payload),
-    } as Response);
+    } as unknown as Response);
 
     const req = new Request("http://localhost/api/downloads?package=i18nexus");
     const res = await GET(req);
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("api.npmjs.org/downloads/point/2025-09-28"),
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 3600 } },
     );
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual(payload);

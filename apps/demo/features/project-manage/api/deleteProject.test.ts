@@ -11,7 +11,7 @@ describe("deleteProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(payload),
-    } as Response);
+    } as unknown as Response);
 
     const result = await deleteProject("p1");
 
@@ -26,7 +26,7 @@ describe("deleteProject", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: jest.fn().mockResolvedValue({ error: "Failed to delete" }),
-    } as Response);
+    } as unknown as Response);
 
     await expect(deleteProject("p1")).rejects.toThrow("Failed to delete");
   });

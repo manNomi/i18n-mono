@@ -37,7 +37,7 @@ describe("POST /api/metadata", () => {
       status: 429,
       statusText: "Too Many Requests",
       headers: new Headers({ "content-type": "application/json" }),
-    } as Response);
+    } as unknown as Response);
 
     const res = await POST(createRequest({ url: "https://example.com" }));
 
@@ -53,7 +53,7 @@ describe("POST /api/metadata", () => {
       ok: true,
       headers: new Headers({ "content-type": "text/html" }),
       json: jest.fn().mockResolvedValue({ status: "success" }),
-    } as Response);
+    } as unknown as Response);
 
     const res = await POST(createRequest({ url: "https://example.com" }));
 
@@ -72,7 +72,7 @@ describe("POST /api/metadata", () => {
         status: "fail",
         message: "ENOTFOUND domain",
       }),
-    } as Response);
+    } as unknown as Response);
 
     const res = await POST(createRequest({ url: "https://example.com" }));
 
@@ -97,7 +97,7 @@ describe("POST /api/metadata", () => {
           screenshot: { url: "https://example.com/shot.png" },
         },
       }),
-    } as Response);
+    } as unknown as Response);
 
     const res = await POST(createRequest({ url: "https://example.com" }));
     const body = await res.json();

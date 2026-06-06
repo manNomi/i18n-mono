@@ -17,7 +17,7 @@ describe("fetchMetadata", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(mockPayload),
-    } as Response);
+    } as unknown as Response);
 
     const result = await fetchMetadata("https://example.com");
 
@@ -36,10 +36,10 @@ describe("fetchMetadata", () => {
         error: "Metadata service error occurred",
         details: "HTTP 500",
       }),
-    } as Response);
+    } as unknown as Response);
 
     await expect(fetchMetadata("https://example.com")).rejects.toThrow(
-      "Metadata service error occurred (HTTP 500)"
+      "Metadata service error occurred (HTTP 500)",
     );
   });
 
@@ -47,10 +47,10 @@ describe("fetchMetadata", () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockRejectedValue(new Error("bad json")),
-    } as Response);
+    } as unknown as Response);
 
     await expect(fetchMetadata("https://example.com")).rejects.toThrow(
-      "서버 응답을 처리할 수 없습니다. 잠시 후 다시 시도해주세요."
+      "서버 응답을 처리할 수 없습니다. 잠시 후 다시 시도해주세요.",
     );
   });
 });
