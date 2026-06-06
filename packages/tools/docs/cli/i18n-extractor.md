@@ -197,6 +197,21 @@ Fail type generation when a language file is missing keys or contains empty valu
 npx i18n-extractor --strict-types
 ```
 
+### `--translation-import-source <source>`
+
+Override the module that receives generated type augmentation when extraction
+also generates types. This is useful when your runtime imports
+`useTranslation` from `react-i18next` or a local wrapper module.
+
+Aliases: `--library`, `--lib`
+
+**Usage:**
+
+```bash
+npx i18n-extractor --translation-import-source react-i18next
+npx i18n-extractor --library react-i18next
+```
+
 ### `--static-key-extraction <mode>`
 
 Controls how aggressively the extractor resolves static constants passed to

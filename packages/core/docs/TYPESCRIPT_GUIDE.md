@@ -158,6 +158,26 @@ import type {
 } from "i18nexus";
 ```
 
+URL localization helpers and their option types are exported from the package
+root:
+
+```ts
+import {
+  getLanguageFromUrl,
+  localizeUrl,
+  removeLanguageFromUrl,
+  type LocalizedUrlOptions,
+  type LocalizedUrlStrategy,
+} from "i18nexus";
+
+const options: LocalizedUrlOptions = {
+  languages: ["en", "ko"],
+  defaultLanguage: "ko",
+};
+
+localizeUrl("/docs", "en", options);
+```
+
 `I18NexusDevtoolsProps` is exported from the devtools subpath:
 
 ```ts

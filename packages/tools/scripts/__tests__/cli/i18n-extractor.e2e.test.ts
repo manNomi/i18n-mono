@@ -67,10 +67,10 @@ describe("i18n-extractor CLI E2E", () => {
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(path.join(projectDir, "locales", "ko.json"))).toBe(
-        true,
+        true
       );
       expect(fileExists(path.join(projectDir, "locales", "en.json"))).toBe(
-        true,
+        true
       );
 
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
@@ -210,7 +210,7 @@ describe("i18n-extractor CLI E2E", () => {
       expect(result.exitCode).toBe(0);
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
       expect(
-        getValueByDotOrLiteral(koData, "home.fromResponse"),
+        getValueByDotOrLiteral(koData, "home.fromResponse")
       ).toBeUndefined();
     });
 
@@ -243,6 +243,21 @@ describe("i18n-extractor CLI E2E", () => {
       expect(getValueByDotOrLiteral(koData, "home.fromResponse")).toBeDefined();
     });
 
+    it("--library 옵션 값이 없으면 실패해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {});
+
+      const result = await runCLICommand(
+        "i18n-extractor",
+        ["--library"],
+        projectDir
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr || result.stdout).toContain(
+        "Missing value for option: --library"
+      );
+    });
+
     it("--static-key-extraction off는 const 문자열 키를 추출하지 않아야 함", async () => {
       const projectDir = createTestProject(tempDir, {
         src: {
@@ -269,7 +284,7 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--static-key-extraction", "off"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
@@ -303,7 +318,7 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--force"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
@@ -331,12 +346,12 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--dry-run"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(path.join(projectDir, "locales", "ko.json"))).toBe(
-        false,
+        false
       );
     });
 
@@ -359,7 +374,7 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--format", "csv", "--output", "translations.csv"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
@@ -390,18 +405,18 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--languages", "en,ja"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(path.join(projectDir, "locales", "en.json"))).toBe(
-        true,
+        true
       );
       expect(fileExists(path.join(projectDir, "locales", "ja.json"))).toBe(
-        true,
+        true
       );
       expect(fileExists(path.join(projectDir, "locales", "ko.json"))).toBe(
-        false,
+        false
       );
     });
 
@@ -434,13 +449,51 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--pattern", "app/**/*.tsx"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
       expect(getValueByDotOrLiteral(koData, "app.key")).toBeDefined();
       expect(getValueByDotOrLiteral(koData, "src.key")).toBeUndefined();
+    });
+
+    it("--translation-import-source 옵션을 타입 생성에 전달해야 함", async () => {
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "react-i18next";
+
+            export default function Component() {
+              const { t } = useTranslation();
+              return <div>{t("profile.title")}</div>;
+            }
+          `,
+        },
+      });
+
+      createTestConfig(projectDir, {
+        generateTypes: true,
+      });
+
+      const result = await runCLICommand(
+        "i18n-extractor",
+        ["--translation-import-source", "react-i18next"],
+        projectDir
+      );
+
+      expect(result.exitCode).toBe(0);
+
+      const typeFile = path.join(
+        projectDir,
+        "locales",
+        "types",
+        "i18nexus.d.ts"
+      );
+      const typeContent = readFileContent(typeFile);
+
+      expect(typeContent).toContain('declare module "react-i18next"');
+      expect(typeContent).not.toContain("from 'i18nexus'");
     });
   });
 
@@ -479,7 +532,7 @@ describe("i18n-extractor CLI E2E", () => {
         projectDir,
         "locales",
         "dashboard",
-        "ko.json",
+        "ko.json"
       );
       expect(fileExists(dashboardKoFile)).toBe(true);
 
@@ -508,7 +561,7 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--invalid-option"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(1);
@@ -547,7 +600,7 @@ describe("i18n-extractor CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-extractor",
         ["--format", "invalid"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(1);
@@ -572,7 +625,7 @@ describe("i18n-extractor CLI E2E", () => {
           "ko.json": JSON.stringify(
             { existing: "기존 키", "new.key": "이미 있음" },
             null,
-            2,
+            2
           ),
         },
       });

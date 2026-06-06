@@ -17,6 +17,9 @@ describe("root exports", () => {
       "useLanguageSwitcher",
       "createI18n",
       "defineConfig",
+      "getLanguageFromUrl",
+      "localizeUrl",
+      "removeLanguageFromUrl",
     ];
 
     for (const exportName of keptRootExports) {

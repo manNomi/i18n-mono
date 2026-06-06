@@ -17,6 +17,9 @@ Devtools are intentionally split into the `i18nexus/devtools` subpath so the pac
 import {
   I18nProvider,
   createI18n,
+  getLanguageFromUrl,
+  localizeUrl,
+  removeLanguageFromUrl,
   useLanguageSwitcher,
   useTranslation,
 } from "i18nexus";
@@ -27,6 +30,8 @@ import type {
   CreateI18nUseTranslationReturn,
   I18nProviderProps,
   I18nTranslations,
+  LocalizedUrlOptions,
+  LocalizedUrlStrategy,
   NamespaceLoader,
   NamespaceTranslations,
   TranslationFunction,
@@ -60,7 +65,7 @@ type NamespaceTranslations = Record<
 
 type NamespaceLoader = (
   namespace: string,
-  language: string,
+  language: string
 ) => Promise<Record<string, string>>;
 
 interface I18nProviderProps<
@@ -128,7 +133,7 @@ Hook for client component translations.
 
 ```typescript
 function useTranslation<K extends string = string>(
-  namespace?: string,
+  namespace?: string
 ): UseTranslationReturn<K>;
 ```
 
@@ -146,7 +151,7 @@ type TranslationFunction<K extends string = string> = {
   (
     key: K,
     variables: TranslationVariables,
-    styles: TranslationStyles,
+    styles: TranslationStyles
   ): React.ReactElement;
   (key: K, variables?: TranslationVariables): string;
 };
@@ -190,7 +195,7 @@ function createI18n<
   FallbackNamespace extends keyof TTranslations & string = never,
 >(
   translations: TTranslations,
-  options?: CreateI18nOptions<TTranslations, FallbackNamespace>,
+  options?: CreateI18nOptions<TTranslations, FallbackNamespace>
 ): CreateI18nInstance<TTranslations, FallbackNamespace>;
 ```
 
@@ -228,7 +233,7 @@ interface CreateI18nInstance<
   useTranslation: {
     (): CreateI18nUseTranslationReturn<string>;
     <NS extends keyof TTranslations & string>(
-      namespace: NS,
+      namespace: NS
     ): CreateI18nUseTranslationReturn<string>;
   };
   translations: TTranslations;
@@ -345,6 +350,57 @@ interface UseLanguageSwitcherReturn {
 }
 ```
 
+## URL Localization Helpers
+
+Helpers for converting links when language is represented in a path prefix or
+query parameter.
+
+```typescript
+type LocalizedUrlStrategy = "prefix" | "query";
+
+interface LocalizedUrlOptions {
+  strategy?: LocalizedUrlStrategy;
+  languages?: readonly string[];
+  defaultLanguage?: string;
+  includeDefaultLanguage?: boolean;
+  queryParam?: string;
+  basePath?: string;
+}
+
+function localizeUrl(
+  input: string,
+  language: string,
+  options?: LocalizedUrlOptions
+): string;
+
+function getLanguageFromUrl(
+  input: string,
+  options?: LocalizedUrlOptions
+): string | undefined;
+
+function removeLanguageFromUrl(
+  input: string,
+  options?: LocalizedUrlOptions
+): string;
+```
+
+```typescript
+const options = {
+  languages: ["ko", "en", "ja"],
+  defaultLanguage: "ko",
+};
+
+localizeUrl("/docs?tab=api", "en", options); // "/en/docs?tab=api"
+localizeUrl("/en/docs", "ko", options); // "/docs"
+getLanguageFromUrl("/ja/docs", options); // "ja"
+removeLanguageFromUrl("/en/docs", options); // "/docs"
+
+localizeUrl("/profile", "en", {
+  strategy: "query",
+  queryParam: "lng",
+}); // "/profile?lng=en"
+```
+
 ## Devtools Subpath
 
 `I18NexusDevtools` is no longer exported from the package root. Import it from
@@ -360,7 +416,7 @@ const I18NexusDevtools =
     : dynamic(
         () =>
           import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
-        { ssr: false },
+        { ssr: false }
       );
 
 export function ClientProvider({ children }: { children: React.ReactNode }) {

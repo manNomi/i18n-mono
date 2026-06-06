@@ -8,6 +8,9 @@ Complete API reference for i18nexus client-side hooks and components.
 import {
   I18nProvider,
   createI18n,
+  getLanguageFromUrl,
+  localizeUrl,
+  removeLanguageFromUrl,
   useTranslation,
   useLanguageSwitcher,
   useI18nContext,
@@ -19,6 +22,8 @@ import type {
   CreateI18nUseTranslationReturn,
   I18nTranslations,
   I18nProviderProps,
+  LocalizedUrlOptions,
+  LocalizedUrlStrategy,
   UseTranslationReturn,
   UseLanguageSwitcherReturn,
   TranslationVariables,
@@ -49,7 +54,7 @@ function I18nProvider<
 ```typescript
 type NamespaceLoader = (
   namespace: string,
-  language: string,
+  language: string
 ) => Promise<Record<string, string>>;
 
 interface I18nProviderProps<
@@ -130,7 +135,7 @@ const I18NexusDevtools =
     : dynamic(
         () =>
           import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
-        { ssr: false },
+        { ssr: false }
       );
 
 <I18nProvider {...config}>
@@ -153,7 +158,7 @@ Main hook for translation functions.
 
 ```typescript
 function useTranslation<K extends string = string>(
-  namespace?: string,
+  namespace?: string
 ): UseTranslationReturn<K>;
 ```
 
@@ -176,7 +181,7 @@ interface TranslationFunction {
   (
     key: string,
     variables: TranslationVariables,
-    styles: TranslationStyles,
+    styles: TranslationStyles
   ): React.ReactElement;
 
   // Without styles - returns string
@@ -226,7 +231,7 @@ function createI18n<
   FallbackNamespace extends keyof TTranslations & string = never,
 >(
   translations: TTranslations,
-  options?: CreateI18nOptions<TTranslations, FallbackNamespace>,
+  options?: CreateI18nOptions<TTranslations, FallbackNamespace>
 ): CreateI18nInstance<TTranslations, FallbackNamespace>;
 ```
 
@@ -304,6 +309,57 @@ function LanguageSwitcher() {
     </select>
   );
 }
+```
+
+---
+
+### URL Localization Helpers
+
+Helpers for path-prefix and query-parameter language URLs.
+
+```typescript
+type LocalizedUrlStrategy = "prefix" | "query";
+
+interface LocalizedUrlOptions {
+  strategy?: LocalizedUrlStrategy;
+  languages?: readonly string[];
+  defaultLanguage?: string;
+  includeDefaultLanguage?: boolean;
+  queryParam?: string;
+  basePath?: string;
+}
+
+function localizeUrl(
+  input: string,
+  language: string,
+  options?: LocalizedUrlOptions
+): string;
+
+function getLanguageFromUrl(
+  input: string,
+  options?: LocalizedUrlOptions
+): string | undefined;
+
+function removeLanguageFromUrl(
+  input: string,
+  options?: LocalizedUrlOptions
+): string;
+```
+
+**Example:**
+
+```typescript
+const options = {
+  languages: ["ko", "en"],
+  defaultLanguage: "ko",
+};
+
+localizeUrl("/docs", "en", options); // "/en/docs"
+localizeUrl("/en/docs", "ko", options); // "/docs"
+
+localizeUrl("/settings", "en", {
+  strategy: "query",
+}); // "/settings?lang=en"
 ```
 
 ---
@@ -540,7 +596,7 @@ function ExpensiveComponent() {
 
   const styledText = useMemo(
     () => t("Price: {{amount}}", { amount: 100 }, { amount: { color: "red" } }),
-    [t],
+    [t]
   );
 
   return <div>{styledText}</div>;

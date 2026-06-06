@@ -6,6 +6,10 @@ import {
   generateTypeDefinitions,
 } from "../scripts/extractor/type-generator";
 import { loadConfig } from "../scripts/config-loader";
+import {
+  isTranslationImportSourceOption,
+  readRequiredOptionValue,
+} from "./cli-option-utils";
 
 /**
  * i18n-type: 타입 정의 파일 생성 전용 명령어
@@ -17,6 +21,7 @@ import { loadConfig } from "../scripts/config-loader";
 // CLI 실행 부분
 if (require.main === module) {
   const args = process.argv.slice(2);
+  let translationImportSourceOverride: string | undefined;
 
   // 도움말 처리
   if (args.includes("--help") || args.includes("-h")) {
@@ -28,10 +33,15 @@ This command reads JSON files from locales directory and generates type-safe def
 
 Options:
   -h, --help                   Show this help message
+  --translation-import-source <source>
+                               Module to augment for generated types
+                               (default: config translationImportSource or "i18nexus")
+  --library, --lib <source>     Alias for --translation-import-source
 
 Examples:
   # Generate types from locales directory
   npx i18n-type
+  npx i18n-type --library react-i18next
 
 How it works:
   1. Reads all translation JSON files from locales directory
@@ -54,6 +64,25 @@ Output:
 Note: Run this command after extracting translations or modifying JSON files.
     `);
     process.exit(0);
+  }
+
+  for (let i = 0; i < args.length; i++) {
+    const option = args[i];
+
+    if (isTranslationImportSourceOption(option)) {
+      translationImportSourceOverride = readRequiredOptionValue(
+        args,
+        i,
+        option
+      );
+      i++;
+      continue;
+    }
+
+    if (option.startsWith("-")) {
+      console.error(`Unknown option: ${option}`);
+      process.exit(1);
+    }
   }
 
   // 설정 로드
@@ -80,7 +109,10 @@ Note: Run this command after extracting translations or modifying JSON files.
     generateTypeDefinitions(translations, {
       outputPath,
       fallbackNamespace: config.fallbackNamespace,
-      translationImportSource: config.translationImportSource || "i18nexus",
+      translationImportSource:
+        translationImportSourceOverride ||
+        config.translationImportSource ||
+        "i18nexus",
       includeJsDocs: true,
       strictValidation: config.strictTypeGeneration,
     });
@@ -90,15 +122,23 @@ Note: Run this command after extracting translations or modifying JSON files.
 
     if (config.fallbackNamespace) {
       console.log(
-        `   Fallback namespace: "${config.fallbackNamespace}" (keys included in all namespaces)`,
+        `   Fallback namespace: "${config.fallbackNamespace}" (keys included in all namespaces)`
       );
     }
 
     if (config.strictTypeGeneration) {
       console.log(
-        `   Strict validation: enabled (missing key/value will fail generation)`,
+        `   Strict validation: enabled (missing key/value will fail generation)`
       );
     }
+
+    console.log(
+      `   Import source: "${
+        translationImportSourceOverride ||
+        config.translationImportSource ||
+        "i18nexus"
+      }"`
+    );
   } catch (error) {
     console.error("❌ Failed to generate type definitions:", error);
     process.exit(1);

@@ -192,7 +192,7 @@ export class TranslationExtractor {
         namespace = inferNamespaceFromFile(
           filePath,
           code,
-          this.config.namespacing,
+          this.config.namespacing
         );
 
         // 네임스페이스 검증 (skipValidation이 false일 때만)
@@ -209,7 +209,7 @@ export class TranslationExtractor {
               filePath,
               code,
               namespace,
-              this.config.namespacing,
+              this.config.namespacing
             );
             if (!validation.valid) {
               console.error(validation.error);
@@ -330,7 +330,7 @@ export class TranslationExtractor {
 
       if (files.length === 0) {
         console.warn(
-          CONSOLE_MESSAGES.NO_FILES_FOUND(this.config.sourcePattern),
+          CONSOLE_MESSAGES.NO_FILES_FOUND(this.config.sourcePattern)
         );
         return;
       }
@@ -383,10 +383,10 @@ export class TranslationExtractor {
           this.config.dryRun,
           canGenerateRuntimeEntrypoint,
           this.config.generateTypes,
-          this.getTypesOutputPath(),
+          this.getTypesOutputPath()
         );
 
-        this.generateTypesIfEnabled(canGenerateRuntimeEntrypoint);
+        this.generateTypesIfEnabled();
       } else {
         // 레거시 모드: 기존 방식 유지
         const keys = Array.from(this.extractedKeys.values());
@@ -412,9 +412,7 @@ export class TranslationExtractor {
           dryRun: this.config.dryRun,
         });
 
-        this.generateTypesIfEnabled(
-          (this.config.translationImportSource || "i18nexus") === "i18nexus",
-        );
+        this.generateTypesIfEnabled();
       }
     } catch (error) {
       console.error(CONSOLE_MESSAGES.EXTRACTION_FAILED, error);
@@ -422,11 +420,11 @@ export class TranslationExtractor {
     }
   }
 
-  private generateTypesIfEnabled(useI18nexusLibrary: boolean): void {
+  private generateTypesIfEnabled(): void {
     if (
       this.config.dryRun ||
       !this.config.generateTypes ||
-      !useI18nexusLibrary
+      this.config.outputFormat !== OUTPUT_FORMATS.JSON
     ) {
       if (!this.config.dryRun && !this.config.generateTypes) {
         console.log("\n💡 Tip: Generate types later with:");
@@ -463,7 +461,7 @@ export class TranslationExtractor {
 }
 
 export async function runTranslationExtractor(
-  config: Partial<ExtractorConfig> = {},
+  config: Partial<ExtractorConfig> = {}
 ): Promise<void> {
   const extractor = new TranslationExtractor(config);
   await extractor.extract();
