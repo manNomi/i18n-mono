@@ -159,7 +159,7 @@ export default function ProjectSubmitForm() {
         {/* URL Input */}
         <div className="mb-6">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
-            프로젝트 URL (필수)
+            {t("프로젝트 URL (필수)")}
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
@@ -177,7 +177,7 @@ export default function ProjectSubmitForm() {
               disabled={!url || loading}
               className="whitespace-nowrap rounded-md border border-blue-600 bg-blue-600 px-6 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-blue-700"
             >
-              {loading ? "로딩..." : "미리보기"}
+              {loading ? t("로딩...") : t("미리보기")}
             </button>
           </div>
           <p className="text-xs text-slate-500 mt-2">
@@ -188,7 +188,7 @@ export default function ProjectSubmitForm() {
         {/* Project Name (Optional Override) */}
         <div className="mb-6">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
-            프로젝트 이름 (선택)
+            {t("프로젝트 이름 (선택)")}
           </label>
           <input
             type="text"
@@ -206,7 +206,7 @@ export default function ProjectSubmitForm() {
         {/* Contact Email (Optional) */}
         <div className="mb-6">
           <label className="block text-sm font-semibold text-slate-700 mb-2">
-            연락처 이메일 (선택)
+            {t("연락처 이메일 (선택)")}
           </label>
           <input
             type="email"
@@ -263,7 +263,7 @@ export default function ProjectSubmitForm() {
           disabled={!preview || !agreed || submitting}
           className="w-full rounded-md border border-blue-600 bg-blue-600 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-blue-700"
         >
-          {submitting ? t("제출 중...") : "제출하기"}
+          {submitting ? t("제출 중...") : t("제출하기")}
         </button>
 
         {/* Success Message */}
@@ -272,7 +272,7 @@ export default function ProjectSubmitForm() {
             <div className="mb-2 flex items-center justify-center">
               <span className="font-semibold">{t("제출 완료!")}</span>
             </div>
-            <p className="text-sm">검토 후 공개됩니다.</p>
+            <p className="text-sm">{t("검토 후 공개됩니다.")}</p>
           </div>
         )}
       </form>

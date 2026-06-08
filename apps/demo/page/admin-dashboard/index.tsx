@@ -21,7 +21,9 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <div className="text-base font-medium text-slate-500">로딩 중...</div>
+        <div className="text-base font-medium text-slate-500">
+          {t("로딩 중...")}
+        </div>
       </main>
     );
   }
@@ -39,7 +41,7 @@ export default function AdminDashboard() {
           </p>
         </div>
         <button onClick={handleLogout} className="demo-button">
-          로그아웃
+          {t("로그아웃")}
         </button>
       </div>
 
@@ -53,8 +55,8 @@ export default function AdminDashboard() {
               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
-          <span className="hidden sm:inline">승인 대기 중</span>
-          <span className="sm:hidden">대기</span>
+          <span className="hidden sm:inline">{t("승인 대기 중")}</span>
+          <span className="sm:hidden">{t("대기")}</span>
         </button>
         <button
           onClick={() => setFilter("approved")}
@@ -74,7 +76,7 @@ export default function AdminDashboard() {
               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
-          전체
+          {t("전체")}
         </button>
       </div>
 

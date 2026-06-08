@@ -95,12 +95,11 @@ export default function ProviderPage() {
       )}
       size="narrow"
     >
-      <Callout title="현재 권장 경로" tone="info">
+      <Callout title={t("현재 권장 경로")} tone="info">
         <p>
-          초급 사용자는 <code>I18nProvider</code>와 root{" "}
-          <code>useTranslation</code>을 사용합니다. <code>createI18n</code>은
-          번역 객체에서 namespace/key 타입 추론이 필요할 때 쓰는 고급 typed
-          API입니다.
+          {t(
+            "초급 사용자는 I18nProvider와 root useTranslation을 사용합니다. createI18n은 번역 객체에서 namespace/key 타입 추론이 필요할 때 쓰는 고급 typed API입니다."
+          )}
         </p>
       </Callout>
 
@@ -120,7 +119,9 @@ export default function ProviderPage() {
 
       <Section
         title="createI18n"
-        description="Provider를 대체하는 API가 아니라, 타입 추론을 강화하는 선택지입니다."
+        description={t(
+          "Provider를 대체하는 API가 아니라, 타입 추론을 강화하는 선택지입니다."
+        )}
       >
         <CodeBlock language="typescript">{typedExample}</CodeBlock>
       </Section>

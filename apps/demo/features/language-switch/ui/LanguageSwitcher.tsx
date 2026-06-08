@@ -4,7 +4,7 @@ import { useLanguageSwitcher, useTranslation } from "i18nexus";
 import { usePathname } from "next/navigation";
 
 export default function LanguageSwitcher() {
-  const { currentLanguage } = useTranslation<"common">("common");
+  const { t, currentLanguage } = useTranslation<"common">("common");
   const { changeLanguage, availableLanguages } = useLanguageSwitcher();
   const pathname = usePathname();
 
@@ -22,20 +22,28 @@ export default function LanguageSwitcher() {
     }
   };
 
+  const getLanguageLabel = (langCode: string, fallbackName: string) => {
+    if (langCode === "ko") return t("한국어");
+    if (langCode === "en") return t("English");
+    return fallbackName;
+  };
+
   return (
-    <div className="flex max-w-full shrink-0 items-center overflow-hidden rounded-md border border-slate-200 bg-slate-50 p-1">
+    <div className="flex max-w-full shrink-0 items-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 p-1">
       {availableLanguages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => handleLanguageChange(lang.code)}
-          className={`whitespace-nowrap rounded px-2.5 py-1.5 text-xs font-semibold sm:px-3 sm:text-sm ${
+          className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3 sm:text-sm ${
             currentLanguage === lang.code
-              ? "bg-white text-blue-700"
+              ? "bg-white text-blue-700 shadow-[0_1px_2px_rgba(0,12,30,0.08)]"
               : "text-slate-500 hover:text-slate-900"
           }`}
           aria-pressed={currentLanguage === lang.code}
         >
-          <span className="hidden md:inline">{lang.name}</span>
+          <span className="hidden md:inline">
+            {getLanguageLabel(lang.code, lang.name)}
+          </span>
           <span className="md:hidden">{lang.code.toUpperCase()}</span>
         </button>
       ))}

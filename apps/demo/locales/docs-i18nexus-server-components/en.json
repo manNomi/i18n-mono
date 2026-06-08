@@ -1,5 +1,7 @@
 {
   "'use client' 필요": "'use client' required",
+  "// app/page.tsx (서버 컴포넌트)\nimport { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\nimport LanguageSwitcher from \"./LanguageSwitcher\"; // 클라이언트 컴포넌트\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* 클라이언트 컴포넌트: 언어 전환 */}\n      <LanguageSwitcher />\n\n      {/* 서버 컴포넌트: 정적 콘텐츠 */}\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This content is rendered on the server\")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (클라이언트 컴포넌트)\n\"use client\";\n\nimport { useLanguageSwitcher } from \"i18nexus\";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}": "// app/page.tsx (Server Component)\nimport { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\nimport LanguageSwitcher from \"./LanguageSwitcher\"; // Client Component\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* Client Component: language switching */}\n      <LanguageSwitcher />\n\n      {/* Server Component: static content */}\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This content is rendered on the server\")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (Client Component)\n\"use client\";\n\nimport { useLanguageSwitcher } from \"i18nexus\";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}",
+  "// layout.tsx에서\nconst headersList = await headers();\nconst language = getServerLanguage(headersList);\n\n<I18nProvider initialLanguage={language}>": "// In layout.tsx\nconst headersList = await headers();\nconst language = getServerLanguage(headersList);\n\n<I18nProvider initialLanguage={language}>",
   "개요": "Overview",
   "더 나은 SEO": "Better SEO",
   "더 빠른 초기 로딩": "Faster initial loading",
@@ -28,8 +30,10 @@
   "언제 사용해야 하나요?": "When should you use it?",
   "완전한 상호작용": "Full interaction",
   "완전한 예제": "Complete Example",
+  "완전한 예제 압": "Complete example app",
   "이벤트 핸들러 사용": "Using event handlers",
   "정적 콘텐츠 (블로그, 문서)": "Static content (blog, documentation)",
+  "존재하지_않는_키": "missing_key",
   "중요한 참고사항": "Important Notes",
   "참고 자료": "References",
   "초기 로딩 속도가 중요한 경우": "When initial loading speed is important",
@@ -42,15 +46,11 @@
   "하이브리드 접근법": "Hybrid Approach",
   "홈": "Home",
   "i18nexus": "i18nexus",
+  "import { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\n\n// ✅ 서버 컴포넌트 (기본값)\nexport default async function ServerPage() {\n  // 1. 쿠키에서 언어 가져오기\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. 번역 함수 생성\n  const t = createServerTranslation(language, translations);\n\n  // 3. 번역 사용\n  return (\n    <div>\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This is a server component\")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}": "import { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\n\n// ✅ Server Component (default)\nexport default async function ServerPage() {\n  // 1. Read the language from cookies\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. Create a translation function\n  const t = createServerTranslation(language, translations);\n\n  // 3. Use translations\n  return (\n    <div>\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This is a server component\")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}",
   "Next.js 서버 컴포넌트에서 i18nexus 사용하기": "Using i18nexus in Next.js Server Components",
   "Next.js의 서버 컴포넌트에서는 useTranslation 훅을 사용할 수 없습니다. 대신 서버 전용 함수를 사용해야 합니다.": "In Next.js server components, you cannot use the useTranslation hook. Instead, you must use server-only functions.",
   "React 훅 사용 가능": "React hooks available",
   "React 훅이 필요한 경우": "When React hooks are needed",
   "SEO가 중요한 페이지": "Pages where SEO is important",
-  "// app/page.tsx (서버 컴포넌트)\nimport { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\nimport LanguageSwitcher from \"./LanguageSwitcher\"; // 클라이언트 컴포넌트\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* 클라이언트 컴포넌트: 언어 전환 */}\n      <LanguageSwitcher />\n\n      {/* 서버 컴포넌트: 정적 콘텐츠 */}\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This content is rendered on the server\")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (클라이언트 컴포넌트)\n\"use client\";\n\nimport { useLanguageSwitcher } from \"i18nexus\";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}": "",
-  "// layout.tsx에서\nconst headersList = await headers();\nconst language = getServerLanguage(headersList);\n\n<I18nProvider initialLanguage={language}>": "",
-  "완전한 예제 압": "",
-  "존재하지_않는_키": "",
-  "import { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\n\n// ✅ 서버 컴포넌트 (기본값)\nexport default async function ServerPage() {\n  // 1. 쿠키에서 언어 가져오기\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. 번역 함수 생성\n  const t = createServerTranslation(language, translations);\n\n  // 3. 번역 사용\n  return (\n    <div>\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This is a server component\")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}": "",
-  "typo_key": ""
+  "typo_key": "typo_key"
 }

@@ -1,0 +1,14 @@
+{
+  "관련 문서": "Related docs",
+  "문서로 돌아가기": "Back to docs",
+  "설정 순서": "Setup Flow",
+  "컴포넌트에서 namespace 요청": "Request a namespace from components",
+  "현재 API 기준": "Current API behavior",
+  "fallback namespace는 공통 문구를 위해 미리 로드합니다.": "Preload the fallback namespace for common copy.",
+  "I18nProvider에 연결": "Connect it to I18nProvider",
+  "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다.": "Lazy loading is not a createI18n option. Passing loadNamespace to I18nProvider automatically enables lazy mode.",
+  "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다.": "Load namespace translation files only when they are first needed to reduce the initial bundle cost.",
+  "namespace loader 작성": "Create a namespace loader",
+  "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다.": "Receive the namespace and language, then dynamically import the matching JSON file.",
+  "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다.": "useTranslation(namespace) automatically requests the namespace it needs."
+}

@@ -1,8 +1,11 @@
 {
+  "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}": "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}",
   "간단한 파일 구조: locales/en.json, locales/ko.json": "간단한 파일 구조: locales/en.json, locales/ko.json",
   "개발자 경험": "개발자 경험",
   "공백을 유지한 스마트 키 생성": "공백을 유지한 스마트 키 생성",
+  "기본 워크플로우": "기본 워크플로우",
   "기존 번역 보존": "기존 번역 보존",
+  "도구 목록": "도구 목록",
   "동기화 및 협업": "동기화 및 협업",
   "또는 설치 없이 사용": "또는 설치 없이 사용",
   "래핑된 텍스트에서 번역 파일을 생성하고 기존 번역과 병합": "래핑된 텍스트에서 번역 파일을 생성하고 기존 번역과 병합",
@@ -22,12 +25,14 @@
   "영어 번역 추가": "영어 번역 추가",
   "자동 import 주입": "자동 import 주입",
   "자동화": "자동화",
+  "자세히 알아보기": "자세히 알아보기",
   "전역 설치 (권장)": "전역 설치 (권장)",
   "전체 덮어쓰기를 위한 강제 동기화": "전체 덮어쓰기를 위한 강제 동기화",
   "주요 기능": "주요 기능",
   "증분 업데이트 (안전)": "증분 업데이트 (안전)",
   "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구",
   "코드에 하드코딩된 한국어 문자열을 t()로 자동 감싸기": "코드에 하드코딩된 한국어 문자열을 t()로 자동 감싸기",
+  "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.",
   "팀 협업을 위해 번역을 Google Sheets로 업로드": "팀 협업을 위해 번역을 Google Sheets로 업로드",
   "팁": "팁",
   "파일 관리": "파일 관리",
@@ -51,10 +56,5 @@
   "i18nexus-tools": "i18nexus-tools",
   "i18nexus-tools 문서": "i18nexus-tools 문서",
   "TypeScript 지원": "TypeScript 지원",
-  "Upload local translations to Google Sheets": "Upload local translations to Google Sheets",
-  "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}": "// locales/en.json\n{\n  \"환영합니다\": \"Welcome\",\n  \"시작하기\": \"Get Started\"\n}",
-  "기본 워크플로우": "기본 워크플로우",
-  "도구 목록": "도구 목록",
-  "자세히 알아보기": "자세히 알아보기",
-  "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다."
+  "Upload local translations to Google Sheets": "Upload local translations to Google Sheets"
 }

@@ -3,14 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f9fafb;
+  --foreground: #191f28;
   --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --muted: #64748b;
-  --blue-primary: #2563eb;
-  --indigo-primary: #4f46e5;
+  --surface-muted: #f2f4f6;
+  --border: #e5e8eb;
+  --muted: #6b7684;
+  --blue-primary: #3182f6;
+  --blue-strong: #2272eb;
+  --blue-soft: #e8f3ff;
+  --green-primary: #03b26c;
+  --red-primary: #f04452;
+  --shadow-card: 0 1px 2px rgba(0, 12, 30, 0.04);
 }
 
 html,
@@ -25,7 +29,13 @@ html {
 
 body {
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(49, 130, 246, 0.08),
+      transparent 28rem
+    ),
+    linear-gradient(180deg, #ffffff 0, var(--background) 18rem);
   color: var(--foreground);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -39,8 +49,8 @@ body {
 }
 
 ::selection {
-  background: #dbeafe;
-  color: #1e3a8a;
+  background: var(--blue-soft);
+  color: #194aa6;
 }
 
 ::-webkit-scrollbar {
@@ -102,25 +112,31 @@ main :where(h1, h2, h3, h4, h5, h6) {
   }
 
   .demo-section {
-    @apply rounded-lg border border-slate-200 bg-white p-5 sm:p-6;
+    @apply rounded-2xl border border-slate-200 bg-white p-5 sm:p-6;
     min-width: 0;
+    box-shadow: var(--shadow-card);
   }
 
   .demo-muted-section {
-    @apply rounded-lg border border-slate-200 bg-slate-50 p-5 sm:p-6;
+    @apply rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6;
     min-width: 0;
+    box-shadow: var(--shadow-card);
   }
 
   .demo-button {
-    @apply inline-flex min-h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm font-semibold leading-5 text-slate-800 hover:border-slate-400 hover:bg-slate-50;
+    @apply inline-flex min-h-11 items-center justify-center border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-semibold leading-5 text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950;
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
   }
 
   .demo-button-primary {
-    @apply inline-flex min-h-10 items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-4 py-2 text-center text-sm font-semibold leading-5 text-white hover:border-blue-700 hover:bg-blue-700;
+    @apply inline-flex min-h-11 items-center justify-center border border-blue-600 bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold leading-5 text-white transition-colors hover:border-blue-700 hover:bg-blue-700;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(49, 130, 246, 0.18);
   }
 
   .demo-hero-title {
-    @apply max-w-5xl text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl;
+    @apply max-w-5xl text-3xl font-bold tracking-[-0.03em] text-slate-950 sm:text-4xl;
     line-height: 1.14;
     overflow-wrap: normal;
     text-wrap: balance;
@@ -229,17 +245,20 @@ main .border-violet-800\/50 {
   border-color: #e2e8f0 !important;
 }
 
-main [class*="shadow-"],
-nav [class*="shadow-"],
-aside [class*="shadow-"] {
-  box-shadow: none !important;
+main .shadow-lg,
+main .shadow-xl,
+main .shadow-2xl {
+  box-shadow: var(--shadow-card) !important;
 }
 
-main .rounded-xl,
-main .rounded-2xl,
-main .rounded-3xl,
-main .rounded-full {
-  border-radius: 0.5rem !important;
+main [class*="shadow-purple-"],
+main [class*="shadow-pink-"],
+main [class*="shadow-green-"],
+main [class*="shadow-blue-"],
+main [class*="shadow-yellow-"],
+main [class*="shadow-red-"],
+main [class*="shadow-orange-"] {
+  box-shadow: none !important;
 }
 
 main .text-5xl,

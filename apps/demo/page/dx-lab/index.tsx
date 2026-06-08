@@ -44,12 +44,18 @@ export default function DxLabPage() {
   const { availableLanguages, changeLanguage, isLoading } =
     useLanguageSwitcher();
 
+  const getLanguageLabel = (langCode: string, fallbackName: string) => {
+    if (langCode === "ko") return t("한국어");
+    if (langCode === "en") return t("English");
+    return fallbackName;
+  };
+
   return (
     <PageShell
       eyebrow={t("실사용 DX 점검")}
       title={t("라이브러리를 직접 써보며 만든 데모")}
       description={t(
-        "이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation(\"dx-lab\") 호출만으로 불러옵니다."
+        '이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation("dx-lab") 호출만으로 불러옵니다.'
       )}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -102,7 +108,9 @@ export default function DxLabPage() {
                   <span className="text-lg" aria-hidden="true">
                     {language.flag}
                   </span>
-                  <span className="ml-2 font-semibold">{language.name}</span>
+                  <span className="ml-2 font-semibold">
+                    {getLanguageLabel(language.code, language.name)}
+                  </span>
                 </button>
               );
             })}

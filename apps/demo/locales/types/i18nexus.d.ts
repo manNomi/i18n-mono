@@ -34,6 +34,7 @@ declare type TranslationNamespace =
   | "docs-i18nexus-tools-wrapper"
   | "docs-i18nexus-use-language-switcher"
   | "docs-i18nexus-use-translation"
+  | "docs-lazy-loading"
   | "dx-lab"
   | "getting-started"
   | "home"
@@ -51,13 +52,18 @@ declare type AdminDashboardKeys =
   | "✅ 승인됨"
   | "✓ 승인됨"
   | "관리자 대시보드"
+  | "대기"
   | "대기 중"
+  | "로그아웃"
+  | "로딩 중..."
   | "삭제 중 오류가 발생했습니다."
+  | "승인 대기 중"
   | "승인 대기 중인 프로젝트가 없습니다"
   | "승인 중 오류가 발생했습니다."
   | "승인된 프로젝트가 없습니다"
   | "승인됨"
   | "아직 제출된 프로젝트가 없습니다"
+  | "전체"
   | "전체 제출"
   | "정말 삭제하시겠습니까?"
   | "제출 목록을 불러오는데 실패했습니다."
@@ -65,6 +71,11 @@ declare type AdminDashboardKeys =
   | "📋 전체"
   | "🔗 Firestore 인덱스 생성 링크:"
   | "🚪 로그아웃";
+
+/** Interpolation variables for "admin-dashboard" namespace keys */
+declare type AdminDashboardKeyVariables = {
+  "Firestore 인덱스가 필요합니다. 링크를 클릭하여 생성해주세요: {{\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata_indexUrl}}": "data_indexUrl";
+};
 
 declare type CliKeys =
   | '// lib/translations/en.json\n{\n  "환영합니다": "Welcome",\n  "시작하기": "Get Started"\n}'
@@ -120,6 +131,7 @@ declare type CommonKeys =
   | "CLI"
   | "CLI 개요"
   | "DX Lab"
+  | "English"
   | "Failed to load"
   | "Firebase Authentication이 올바르게 설정되지 않았습니다. Firebase Console에서 Authentication을 활성화해주세요."
   | "Firebase 설정이 필요하신가요?"
@@ -151,6 +163,7 @@ declare type CommonKeys =
   | "개요 설명"
   | "개요 제목"
   | "검토 후 공개됩니다 😊"
+  | "검토 후 공개됩니다."
   | "공개 접근 가능한 URL"
   | "관련 문서"
   | "관리자"
@@ -162,7 +175,10 @@ declare type CommonKeys =
   | "닫기"
   | "대시보드"
   | "등록되지 않은 이메일입니다."
+  | "로그인"
+  | "로그인 중..."
   | "로그인에 실패했습니다."
+  | "로딩..."
   | "메뉴 열기"
   | "메타데이터 서비스"
   | "메타데이터 서비스에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요."
@@ -170,11 +186,13 @@ declare type CommonKeys =
   | "문서"
   | "문서 개요"
   | "문제가 계속되면"
+  | "미리보기"
   | "미리보기 ▶"
   | "미리보기 생성 실패: {{errorMessage}}"
   | "미리보기 생성에 실패했습니다."
   | "미리보기 생성이 실패하면"
   | "바로가기"
+  | "비밀번호"
   | "비밀번호가 올바르지 않습니다."
   | "사용 예제 설명"
   | "사용 예제 제목"
@@ -196,6 +214,7 @@ declare type CommonKeys =
   | "시작하기"
   | "아직 등록된 프로젝트가 없습니다"
   | "에서 Authentication 활성화"
+  | "연락처 이메일 (선택)"
   | "예상치 못한 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
   | "예상치 못한 응답"
   | "오류가 발생했습니다"
@@ -205,6 +224,7 @@ declare type CommonKeys =
   | "위 정보 제공에 동의하며, i18nexus 쇼케이스에 공개될 수 있음을\n              이해합니다. 관리자 검토 후 공개됩니다. (필수)"
   | "을\n              사용하세요 (localhost, 127.0.0.1 불가)"
   | "을 입력하세요 (예:\n              https://example.com)"
+  | "이메일"
   | "이메일 또는 비밀번호가 올바르지 않습니다."
   | "이미지 다운로드"
   | "이미지 확대"
@@ -225,6 +245,7 @@ declare type CommonKeys =
   | "제출 팁"
   | "제출 후 관리자 검토를 거쳐 24시간 이내에 공개됩니다"
   | "제출에 실패했습니다. 다시 시도해주세요."
+  | "제출하기"
   | "주의사항 제목"
   | "주의사항1"
   | "주의사항2"
@@ -233,8 +254,10 @@ declare type CommonKeys =
   | "첫 번째 프로젝트 등록하기"
   | "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!"
   | "클라이언트 컴포넌트 제목"
+  | "프로젝트 URL (필수)"
   | "프로젝트 등록"
   | "프로젝트 등록하기"
+  | "프로젝트 이름 (선택)"
   | "프로젝트에"
   | "프리로드 설명"
   | "프리로드 제목"
@@ -924,6 +947,20 @@ declare type DocsI18nexusUseTranslationKeys =
   | "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 React 훅"
   | "홈";
 
+declare type DocsLazyLoadingKeys =
+  | "I18nProvider에 연결"
+  | "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다."
+  | "fallback namespace는 공통 문구를 위해 미리 로드합니다."
+  | "namespace loader 작성"
+  | "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다."
+  | "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다."
+  | "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다."
+  | "관련 문서"
+  | "문서로 돌아가기"
+  | "설정 순서"
+  | "컴포넌트에서 namespace 요청"
+  | "현재 API 기준";
+
 declare type DxLabKeys =
   | "Devtools 상태"
   | "Devtools는 Provider 근처에 한 번만 mount되어 페이지 코드는 번역 흐름에 집중할 수 있습니다."
@@ -962,6 +999,7 @@ declare type GettingStartedKeys =
   | "App 디렉토리 참고사항"
   | "CLI 도구 살펴보기"
   | "I18nProvider 자세히 알아보기"
+  | "Lazy loading은 createI18n 옵션이 아니라 I18nProvider props로 설정합니다."
   | "Next.js App Router를 사용하는 경우, -p 플래그를 사용하여 올바른 디렉토리를 지정하세요"
   | "Next.js App Router의 경우"
   | "React 컴포넌트와 CLI 도구를 모두 설치합니다"
@@ -993,10 +1031,13 @@ declare type GettingStartedKeys =
   | "영어 번역 (수동 번역 필요)"
   | "영어 번역 추가"
   | "완료!"
+  | "을 사용하고, 서버 컴포넌트는"
+  | "을 사용합니다."
   | "이전 (자동 생성)"
   | "이후 (번역됨)"
   | "중요: 서버 컴포넌트 확인"
   | "코드를 스캔하여 번역 파일을 생성/업데이트합니다"
+  | "클라이언트 컴포넌트는"
   | "클라이언트 컴포넌트의 경우"
   | "팀 협업을 위해 Google Sheets와 동기화할 수 있습니다"
   | "파일이 서버 컴포넌트인 경우 (use client가 없는 경우), 훅 대신 서버 유틸리티를 사용해야 합니다"
@@ -1090,6 +1131,7 @@ declare type ProviderKeys =
   | '// ❌ 옛날 방식 (Provider 필요)\nimport { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "한국어", flag: "🇰🇷" },\n              { code: "en", name: "English", flag: "🇺🇸" },\n            ],\n          }}\n          translations={{\n            ko: { "환영합니다": "환영합니다" },\n            en: { "환영합니다": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}\n\n// ✅ 새로운 방식 (Provider 불필요)\n// locales/index.ts에서 createI18n으로 설정\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="ko">\n      <body>{children}</body>\n    </html>\n  );\n}'
   | '// 어디서나 직접 호출 가능\nchangeLanguage("en");\n\n// 가능한 언어 목록\nconst languages = getAvailableLanguages();\n\n// 현재 언어\nconst current = getCurrentLanguage();'
   | "API 레퍼런스"
+  | "Provider를 대체하는 API가 아니라, 타입 추론을 강화하는 선택지입니다."
   | "SSR 준비 완료"
   | "TypeScript"
   | 'const { t } = i18n.useTranslation();\n\n// Simple usage\nt("key")\nt("한국어 텍스트")'
@@ -1111,10 +1153,12 @@ declare type ProviderKeys =
   | "전환해보세요 - 쿠키에 저장됩니다!"
   | "제로 하이드레이션"
   | "주요 기능"
+  | "초급 사용자는 I18nProvider와 root useTranslation을 사용합니다. createI18n은 번역 객체에서 namespace/key 타입 추론이 필요할 때 쓰는 고급 typed API입니다."
   | "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider"
   | "쿠키 영속성"
   | "클라이언트 컴포넌트 (app/page.tsx)"
   | "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 훅"
+  | "현재 권장 경로"
   | "현재 언어"
   | "환영합니다";
 
@@ -1181,6 +1225,7 @@ declare type TranslationKeys = {
   "docs-i18nexus-tools-wrapper": DocsI18nexusToolsWrapperKeys;
   "docs-i18nexus-use-language-switcher": DocsI18nexusUseLanguageSwitcherKeys;
   "docs-i18nexus-use-translation": DocsI18nexusUseTranslationKeys;
+  "docs-lazy-loading": DocsLazyLoadingKeys;
   "dx-lab": DxLabKeys;
   "getting-started": GettingStartedKeys;
   home: HomeKeys;
@@ -1189,15 +1234,2397 @@ declare type TranslationKeys = {
   showcase: ShowcaseKeys;
 };
 
+/**
+ * Translation shape for createI18n().
+ *
+ * Generated locale entrypoints can use this type without importing JSON at runtime:
+ * createI18n({} as I18nexusGeneratedTranslations, { fallbackNamespace: "common" })
+ */
+export type I18nexusGeneratedTranslations = {
+  readonly "admin-dashboard": {
+    readonly en: {
+      readonly "Firestore Database가 설정되지 않았습니다. FIREBASE_QUICK_SETUP.md를 참고하세요.": string;
+      readonly "Firestore 인덱스가 필요합니다. 링크를 클릭하여 생성해주세요: {{\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata_indexUrl}}": string;
+      readonly "Showcase 제출 관리": string;
+      readonly "⏳ 대기": string;
+      readonly "⏳ 로딩 중...": string;
+      readonly "⏳ 승인 대기 중": string;
+      readonly "✅ 승인됨": string;
+      readonly "✓ 승인됨": string;
+      readonly "관리자 대시보드": string;
+      readonly 대기: string;
+      readonly "대기 중": string;
+      readonly 로그아웃: string;
+      readonly "로딩 중...": string;
+      readonly "삭제 중 오류가 발생했습니다.": string;
+      readonly "승인 대기 중": string;
+      readonly "승인 대기 중인 프로젝트가 없습니다": string;
+      readonly "승인 중 오류가 발생했습니다.": string;
+      readonly "승인된 프로젝트가 없습니다": string;
+      readonly 승인됨: string;
+      readonly "아직 제출된 프로젝트가 없습니다": string;
+      readonly 전체: string;
+      readonly "전체 제출": string;
+      readonly "정말 삭제하시겠습니까?": string;
+      readonly "제출 목록을 불러오는데 실패했습니다.": string;
+      readonly "제출된 프로젝트가 없습니다": string;
+      readonly "📋 전체": string;
+      readonly "🔗 Firestore 인덱스 생성 링크:": string;
+      readonly "🚪 로그아웃": string;
+    };
+    readonly ko: {
+      readonly "Firestore Database가 설정되지 않았습니다. FIREBASE_QUICK_SETUP.md를 참고하세요.": string;
+      readonly "Firestore 인덱스가 필요합니다. 링크를 클릭하여 생성해주세요: {{\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata_indexUrl}}": string;
+      readonly "Showcase 제출 관리": string;
+      readonly "⏳ 대기": string;
+      readonly "⏳ 로딩 중...": string;
+      readonly "⏳ 승인 대기 중": string;
+      readonly "✅ 승인됨": string;
+      readonly "✓ 승인됨": string;
+      readonly "관리자 대시보드": string;
+      readonly 대기: string;
+      readonly "대기 중": string;
+      readonly 로그아웃: string;
+      readonly "로딩 중...": string;
+      readonly "삭제 중 오류가 발생했습니다.": string;
+      readonly "승인 대기 중": string;
+      readonly "승인 대기 중인 프로젝트가 없습니다": string;
+      readonly "승인 중 오류가 발생했습니다.": string;
+      readonly "승인된 프로젝트가 없습니다": string;
+      readonly 승인됨: string;
+      readonly "아직 제출된 프로젝트가 없습니다": string;
+      readonly 전체: string;
+      readonly "전체 제출": string;
+      readonly "정말 삭제하시겠습니까?": string;
+      readonly "제출 목록을 불러오는데 실패했습니다.": string;
+      readonly "제출된 프로젝트가 없습니다": string;
+      readonly "📋 전체": string;
+      readonly "🔗 Firestore 인덱스 생성 링크:": string;
+      readonly "🚪 로그아웃": string;
+    };
+  };
+  readonly cli: {
+    readonly en: {
+      readonly '// lib/translations/en.json\n{\n  "환영합니다": "Welcome",\n  "시작하기": "Get Started"\n}': string;
+      readonly "CLI Tools": string;
+      readonly "Google Cloud 프로젝트 생성": string;
+      readonly "Google Sheets API 활성화": string;
+      readonly "Google Sheets 연동": string;
+      readonly "JSX 요소 내 한국어 텍스트 감지": string;
+      readonly "Sheets와 동기화": string;
+      readonly "en.json 파일에 영어 번역을 추가합니다": string;
+      readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n    </div>\n  );\n}": string;
+      readonly "기본 사용법": string;
+      readonly "기존 번역 모두 보존": string;
+      readonly 다운로드: string;
+      readonly "래핑된 텍스트에서 번역 파일을 생성합니다": string;
+      readonly "문자열 리터럴 내 한국어 감지": string;
+      readonly 번역: string;
+      readonly "번역 키를 추출하고 기존 파일과 지능적으로 병합합니다": string;
+      readonly "상세한 통계 표시": string;
+      readonly "서비스 계정 생성": string;
+      readonly "서비스 계정과 시트 공유": string;
+      readonly 선택사항: string;
+      readonly "설정 필요": string;
+      readonly 설치: string;
+      readonly "스마트 감지": string;
+      readonly "스마트 병합 기능": string;
+      readonly "스마트 키 추출": string;
+      readonly "알파벳 순으로 키 정렬": string;
+      readonly "앱이 완전히 국제화되었으며 배포할 준비가 되었습니다": string;
+      readonly 업로드: string;
+      readonly "완료!": string;
+      readonly "이미 래핑된 텍스트 건너뛰기": string;
+      readonly 이전: string;
+      readonly 이후: string;
+      readonly "인증 정보 JSON 다운로드": string;
+      readonly "자동 텍스트 래핑": string;
+      readonly "전체 워크플로우": string;
+      readonly "코드 포매팅 보존": string;
+      readonly "코드에 하드코딩된 한국어 문자열을 자동으로 감쌉니다": string;
+      readonly "코드에서 새 키만 추가": string;
+      readonly "키 추출": string;
+      readonly "텍스트 래핑 및 번역 관리를 위한 강력한 자동화 도구": string;
+      readonly "템플릿 리터럴 내 한국어 감지": string;
+      readonly "팀 번역을 위해 Google Sheets에 업로드합니다": string;
+      readonly "팀 협업": string;
+      readonly "팀 협업을 위해 Google Sheets와 번역을 동기화합니다": string;
+      readonly "한국어 텍스트 감싸기": string;
+      readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
+    };
+    readonly ko: {
+      readonly '// lib/translations/en.json\n{\n  "환영합니다": "Welcome",\n  "시작하기": "Get Started"\n}': string;
+      readonly "CLI Tools": string;
+      readonly "Google Cloud 프로젝트 생성": string;
+      readonly "Google Sheets API 활성화": string;
+      readonly "Google Sheets 연동": string;
+      readonly "JSX 요소 내 한국어 텍스트 감지": string;
+      readonly "Sheets와 동기화": string;
+      readonly "en.json 파일에 영어 번역을 추가합니다": string;
+      readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n    </div>\n  );\n}": string;
+      readonly "기본 사용법": string;
+      readonly "기존 번역 모두 보존": string;
+      readonly 다운로드: string;
+      readonly "래핑된 텍스트에서 번역 파일을 생성합니다": string;
+      readonly "문자열 리터럴 내 한국어 감지": string;
+      readonly 번역: string;
+      readonly "번역 키를 추출하고 기존 파일과 지능적으로 병합합니다": string;
+      readonly "상세한 통계 표시": string;
+      readonly "서비스 계정 생성": string;
+      readonly "서비스 계정과 시트 공유": string;
+      readonly 선택사항: string;
+      readonly "설정 필요": string;
+      readonly 설치: string;
+      readonly "스마트 감지": string;
+      readonly "스마트 병합 기능": string;
+      readonly "스마트 키 추출": string;
+      readonly "알파벳 순으로 키 정렬": string;
+      readonly "앱이 완전히 국제화되었으며 배포할 준비가 되었습니다": string;
+      readonly 업로드: string;
+      readonly "완료!": string;
+      readonly "이미 래핑된 텍스트 건너뛰기": string;
+      readonly 이전: string;
+      readonly 이후: string;
+      readonly "인증 정보 JSON 다운로드": string;
+      readonly "자동 텍스트 래핑": string;
+      readonly "전체 워크플로우": string;
+      readonly "코드 포매팅 보존": string;
+      readonly "코드에 하드코딩된 한국어 문자열을 자동으로 감쌉니다": string;
+      readonly "코드에서 새 키만 추가": string;
+      readonly "키 추출": string;
+      readonly "텍스트 래핑 및 번역 관리를 위한 강력한 자동화 도구": string;
+      readonly "템플릿 리터럴 내 한국어 감지": string;
+      readonly "팀 번역을 위해 Google Sheets에 업로드합니다": string;
+      readonly "팀 협업": string;
+      readonly "팀 협업을 위해 Google Sheets와 번역을 동기화합니다": string;
+      readonly "한국어 텍스트 감싸기": string;
+      readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
+    };
+  };
+  readonly common: {
+    readonly en: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport function ProductCard() {\n  // product namespace가 처음 사용 시 자동으로 로드됩니다\n  const { t } = useTranslation("product");\n\n  return (\n    <div>\n      <h2>{t("제품명")}</h2>\n      <p>{t("가격")}</p>\n    </div>\n  );\n}': string;
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\nimport { useEffect } from "react";\n\nexport function ProductPage() {\n  useEffect(() => {\n    // 필요한 namespace를 미리 로드\n    i18n.loadNamespace("product");\n  }, []);\n\n  const { t } = useTranslation("product");\n\n  return (\n    <div>\n      <h1>{t("제품 목록")}</h1>\n    </div>\n  );\n}': string;
+      readonly CLI: string;
+      readonly "CLI 개요": string;
+      readonly "DX Lab": string;
+      readonly English: string;
+      readonly "Failed to load": string;
+      readonly "Firebase Authentication이 올바르게 설정되지 않았습니다. Firebase Console에서 Authentication을 활성화해주세요.": string;
+      readonly "Firebase 설정이 필요하신가요?": string;
+      readonly "Firebase 연결 확인 중...": string;
+      readonly "Firestore Database도 생성 필요 (규칙: 테스트 모드)": string;
+      readonly "Loading...": string;
+      readonly "Open Graph 메타 태그": string;
+      readonly Provider: string;
+      readonly "Showcase 관리 대시보드에 접근하려면 로그인하세요": string;
+      readonly "Showcase 등록하기": string;
+      readonly 'Sign-in method에서 "Email/Password" 활성화': string;
+      readonly "Total downloads": string;
+      readonly "URL에 접근할 수 없습니다. 공개 접근 가능한 URL인지 확인해주세요.": string;
+      readonly "URL을 다시 확인": string;
+      readonly "URL을 입력하면 자동으로 제목, 설명, 썸네일을 추출합니다": string;
+      readonly "Users 탭에서 관리자 계정 추가": string;
+      readonly "eager loading 설명": string;
+      readonly "eager loading 제목": string;
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus를 사용하는 프로젝트를 공유하고 커뮤니티에 영감을 주세요": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "→ i18n-extractor 사용법": string;
+      readonly "→ i18nexus 소개": string;
+      readonly "⏳ 로그인 중...": string;
+      readonly "⏳ 로딩...": string;
+      readonly "✓ 승인": string;
+      readonly "✗ 삭제": string;
+      readonly "가\n              있으면 더 좋은 썸네일을 얻을 수 있습니다": string;
+      readonly "개요 설명": string;
+      readonly "개요 제목": string;
+      readonly "검토 후 공개됩니다 😊": string;
+      readonly "검토 후 공개됩니다.": string;
+      readonly "공개 접근 가능한 URL": string;
+      readonly "관련 문서": string;
+      readonly 관리자: string;
+      readonly "관리자 로그인": string;
+      readonly "내 프로젝트 등록하기": string;
+      readonly "너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.": string;
+      readonly "다시 시도": string;
+      readonly 닫기: string;
+      readonly 대시보드: string;
+      readonly "등록되지 않은 이메일입니다.": string;
+      readonly 로그인: string;
+      readonly "로그인 중...": string;
+      readonly "로그인에 실패했습니다.": string;
+      readonly "로딩...": string;
+      readonly "메뉴 열기": string;
+      readonly "메타데이터 서비스": string;
+      readonly "메타데이터 서비스에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "메타데이터 서비스의 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly 문서: string;
+      readonly "문서 개요": string;
+      readonly "문제가 계속되면": string;
+      readonly 미리보기: string;
+      readonly "미리보기 ▶": string;
+      readonly "미리보기 생성 실패: {{errorMessage}}": string;
+      readonly "미리보기 생성에 실패했습니다.": string;
+      readonly "미리보기 생성이 실패하면": string;
+      readonly 바로가기: string;
+      readonly 비밀번호: string;
+      readonly "비밀번호가 올바르지 않습니다.": string;
+      readonly "사용 예제 설명": string;
+      readonly "사용 예제 제목": string;
+      readonly "사이트 방문하기": string;
+      readonly "생성된 구조 설명": string;
+      readonly "생성된 구조 제목": string;
+      readonly "서버 예제": string;
+      readonly "서버 응답을 처리할 수 없습니다. URL이 올바른지 확인하고 다시 시도해주세요.": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 제목": string;
+      readonly 설명: string;
+      readonly "설정 단계1 설명": string;
+      readonly "설정 단계1 제목": string;
+      readonly "설정 단계2 설명": string;
+      readonly "설정 단계2 제목": string;
+      readonly "설정 제목": string;
+      readonly 쇼케이스: string;
+      readonly "승인 알림을 받으려면 이메일을 입력하세요": string;
+      readonly 시작하기: string;
+      readonly "아직 등록된 프로젝트가 없습니다": string;
+      readonly "에서 Authentication 활성화": string;
+      readonly "연락처 이메일 (선택)": string;
+      readonly "예상치 못한 문제가 발생했습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "예상치 못한 응답": string;
+      readonly "오류가 발생했습니다": string;
+      readonly "올바르지 않은 URL 형식입니다. https:// 로 시작하는 전체 URL을 입력해주세요.": string;
+      readonly "요청 시간이 초과되었습니다. 네트워크 연결을 확인하고 다시 시도해주세요.": string;
+      readonly "요청 한도": string;
+      readonly "위 정보 제공에 동의하며, i18nexus 쇼케이스에 공개될 수 있음을\n              이해합니다. 관리자 검토 후 공개됩니다. (필수)": string;
+      readonly "을\n              사용하세요 (localhost, 127.0.0.1 불가)": string;
+      readonly "을 입력하세요 (예:\n              https://example.com)": string;
+      readonly 이메일: string;
+      readonly "이메일 또는 비밀번호가 올바르지 않습니다.": string;
+      readonly "이미지 다운로드": string;
+      readonly "이미지 확대": string;
+      readonly "이슈를 제보": string;
+      readonly "입력하지 않으면 자동 추출된 제목을 사용합니다": string;
+      readonly "자동 미리보기": string;
+      readonly "자동 수집된 제목을 변경하려면 입력하세요": string;
+      readonly "장점 제목": string;
+      readonly 장점1: string;
+      readonly 장점2: string;
+      readonly 장점3: string;
+      readonly 장점4: string;
+      readonly "전체 URL": string;
+      readonly "접근할 수 없습니다": string;
+      readonly 제목: string;
+      readonly "제출 완료!": string;
+      readonly "제출 중...": string;
+      readonly "제출 팁": string;
+      readonly "제출 후 관리자 검토를 거쳐 24시간 이내에 공개됩니다": string;
+      readonly "제출에 실패했습니다. 다시 시도해주세요.": string;
+      readonly 제출하기: string;
+      readonly "주의사항 제목": string;
+      readonly 주의사항1: string;
+      readonly 주의사항2: string;
+      readonly 주의사항3: string;
+      readonly "처리할 수 없습니다": string;
+      readonly "첫 번째 프로젝트 등록하기": string;
+      readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
+      readonly "클라이언트 컴포넌트 제목": string;
+      readonly "프로젝트 URL (필수)": string;
+      readonly "프로젝트 등록": string;
+      readonly "프로젝트 등록하기": string;
+      readonly "프로젝트 이름 (선택)": string;
+      readonly 프로젝트에: string;
+      readonly "프리로드 설명": string;
+      readonly "프리로드 제목": string;
+      readonly "하거나 잠시\n              후 다시 시도해주세요": string;
+      readonly 한국어: string;
+      readonly "해주세요.": string;
+      readonly 홈: string;
+      readonly "홈으로 돌아가기": string;
+      readonly "📛 프로젝트 이름 (선택)": string;
+      readonly "📧 연락처 이메일 (선택)": string;
+      readonly "📧 이메일": string;
+      readonly "🔑 비밀번호": string;
+      readonly "🔗 프로젝트 URL (필수)": string;
+      readonly "🚀 로그인": string;
+      readonly "🚀 제출하기": string;
+    };
+    readonly ko: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport function ProductCard() {\n  // product namespace가 처음 사용 시 자동으로 로드됩니다\n  const { t } = useTranslation("product");\n\n  return (\n    <div>\n      <h2>{t("제품명")}</h2>\n      <p>{t("가격")}</p>\n    </div>\n  );\n}': string;
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\nimport { useEffect } from "react";\n\nexport function ProductPage() {\n  useEffect(() => {\n    // 필요한 namespace를 미리 로드\n    i18n.loadNamespace("product");\n  }, []);\n\n  const { t } = useTranslation("product");\n\n  return (\n    <div>\n      <h1>{t("제품 목록")}</h1>\n    </div>\n  );\n}': string;
+      readonly CLI: string;
+      readonly "CLI 개요": string;
+      readonly "DX Lab": string;
+      readonly English: string;
+      readonly "Failed to load": string;
+      readonly "Firebase Authentication이 올바르게 설정되지 않았습니다. Firebase Console에서 Authentication을 활성화해주세요.": string;
+      readonly "Firebase 설정이 필요하신가요?": string;
+      readonly "Firebase 연결 확인 중...": string;
+      readonly "Firestore Database도 생성 필요 (규칙: 테스트 모드)": string;
+      readonly "Loading...": string;
+      readonly "Open Graph 메타 태그": string;
+      readonly Provider: string;
+      readonly "Showcase 관리 대시보드에 접근하려면 로그인하세요": string;
+      readonly "Showcase 등록하기": string;
+      readonly 'Sign-in method에서 "Email/Password" 활성화': string;
+      readonly "Total downloads": string;
+      readonly "URL에 접근할 수 없습니다. 공개 접근 가능한 URL인지 확인해주세요.": string;
+      readonly "URL을 다시 확인": string;
+      readonly "URL을 입력하면 자동으로 제목, 설명, 썸네일을 추출합니다": string;
+      readonly "Users 탭에서 관리자 계정 추가": string;
+      readonly "eager loading 설명": string;
+      readonly "eager loading 제목": string;
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus를 사용하는 프로젝트를 공유하고 커뮤니티에 영감을 주세요": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "→ i18n-extractor 사용법": string;
+      readonly "→ i18nexus 소개": string;
+      readonly "⏳ 로그인 중...": string;
+      readonly "⏳ 로딩...": string;
+      readonly "✓ 승인": string;
+      readonly "✗ 삭제": string;
+      readonly "가\n              있으면 더 좋은 썸네일을 얻을 수 있습니다": string;
+      readonly "개요 설명": string;
+      readonly "개요 제목": string;
+      readonly "검토 후 공개됩니다 😊": string;
+      readonly "검토 후 공개됩니다.": string;
+      readonly "공개 접근 가능한 URL": string;
+      readonly "관련 문서": string;
+      readonly 관리자: string;
+      readonly "관리자 로그인": string;
+      readonly "내 프로젝트 등록하기": string;
+      readonly "너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.": string;
+      readonly "다시 시도": string;
+      readonly 닫기: string;
+      readonly 대시보드: string;
+      readonly "등록되지 않은 이메일입니다.": string;
+      readonly 로그인: string;
+      readonly "로그인 중...": string;
+      readonly "로그인에 실패했습니다.": string;
+      readonly "로딩...": string;
+      readonly "메뉴 열기": string;
+      readonly "메타데이터 서비스": string;
+      readonly "메타데이터 서비스에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "메타데이터 서비스의 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly 문서: string;
+      readonly "문서 개요": string;
+      readonly "문제가 계속되면": string;
+      readonly 미리보기: string;
+      readonly "미리보기 ▶": string;
+      readonly "미리보기 생성 실패: {{errorMessage}}": string;
+      readonly "미리보기 생성에 실패했습니다.": string;
+      readonly "미리보기 생성이 실패하면": string;
+      readonly 바로가기: string;
+      readonly 비밀번호: string;
+      readonly "비밀번호가 올바르지 않습니다.": string;
+      readonly "사용 예제 설명": string;
+      readonly "사용 예제 제목": string;
+      readonly "사이트 방문하기": string;
+      readonly "생성된 구조 설명": string;
+      readonly "생성된 구조 제목": string;
+      readonly "서버 예제": string;
+      readonly "서버 응답을 처리할 수 없습니다. URL이 올바른지 확인하고 다시 시도해주세요.": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 제목": string;
+      readonly 설명: string;
+      readonly "설정 단계1 설명": string;
+      readonly "설정 단계1 제목": string;
+      readonly "설정 단계2 설명": string;
+      readonly "설정 단계2 제목": string;
+      readonly "설정 제목": string;
+      readonly 쇼케이스: string;
+      readonly "승인 알림을 받으려면 이메일을 입력하세요": string;
+      readonly 시작하기: string;
+      readonly "아직 등록된 프로젝트가 없습니다": string;
+      readonly "에서 Authentication 활성화": string;
+      readonly "연락처 이메일 (선택)": string;
+      readonly "예상치 못한 문제가 발생했습니다. 잠시 후 다시 시도해주세요.": string;
+      readonly "예상치 못한 응답": string;
+      readonly "오류가 발생했습니다": string;
+      readonly "올바르지 않은 URL 형식입니다. https:// 로 시작하는 전체 URL을 입력해주세요.": string;
+      readonly "요청 시간이 초과되었습니다. 네트워크 연결을 확인하고 다시 시도해주세요.": string;
+      readonly "요청 한도": string;
+      readonly "위 정보 제공에 동의하며, i18nexus 쇼케이스에 공개될 수 있음을\n              이해합니다. 관리자 검토 후 공개됩니다. (필수)": string;
+      readonly "을\n              사용하세요 (localhost, 127.0.0.1 불가)": string;
+      readonly "을 입력하세요 (예:\n              https://example.com)": string;
+      readonly 이메일: string;
+      readonly "이메일 또는 비밀번호가 올바르지 않습니다.": string;
+      readonly "이미지 다운로드": string;
+      readonly "이미지 확대": string;
+      readonly "이슈를 제보": string;
+      readonly "입력하지 않으면 자동 추출된 제목을 사용합니다": string;
+      readonly "자동 미리보기": string;
+      readonly "자동 수집된 제목을 변경하려면 입력하세요": string;
+      readonly "장점 제목": string;
+      readonly 장점1: string;
+      readonly 장점2: string;
+      readonly 장점3: string;
+      readonly 장점4: string;
+      readonly "전체 URL": string;
+      readonly "접근할 수 없습니다": string;
+      readonly 제목: string;
+      readonly "제출 완료!": string;
+      readonly "제출 중...": string;
+      readonly "제출 팁": string;
+      readonly "제출 후 관리자 검토를 거쳐 24시간 이내에 공개됩니다": string;
+      readonly "제출에 실패했습니다. 다시 시도해주세요.": string;
+      readonly 제출하기: string;
+      readonly "주의사항 제목": string;
+      readonly 주의사항1: string;
+      readonly 주의사항2: string;
+      readonly 주의사항3: string;
+      readonly "처리할 수 없습니다": string;
+      readonly "첫 번째 프로젝트 등록하기": string;
+      readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
+      readonly "클라이언트 컴포넌트 제목": string;
+      readonly "프로젝트 URL (필수)": string;
+      readonly "프로젝트 등록": string;
+      readonly "프로젝트 등록하기": string;
+      readonly "프로젝트 이름 (선택)": string;
+      readonly 프로젝트에: string;
+      readonly "프리로드 설명": string;
+      readonly "프리로드 제목": string;
+      readonly "하거나 잠시\n              후 다시 시도해주세요": string;
+      readonly 한국어: string;
+      readonly "해주세요.": string;
+      readonly 홈: string;
+      readonly "홈으로 돌아가기": string;
+      readonly "📛 프로젝트 이름 (선택)": string;
+      readonly "📧 연락처 이메일 (선택)": string;
+      readonly "📧 이메일": string;
+      readonly "🔑 비밀번호": string;
+      readonly "🔗 프로젝트 URL (필수)": string;
+      readonly "🚀 로그인": string;
+      readonly "🚀 제출하기": string;
+    };
+  };
+  readonly constant: {
+    readonly en: {
+      readonly English: string;
+      readonly 한국어: string;
+    };
+    readonly ko: {
+      readonly English: string;
+      readonly 한국어: string;
+    };
+  };
+  readonly "docs-i18nexus": {
+    readonly en: {
+      readonly "I18nProvider 설정": string;
+      readonly "i18nexus 라이브러리": string;
+      readonly "i18nexus 문서": string;
+      readonly "또는 yarn 사용:": string;
+      readonly "빠른 시작": string;
+      readonly 설치: string;
+      readonly "자세히 알아보기": string;
+      readonly "컴포넌트에서 사용": string;
+      readonly "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷": string;
+      readonly "쿠키 기반 언어 영속성을 갖춘 React Context Provider": string;
+      readonly "쿠키 영속성을 통한 언어 변경 훅": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 훅": string;
+      readonly "하이드레이션 불일치 제로의 서버 사이드 번역": string;
+      readonly "핵심 기능": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly "I18nProvider 설정": string;
+      readonly "i18nexus 라이브러리": string;
+      readonly "i18nexus 문서": string;
+      readonly "또는 yarn 사용:": string;
+      readonly "빠른 시작": string;
+      readonly 설치: string;
+      readonly "자세히 알아보기": string;
+      readonly "컴포넌트에서 사용": string;
+      readonly "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷": string;
+      readonly "쿠키 기반 언어 영속성을 갖춘 React Context Provider": string;
+      readonly "쿠키 영속성을 통한 언어 변경 훅": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 훅": string;
+      readonly "하이드레이션 불일치 제로의 서버 사이드 번역": string;
+      readonly "핵심 기능": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-provider": {
+    readonly en: {
+      readonly '// app/layout.tsx\nimport { I18nProvider } from "i18nexus";\nimport { translations } from "@/lib/i18n";\n\nconst languageManagerOptions = {\n  defaultLanguage: "ko",\n  availableLanguages: [\n    { code: "ko", name: "한국어", flag: "🇰🇷" },\n    { code: "en", name: "English", flag: "🇺🇸" },\n    { code: "ja", name: "日本語", flag: "🇯🇵" },\n  ],\n  cookieOptions: {\n    maxAge: 365 * 24 * 60 * 60, // 1 year\n    path: "/",\n    sameSite: "lax",\n  }\n};\n\nexport default function RootLayout({ children }) {\n  return (\n    <I18nProvider \n      initialLanguage="ko" \n      translations={translations}\n      languageManagerOptions={languageManagerOptions}\n    >\n      {children}\n    </I18nProvider>\n  );\n}': string;
+      readonly "API 레퍼런스": string;
+      readonly "I18nProvider 컴포넌트를 중첩하지 마세요. 루트 레벨에서 하나의 provider만 사용하세요.": string;
+      readonly "Next.js 애플리케이션의 경우, 하이드레이션 불일치를 방지하기 위해 항상 서버에서 쿠키로부터 언어를 읽으세요.": string;
+      readonly "Next.js에서 하이드레이션 불일치 제로": string;
+      readonly Props: string;
+      readonly "ReactNode (필수)": string;
+      readonly i18nexus: string;
+      readonly "initialLanguage prop은 한 번만 설정해야 합니다. 언어를 동적으로 변경하려면 useLanguageSwitcher의 changeLanguage()를 사용하세요.": string;
+      readonly 'languageManagerOptions={{\n  defaultLanguage: "ko",\n  availableLanguages: [\n    { code: "ko", name: "한국어", flag: "🇰🇷" },\n    { code: "en", name: "English", flag: "🇺🇸" }\n  ]\n}}': string;
+      readonly 'translations={{\n  en: { "Welcome": "Welcome" },\n  ko: { "Welcome": "환영합니다" }\n}}': string;
+      readonly 개요: string;
+      readonly "객체 (선택사항)": string;
+      readonly "객체 (필수)": string;
+      readonly "고급 설정": string;
+      readonly "권장: 서버 사이드 언어 감지 사용": string;
+      readonly "권장: 앱의 루트에 배치": string;
+      readonly "기본 설정 (클라이언트 컴포넌트만)": string;
+      readonly "는 전체 애플리케이션에 국제화 컨텍스트를 제공하는 루트 컴포넌트입니다. 언어 상태를 관리하고, 쿠키 영속성을 처리하며, SSR에서 하이드레이션 불일치가 없음을 보장합니다.": string;
+      readonly "모든 컴포넌트가 번역에 접근할 수 있도록 루트 레이아웃 레벨에서 항상 전체 애플리케이션을 I18nProvider로 감싸세요.": string;
+      readonly "모범 사례": string;
+      readonly "문자열 (필수)": string;
+      readonly "번역에 접근해야 하는 애플리케이션 컴포넌트들입니다.": string;
+      readonly "비권장: initialLanguage를 동적으로 변경": string;
+      readonly "비권장: 여러 provider 중첩": string;
+      readonly "사용 예제": string;
+      readonly "사용할 초기 언어 코드입니다. translations 객체의 키 중 하나와 일치해야 합니다.": string;
+      readonly "서버 사이드 렌더링 (Next.js App Router)": string;
+      readonly "서버에서 쿠키로부터 언어를 읽음으로써, 초기 HTML이 클라이언트가 예상하는 것과 일치하도록 보장하여 하이드레이션 불일치를 방지합니다.": string;
+      readonly "언어 관리를 위한 추가 설정입니다.": string;
+      readonly "언어를 동적으로 변경하는 방법 알아보기": string;
+      readonly "왜 중요한가": string;
+      readonly "지원되는 모든 언어에 대한 번역 키와 값을 포함하는 객체입니다.": string;
+      readonly "참고 자료": string;
+      readonly "컴포넌트에서 번역을 사용하는 방법 알아보기": string;
+      readonly "쿠키 기반 언어 영속성": string;
+      readonly "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider": string;
+      readonly "쿠키에서 자동 언어 감지": string;
+      readonly "타입 안전 언어 관리": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '// app/layout.tsx\nimport { I18nProvider } from "i18nexus";\nimport { translations } from "@/lib/i18n";\n\nconst languageManagerOptions = {\n  defaultLanguage: "ko",\n  availableLanguages: [\n    { code: "ko", name: "한국어", flag: "🇰🇷" },\n    { code: "en", name: "English", flag: "🇺🇸" },\n    { code: "ja", name: "日本語", flag: "🇯🇵" },\n  ],\n  cookieOptions: {\n    maxAge: 365 * 24 * 60 * 60, // 1 year\n    path: "/",\n    sameSite: "lax",\n  }\n};\n\nexport default function RootLayout({ children }) {\n  return (\n    <I18nProvider \n      initialLanguage="ko" \n      translations={translations}\n      languageManagerOptions={languageManagerOptions}\n    >\n      {children}\n    </I18nProvider>\n  );\n}': string;
+      readonly "API 레퍼런스": string;
+      readonly "I18nProvider 컴포넌트를 중첩하지 마세요. 루트 레벨에서 하나의 provider만 사용하세요.": string;
+      readonly "Next.js 애플리케이션의 경우, 하이드레이션 불일치를 방지하기 위해 항상 서버에서 쿠키로부터 언어를 읽으세요.": string;
+      readonly "Next.js에서 하이드레이션 불일치 제로": string;
+      readonly Props: string;
+      readonly "ReactNode (필수)": string;
+      readonly i18nexus: string;
+      readonly "initialLanguage prop은 한 번만 설정해야 합니다. 언어를 동적으로 변경하려면 useLanguageSwitcher의 changeLanguage()를 사용하세요.": string;
+      readonly 'languageManagerOptions={{\n  defaultLanguage: "ko",\n  availableLanguages: [\n    { code: "ko", name: "한국어", flag: "🇰🇷" },\n    { code: "en", name: "English", flag: "🇺🇸" }\n  ]\n}}': string;
+      readonly 'translations={{\n  en: { "Welcome": "Welcome" },\n  ko: { "Welcome": "환영합니다" }\n}}': string;
+      readonly 개요: string;
+      readonly "객체 (선택사항)": string;
+      readonly "객체 (필수)": string;
+      readonly "고급 설정": string;
+      readonly "권장: 서버 사이드 언어 감지 사용": string;
+      readonly "권장: 앱의 루트에 배치": string;
+      readonly "기본 설정 (클라이언트 컴포넌트만)": string;
+      readonly "는 전체 애플리케이션에 국제화 컨텍스트를 제공하는 루트 컴포넌트입니다. 언어 상태를 관리하고, 쿠키 영속성을 처리하며, SSR에서 하이드레이션 불일치가 없음을 보장합니다.": string;
+      readonly "모든 컴포넌트가 번역에 접근할 수 있도록 루트 레이아웃 레벨에서 항상 전체 애플리케이션을 I18nProvider로 감싸세요.": string;
+      readonly "모범 사례": string;
+      readonly "문자열 (필수)": string;
+      readonly "번역에 접근해야 하는 애플리케이션 컴포넌트들입니다.": string;
+      readonly "비권장: initialLanguage를 동적으로 변경": string;
+      readonly "비권장: 여러 provider 중첩": string;
+      readonly "사용 예제": string;
+      readonly "사용할 초기 언어 코드입니다. translations 객체의 키 중 하나와 일치해야 합니다.": string;
+      readonly "서버 사이드 렌더링 (Next.js App Router)": string;
+      readonly "서버에서 쿠키로부터 언어를 읽음으로써, 초기 HTML이 클라이언트가 예상하는 것과 일치하도록 보장하여 하이드레이션 불일치를 방지합니다.": string;
+      readonly "언어 관리를 위한 추가 설정입니다.": string;
+      readonly "언어를 동적으로 변경하는 방법 알아보기": string;
+      readonly "왜 중요한가": string;
+      readonly "지원되는 모든 언어에 대한 번역 키와 값을 포함하는 객체입니다.": string;
+      readonly "참고 자료": string;
+      readonly "컴포넌트에서 번역을 사용하는 방법 알아보기": string;
+      readonly "쿠키 기반 언어 영속성": string;
+      readonly "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider": string;
+      readonly "쿠키에서 자동 언어 감지": string;
+      readonly "타입 안전 언어 관리": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-server-components": {
+    readonly en: {
+      readonly "'use client' 필요": string;
+      readonly '// app/page.tsx (서버 컴포넌트)\nimport { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\nimport LanguageSwitcher from "./LanguageSwitcher"; // 클라이언트 컴포넌트\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* 클라이언트 컴포넌트: 언어 전환 */}\n      <LanguageSwitcher />\n\n      {/* 서버 컴포넌트: 정적 콘텐츠 */}\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This content is rendered on the server")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (클라이언트 컴포넌트)\n"use client";\n\nimport { useLanguageSwitcher } from "i18nexus";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}': string;
+      readonly "// layout.tsx에서\nconst headersList = await headers();\nconst language = getServerLanguage(headersList);\n\n<I18nProvider initialLanguage={language}>": string;
+      readonly "Next.js 서버 컴포넌트에서 i18nexus 사용하기": string;
+      readonly "Next.js의 서버 컴포넌트에서는 useTranslation 훅을 사용할 수 없습니다. 대신 서버 전용 함수를 사용해야 합니다.": string;
+      readonly "React 훅 사용 가능": string;
+      readonly "React 훅이 필요한 경우": string;
+      readonly "SEO가 중요한 페이지": string;
+      readonly i18nexus: string;
+      readonly 'import { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\n\n// ✅ 서버 컴포넌트 (기본값)\nexport default async function ServerPage() {\n  // 1. 쿠키에서 언어 가져오기\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. 번역 함수 생성\n  const t = createServerTranslation(language, translations);\n\n  // 3. 번역 사용\n  return (\n    <div>\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This is a server component")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}': string;
+      readonly typo_key: string;
+      readonly 개요: string;
+      readonly "더 나은 SEO": string;
+      readonly "더 빠른 초기 로딩": string;
+      readonly "더 작은 JavaScript 번들": string;
+      readonly "더 작은 번들 크기": string;
+      readonly "더 큰 번들 크기": string;
+      readonly "동적 언어 전환": string;
+      readonly "동적 언어 전환 불가": string;
+      readonly "동적으로 변경되는 콘텐츠": string;
+      readonly "라이브 예제": string;
+      readonly "사용자 상호작용이 필요 없는 페이지": string;
+      readonly "사용자 입력이 필요한 폼": string;
+      readonly "서버 번역 API": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 vs 클라이언트 컴포넌트": string;
+      readonly "서버 컴포넌트 사용": string;
+      readonly "서버 컴포넌트 실제 동작 확인하기": string;
+      readonly "서버 컴포넌트는 언어 변경 시 자동으로 업데이트되지 않습니다. 클라이언트 컴포넌트에서 언어를 변경하면 쿠키가 업데이트되고, 페이지를 새로고침하면 서버 컴포넌트도 새 언어로 렌더링됩니다.": string;
+      readonly "서버 컴포넌트와 클라이언트 컴포넌트를 함께 사용하면 최적의 성능을 얻을 수 있습니다.": string;
+      readonly "서버에서 사용할 번역 함수를 생성합니다.": string;
+      readonly "서버에서 쿠키로부터 현재 언어를 읽어옵니다.": string;
+      readonly "서버와 클라이언트가 같은 언어를 사용하도록 쿠키에서 언어를 읽어야 합니다.": string;
+      readonly "언어 변경 시 페이지 리로드": string;
+      readonly "언어 선택기/전환 버튼": string;
+      readonly "언어 전환 불가": string;
+      readonly "언제 사용해야 하나요?": string;
+      readonly "완전한 상호작용": string;
+      readonly "완전한 예제": string;
+      readonly "완전한 예제 압": string;
+      readonly "이벤트 핸들러 사용": string;
+      readonly "정적 콘텐츠 (블로그, 문서)": string;
+      readonly 존재하지_않는_키: string;
+      readonly "중요한 참고사항": string;
+      readonly "참고 자료": string;
+      readonly "초기 로딩 속도가 중요한 경우": string;
+      readonly "클라이언트 상호작용 불가": string;
+      readonly "클라이언트 컴포넌트": string;
+      readonly "클라이언트 컴포넌트 사용": string;
+      readonly "클라이언트 컴포넌트에서 번역 사용하기": string;
+      readonly "하이드레이션 불일치 방지": string;
+      readonly "하이드레이션 불일치 없음": string;
+      readonly "하이브리드 접근법": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly "'use client' 필요": string;
+      readonly '// app/page.tsx (서버 컴포넌트)\nimport { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\nimport LanguageSwitcher from "./LanguageSwitcher"; // 클라이언트 컴포넌트\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* 클라이언트 컴포넌트: 언어 전환 */}\n      <LanguageSwitcher />\n\n      {/* 서버 컴포넌트: 정적 콘텐츠 */}\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This content is rendered on the server")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (클라이언트 컴포넌트)\n"use client";\n\nimport { useLanguageSwitcher } from "i18nexus";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}': string;
+      readonly "// layout.tsx에서\nconst headersList = await headers();\nconst language = getServerLanguage(headersList);\n\n<I18nProvider initialLanguage={language}>": string;
+      readonly "Next.js 서버 컴포넌트에서 i18nexus 사용하기": string;
+      readonly "Next.js의 서버 컴포넌트에서는 useTranslation 훅을 사용할 수 없습니다. 대신 서버 전용 함수를 사용해야 합니다.": string;
+      readonly "React 훅 사용 가능": string;
+      readonly "React 훅이 필요한 경우": string;
+      readonly "SEO가 중요한 페이지": string;
+      readonly i18nexus: string;
+      readonly 'import { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\n\n// ✅ 서버 컴포넌트 (기본값)\nexport default async function ServerPage() {\n  // 1. 쿠키에서 언어 가져오기\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. 번역 함수 생성\n  const t = createServerTranslation(language, translations);\n\n  // 3. 번역 사용\n  return (\n    <div>\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This is a server component")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}': string;
+      readonly typo_key: string;
+      readonly 개요: string;
+      readonly "더 나은 SEO": string;
+      readonly "더 빠른 초기 로딩": string;
+      readonly "더 작은 JavaScript 번들": string;
+      readonly "더 작은 번들 크기": string;
+      readonly "더 큰 번들 크기": string;
+      readonly "동적 언어 전환": string;
+      readonly "동적 언어 전환 불가": string;
+      readonly "동적으로 변경되는 콘텐츠": string;
+      readonly "라이브 예제": string;
+      readonly "사용자 상호작용이 필요 없는 페이지": string;
+      readonly "사용자 입력이 필요한 폼": string;
+      readonly "서버 번역 API": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 vs 클라이언트 컴포넌트": string;
+      readonly "서버 컴포넌트 사용": string;
+      readonly "서버 컴포넌트 실제 동작 확인하기": string;
+      readonly "서버 컴포넌트는 언어 변경 시 자동으로 업데이트되지 않습니다. 클라이언트 컴포넌트에서 언어를 변경하면 쿠키가 업데이트되고, 페이지를 새로고침하면 서버 컴포넌트도 새 언어로 렌더링됩니다.": string;
+      readonly "서버 컴포넌트와 클라이언트 컴포넌트를 함께 사용하면 최적의 성능을 얻을 수 있습니다.": string;
+      readonly "서버에서 사용할 번역 함수를 생성합니다.": string;
+      readonly "서버에서 쿠키로부터 현재 언어를 읽어옵니다.": string;
+      readonly "서버와 클라이언트가 같은 언어를 사용하도록 쿠키에서 언어를 읽어야 합니다.": string;
+      readonly "언어 변경 시 페이지 리로드": string;
+      readonly "언어 선택기/전환 버튼": string;
+      readonly "언어 전환 불가": string;
+      readonly "언제 사용해야 하나요?": string;
+      readonly "완전한 상호작용": string;
+      readonly "완전한 예제": string;
+      readonly "완전한 예제 압": string;
+      readonly "이벤트 핸들러 사용": string;
+      readonly "정적 콘텐츠 (블로그, 문서)": string;
+      readonly 존재하지_않는_키: string;
+      readonly "중요한 참고사항": string;
+      readonly "참고 자료": string;
+      readonly "초기 로딩 속도가 중요한 경우": string;
+      readonly "클라이언트 상호작용 불가": string;
+      readonly "클라이언트 컴포넌트": string;
+      readonly "클라이언트 컴포넌트 사용": string;
+      readonly "클라이언트 컴포넌트에서 번역 사용하기": string;
+      readonly "하이드레이션 불일치 방지": string;
+      readonly "하이드레이션 불일치 없음": string;
+      readonly "하이브리드 접근법": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools": {
+    readonly en: {
+      readonly '// locales/en.json\n{\n  "환영합니다": "Welcome",\n  "시작하기": "Get Started"\n}': string;
+      readonly "Automatically wrap Korean/English text with t() function": string;
+      readonly "Configure Google Sheets integration": string;
+      readonly "Download translations from Google Sheets (incremental)": string;
+      readonly "Extract translation keys from your codebase": string;
+      readonly "Force overwrite all translations from Google Sheets": string;
+      readonly "Google Sheets Setup": string;
+      readonly "Google Sheets 통합": string;
+      readonly "Google Sheets와 동기화": string;
+      readonly "TypeScript 지원": string;
+      readonly "Upload local translations to Google Sheets": string;
+      readonly "en.json 파일을 열어 영어 번역을 추가하세요": string;
+      readonly "i18n-download": string;
+      readonly "i18n-download-force": string;
+      readonly "i18n-extractor": string;
+      readonly "i18n-upload": string;
+      readonly "i18n-wrapper": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus-tools 문서": string;
+      readonly "간단한 파일 구조: locales/en.json, locales/ko.json": string;
+      readonly "개발자 경험": string;
+      readonly "공백을 유지한 스마트 키 생성": string;
+      readonly "기본 워크플로우": string;
+      readonly "기존 번역 보존": string;
+      readonly "도구 목록": string;
+      readonly "동기화 및 협업": string;
+      readonly "또는 설치 없이 사용": string;
+      readonly "래핑된 텍스트에서 번역 파일을 생성하고 기존 번역과 병합": string;
+      readonly "를 실행하여 이 파일을 자동으로 생성하세요": string;
+      readonly "모든 CLI 도구는 프로젝트 루트의": string;
+      readonly "문서 보기": string;
+      readonly "번역 키 추출 및 병합": string;
+      readonly "빠른 워크플로우": string;
+      readonly "사용 가능한 도구": string;
+      readonly "상세한 로깅 및 오류 메시지": string;
+      readonly "새 키의 스마트 병합": string;
+      readonly 선택사항: string;
+      readonly "설정 기반, 설정 불필요": string;
+      readonly "설정 파일": string;
+      readonly 설치: string;
+      readonly "에서 설정을 읽습니다": string;
+      readonly "영어 번역 추가": string;
+      readonly "자동 import 주입": string;
+      readonly 자동화: string;
+      readonly "자세히 알아보기": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "전체 덮어쓰기를 위한 강제 동기화": string;
+      readonly "주요 기능": string;
+      readonly "증분 업데이트 (안전)": string;
+      readonly "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": string;
+      readonly "코드에 하드코딩된 한국어 문자열을 t()로 자동 감싸기": string;
+      readonly "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": string;
+      readonly "팀 협업을 위해 번역을 Google Sheets로 업로드": string;
+      readonly 팁: string;
+      readonly "파일 관리": string;
+      readonly "하드코딩된 문자열 자동 감지 및 래핑": string;
+      readonly "한국어 텍스트 자동 래핑": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '// locales/en.json\n{\n  "환영합니다": "Welcome",\n  "시작하기": "Get Started"\n}': string;
+      readonly "Automatically wrap Korean/English text with t() function": string;
+      readonly "Configure Google Sheets integration": string;
+      readonly "Download translations from Google Sheets (incremental)": string;
+      readonly "Extract translation keys from your codebase": string;
+      readonly "Force overwrite all translations from Google Sheets": string;
+      readonly "Google Sheets Setup": string;
+      readonly "Google Sheets 통합": string;
+      readonly "Google Sheets와 동기화": string;
+      readonly "TypeScript 지원": string;
+      readonly "Upload local translations to Google Sheets": string;
+      readonly "en.json 파일을 열어 영어 번역을 추가하세요": string;
+      readonly "i18n-download": string;
+      readonly "i18n-download-force": string;
+      readonly "i18n-extractor": string;
+      readonly "i18n-upload": string;
+      readonly "i18n-wrapper": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus-tools 문서": string;
+      readonly "간단한 파일 구조: locales/en.json, locales/ko.json": string;
+      readonly "개발자 경험": string;
+      readonly "공백을 유지한 스마트 키 생성": string;
+      readonly "기본 워크플로우": string;
+      readonly "기존 번역 보존": string;
+      readonly "도구 목록": string;
+      readonly "동기화 및 협업": string;
+      readonly "또는 설치 없이 사용": string;
+      readonly "래핑된 텍스트에서 번역 파일을 생성하고 기존 번역과 병합": string;
+      readonly "를 실행하여 이 파일을 자동으로 생성하세요": string;
+      readonly "모든 CLI 도구는 프로젝트 루트의": string;
+      readonly "문서 보기": string;
+      readonly "번역 키 추출 및 병합": string;
+      readonly "빠른 워크플로우": string;
+      readonly "사용 가능한 도구": string;
+      readonly "상세한 로깅 및 오류 메시지": string;
+      readonly "새 키의 스마트 병합": string;
+      readonly 선택사항: string;
+      readonly "설정 기반, 설정 불필요": string;
+      readonly "설정 파일": string;
+      readonly 설치: string;
+      readonly "에서 설정을 읽습니다": string;
+      readonly "영어 번역 추가": string;
+      readonly "자동 import 주입": string;
+      readonly 자동화: string;
+      readonly "자세히 알아보기": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "전체 덮어쓰기를 위한 강제 동기화": string;
+      readonly "주요 기능": string;
+      readonly "증분 업데이트 (안전)": string;
+      readonly "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": string;
+      readonly "코드에 하드코딩된 한국어 문자열을 t()로 자동 감싸기": string;
+      readonly "텍스트 래핑부터 Google Sheets 동기화까지 순서대로 실행합니다.": string;
+      readonly "팀 협업을 위해 번역을 Google Sheets로 업로드": string;
+      readonly 팁: string;
+      readonly "파일 관리": string;
+      readonly "하드코딩된 문자열 자동 감지 및 래핑": string;
+      readonly "한국어 텍스트 자동 래핑": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-download": {
+    readonly en: {
+      readonly "Git 등의 버전 관리를 사용하면 언제든 이전 상태로 복구할 수 있습니다.": string;
+      readonly "Git 커밋": string;
+      readonly "Google Cloud 서비스 계정 인증 정보 JSON 파일 경로 (필수)": string;
+      readonly "Google Sheets에서 모든 번역 데이터를 읽어옵니다.": string;
+      readonly "Google Sheets의 Spreadsheet ID (필수)": string;
+      readonly "Google Sheets의 번역을 안전하게 로컬로 다운로드합니다": string;
+      readonly "Sheets = 단일 진실 공급원": string;
+      readonly "Sheets 데이터 가져오기": string;
+      readonly "Sheets에 새로 추가된 키: 로컬에 추가": string;
+      readonly "Sheets에 있는 키: 값을 업데이트": string;
+      readonly "Sheets의 변경사항만 안전하게 병합": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json에 Google Sheets 정보가 설정되어 있다면:": string;
+      readonly "강제 동기화 옵션 알아보기": string;
+      readonly "같은 키가 양쪽에 있으면 Sheets의 값을 우선합니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기존 로컬 번역 보존": string;
+      readonly "기존 로컬 번역 파일을 읽어옵니다.": string;
+      readonly "는 Google Sheets의 번역을 로컬 JSON 파일로 다운로드하는 CLI 도구입니다. 증분 업데이트 방식으로 기존 번역을 보존하며 안전하게 병합합니다.": string;
+      readonly "다운로드 후 변경사항을 Git에 커밋하여 팀원들과 공유하세요.": string;
+      readonly "다운로드 후 출력되는 변경 내역을 확인하여 예상치 못한 변경이 없는지 검토하세요.": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 이것을 사용하세요": string;
+      readonly "데이터 손실 방지": string;
+      readonly "두 데이터를 지능적으로 병합합니다:": string;
+      readonly "로컬 데이터 읽기": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 삭제": string;
+      readonly "로컬 번역을 Sheets로 업로드하는 방법": string;
+      readonly "로컬에만 있는 번역 키는 절대 삭제되지 않습니다.": string;
+      readonly "로컬에만 있는 키: 그대로 유지": string;
+      readonly "명령어 옵션": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "백업 권장": string;
+      readonly '번역 파일 저장 디렉토리 (기본값: "./locales")': string;
+      readonly "번역가가 작업을 완료하면 정기적으로 다운로드하여 번역을 최신 상태로 유지하세요.": string;
+      readonly "변경 내역 검토": string;
+      readonly "병합된 결과를 로컬 파일에 저장하고 변경 내역을 표시합니다.": string;
+      readonly "상세한 변경 내역 표시": string;
+      readonly "설정 파일 사용": string;
+      readonly "스마트 병합": string;
+      readonly "안전 기능": string;
+      readonly "안전한 병합": string;
+      readonly "예제 출력": string;
+      readonly "일상적으로 사용": string;
+      readonly '읽을 시트 이름 (기본값: "Translations")': string;
+      readonly "자동 충돌 해결": string;
+      readonly "작동 방식": string;
+      readonly "전체 덮어쓰기": string;
+      readonly "정기적으로 다운로드": string;
+      readonly "주의해서 사용": string;
+      readonly "증분 업데이트": string;
+      readonly "충돌 자동 해결": string;
+      readonly "특별한 경우에만 사용하세요": string;
+      readonly "파일 저장": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly "Git 등의 버전 관리를 사용하면 언제든 이전 상태로 복구할 수 있습니다.": string;
+      readonly "Git 커밋": string;
+      readonly "Google Cloud 서비스 계정 인증 정보 JSON 파일 경로 (필수)": string;
+      readonly "Google Sheets에서 모든 번역 데이터를 읽어옵니다.": string;
+      readonly "Google Sheets의 Spreadsheet ID (필수)": string;
+      readonly "Google Sheets의 번역을 안전하게 로컬로 다운로드합니다": string;
+      readonly "Sheets = 단일 진실 공급원": string;
+      readonly "Sheets 데이터 가져오기": string;
+      readonly "Sheets에 새로 추가된 키: 로컬에 추가": string;
+      readonly "Sheets에 있는 키: 값을 업데이트": string;
+      readonly "Sheets의 변경사항만 안전하게 병합": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json에 Google Sheets 정보가 설정되어 있다면:": string;
+      readonly "강제 동기화 옵션 알아보기": string;
+      readonly "같은 키가 양쪽에 있으면 Sheets의 값을 우선합니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기존 로컬 번역 보존": string;
+      readonly "기존 로컬 번역 파일을 읽어옵니다.": string;
+      readonly "는 Google Sheets의 번역을 로컬 JSON 파일로 다운로드하는 CLI 도구입니다. 증분 업데이트 방식으로 기존 번역을 보존하며 안전하게 병합합니다.": string;
+      readonly "다운로드 후 변경사항을 Git에 커밋하여 팀원들과 공유하세요.": string;
+      readonly "다운로드 후 출력되는 변경 내역을 확인하여 예상치 못한 변경이 없는지 검토하세요.": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 이것을 사용하세요": string;
+      readonly "데이터 손실 방지": string;
+      readonly "두 데이터를 지능적으로 병합합니다:": string;
+      readonly "로컬 데이터 읽기": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 삭제": string;
+      readonly "로컬 번역을 Sheets로 업로드하는 방법": string;
+      readonly "로컬에만 있는 번역 키는 절대 삭제되지 않습니다.": string;
+      readonly "로컬에만 있는 키: 그대로 유지": string;
+      readonly "명령어 옵션": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "백업 권장": string;
+      readonly '번역 파일 저장 디렉토리 (기본값: "./locales")': string;
+      readonly "번역가가 작업을 완료하면 정기적으로 다운로드하여 번역을 최신 상태로 유지하세요.": string;
+      readonly "변경 내역 검토": string;
+      readonly "병합된 결과를 로컬 파일에 저장하고 변경 내역을 표시합니다.": string;
+      readonly "상세한 변경 내역 표시": string;
+      readonly "설정 파일 사용": string;
+      readonly "스마트 병합": string;
+      readonly "안전 기능": string;
+      readonly "안전한 병합": string;
+      readonly "예제 출력": string;
+      readonly "일상적으로 사용": string;
+      readonly '읽을 시트 이름 (기본값: "Translations")': string;
+      readonly "자동 충돌 해결": string;
+      readonly "작동 방식": string;
+      readonly "전체 덮어쓰기": string;
+      readonly "정기적으로 다운로드": string;
+      readonly "주의해서 사용": string;
+      readonly "증분 업데이트": string;
+      readonly "충돌 자동 해결": string;
+      readonly "특별한 경우에만 사용하세요": string;
+      readonly "파일 저장": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-download-force": {
+    readonly en: {
+      readonly "CI/CD에서 사용": string;
+      readonly "Google Sheets를 마스터로 사용": string;
+      readonly "Google Sheets에서 모든 번역을 읽어옵니다.": string;
+      readonly "Google Sheets의 내용이 올바른지 확인한 후 다운로드하세요.": string;
+      readonly "Google Sheets의 데이터로 로컬 번역을 완전히 덮어씁니다": string;
+      readonly "Sheets 내용 확인": string;
+      readonly "Sheets 데이터 가져오기": string;
+      readonly "Sheets 데이터 쓰기": string;
+      readonly "Sheets의 번역을 로컬 파일에 씁니다. 병합 없음.": string;
+      readonly "i18n-download와 비교": string;
+      readonly "i18nexus-tools": string;
+      readonly 가이드: string;
+      readonly 개요: string;
+      readonly "권장 사용": string;
+      readonly "기존 로컬 번역 파일의 내용을 완전히 지웁니다.": string;
+      readonly "는 Google Sheets를 단일 진실 공급원(Single Source of Truth)으로 사용할 때를 위한 명령어입니다. 로컬 번역 파일을 Sheets의 데이터로 완전히 대체합니다.": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 i18n-download를 사용하는 것이 더 안전합니다.": string;
+      readonly "되돌릴 수 없음 (Git 미사용 시)": string;
+      readonly "드물게 사용": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 완전 덮어쓰기": string;
+      readonly "로컬 번역 파일을 다른 위치에 백업한 후 명령을 실행하세요.": string;
+      readonly "로컬 변경사항이 없음을 확신": string;
+      readonly "로컬 전용 번역 삭제": string;
+      readonly "로컬 파일 리셋 필요": string;
+      readonly "로컬 파일 삭제": string;
+      readonly "로컬 파일이 손상되었거나 문제가 있어서 Sheets의 깨끗한 버전으로 다시 시작하고 싶은 경우": string;
+      readonly "로컬에서 번역을 직접 수정하지 않고, Sheets에서만 번역을 관리하는 경우": string;
+      readonly "명령 실행 전에 현재 상태를 Git에 커밋하세요. 문제가 생기면 되돌릴 수 있습니다.": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "명확한 워크플로우 정의": string;
+      readonly "모든 번역 작업이 Google Sheets에서만 이루어지고, 로컬 파일은 단순히 Sheets의 복사본인 경우": string;
+      readonly "모범 사례": string;
+      readonly "백업 생성": string;
+      readonly "사용 빈도": string;
+      readonly "사용 시기": string;
+      readonly 사용법: string;
+      readonly "설정 파일 사용": string;
+      readonly "스마트 병합": string;
+      readonly "실행 전 Git 커밋": string;
+      readonly "안전 대책": string;
+      readonly 안전성: string;
+      readonly "안전한 증분 다운로드 방식 알아보기": string;
+      readonly 안전함: string;
+      readonly "예제 출력": string;
+      readonly "위험: 데이터 손실 가능": string;
+      readonly "이 명령어는 로컬 번역 파일을 Google Sheets의 데이터로 완전히 덮어씁니다. 로컬에만 있는 번역이 모두 삭제됩니다. 일반적으로 i18n-download를 사용하는 것이 안전합니다.": string;
+      readonly "일반적으로 사용하지 마세요": string;
+      readonly "일반적인 경우": string;
+      readonly "자동화된 배포 파이프라인에서 Sheets로부터 항상 최신 번역을 가져오는 용도로 사용할 수 있습니다.": string;
+      readonly "자주 사용": string;
+      readonly "작동 방식": string;
+      readonly "전체 Google Sheets 워크플로우 보기": string;
+      readonly "주의 필요": string;
+      readonly 특성: string;
+      readonly "특수한 경우": string;
+      readonly "팀에서 Google Sheets를 단일 진실 공급원으로 사용하기로 명확히 합의한 경우에만 사용하세요.": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly "CI/CD에서 사용": string;
+      readonly "Google Sheets를 마스터로 사용": string;
+      readonly "Google Sheets에서 모든 번역을 읽어옵니다.": string;
+      readonly "Google Sheets의 내용이 올바른지 확인한 후 다운로드하세요.": string;
+      readonly "Google Sheets의 데이터로 로컬 번역을 완전히 덮어씁니다": string;
+      readonly "Sheets 내용 확인": string;
+      readonly "Sheets 데이터 가져오기": string;
+      readonly "Sheets 데이터 쓰기": string;
+      readonly "Sheets의 번역을 로컬 파일에 씁니다. 병합 없음.": string;
+      readonly "i18n-download와 비교": string;
+      readonly "i18nexus-tools": string;
+      readonly 가이드: string;
+      readonly 개요: string;
+      readonly "권장 사용": string;
+      readonly "기존 로컬 번역 파일의 내용을 완전히 지웁니다.": string;
+      readonly "는 Google Sheets를 단일 진실 공급원(Single Source of Truth)으로 사용할 때를 위한 명령어입니다. 로컬 번역 파일을 Sheets의 데이터로 완전히 대체합니다.": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 i18n-download를 사용하는 것이 더 안전합니다.": string;
+      readonly "되돌릴 수 없음 (Git 미사용 시)": string;
+      readonly "드물게 사용": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 완전 덮어쓰기": string;
+      readonly "로컬 번역 파일을 다른 위치에 백업한 후 명령을 실행하세요.": string;
+      readonly "로컬 변경사항이 없음을 확신": string;
+      readonly "로컬 전용 번역 삭제": string;
+      readonly "로컬 파일 리셋 필요": string;
+      readonly "로컬 파일 삭제": string;
+      readonly "로컬 파일이 손상되었거나 문제가 있어서 Sheets의 깨끗한 버전으로 다시 시작하고 싶은 경우": string;
+      readonly "로컬에서 번역을 직접 수정하지 않고, Sheets에서만 번역을 관리하는 경우": string;
+      readonly "명령 실행 전에 현재 상태를 Git에 커밋하세요. 문제가 생기면 되돌릴 수 있습니다.": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "명확한 워크플로우 정의": string;
+      readonly "모든 번역 작업이 Google Sheets에서만 이루어지고, 로컬 파일은 단순히 Sheets의 복사본인 경우": string;
+      readonly "모범 사례": string;
+      readonly "백업 생성": string;
+      readonly "사용 빈도": string;
+      readonly "사용 시기": string;
+      readonly 사용법: string;
+      readonly "설정 파일 사용": string;
+      readonly "스마트 병합": string;
+      readonly "실행 전 Git 커밋": string;
+      readonly "안전 대책": string;
+      readonly 안전성: string;
+      readonly "안전한 증분 다운로드 방식 알아보기": string;
+      readonly 안전함: string;
+      readonly "예제 출력": string;
+      readonly "위험: 데이터 손실 가능": string;
+      readonly "이 명령어는 로컬 번역 파일을 Google Sheets의 데이터로 완전히 덮어씁니다. 로컬에만 있는 번역이 모두 삭제됩니다. 일반적으로 i18n-download를 사용하는 것이 안전합니다.": string;
+      readonly "일반적으로 사용하지 마세요": string;
+      readonly "일반적인 경우": string;
+      readonly "자동화된 배포 파이프라인에서 Sheets로부터 항상 최신 번역을 가져오는 용도로 사용할 수 있습니다.": string;
+      readonly "자주 사용": string;
+      readonly "작동 방식": string;
+      readonly "전체 Google Sheets 워크플로우 보기": string;
+      readonly "주의 필요": string;
+      readonly 특성: string;
+      readonly "특수한 경우": string;
+      readonly "팀에서 Google Sheets를 단일 진실 공급원으로 사용하기로 명확히 합의한 경우에만 사용하세요.": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-extractor": {
+    readonly en: {
+      readonly '// 이런 코드를 찾습니다:\nt("환영합니다")\nt("시작하기")\nt(\\`안녕하세요 \\${name}님\\`)': string;
+      readonly '// 추출된 키:\n"환영합니다"\n"시작하기"\n"안녕하세요 \\${name}님"': string;
+      readonly "CI/CD에 통합하기": string;
+      readonly "app 디렉토리의 모든 .tsx 파일에서 번역 키를 추출하고 locales 폴더에 저장합니다.": string;
+      readonly "extractor 실행 후 en.json 파일을 열어 새로 추가된 키에 영어 번역을 추가하세요.": string;
+      readonly "i18nexus-tools": string;
+      readonly "t() 함수의 첫 번째 인자를 번역 키로 추출합니다.": string;
+      readonly '{\n  "안녕": "Hello",\n  "시작하기": "시작하기",\n  "환영합니다": "Welcome"\n}': string;
+      readonly '{\n  "안녕": "Hello",\n  "환영합니다": "Welcome"\n}': string;
+      readonly "✓ 추출 완료\n  - 새 키: 5개\n  - 기존 키: 120개\n  - 총 키: 125개\n  - 파일: locales/ko.json, locales/en.json": string;
+      readonly "각 언어 파일은 독립적으로 관리되며, 한 언어의 변경이 다른 언어에 영향을 주지 않습니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기본 추출 및 병합": string;
+      readonly "기존 번역 100% 보존": string;
+      readonly "기존 번역 모두 보존": string;
+      readonly "기존 번역 파일을 읽고, 새로운 키만 추가하며 기존 번역은 모두 보존합니다.": string;
+      readonly "기존 번역과 병합": string;
+      readonly "기존 파일": string;
+      readonly "는 코드에서 t() 함수로 래핑된 모든 번역 키를 추출하여 언어별 JSON 파일을 생성하고, 기존 번역과 지능적으로 병합하는 CLI 도구입니다.": string;
+      readonly "다음 단계": string;
+      readonly "도움말 메시지를 표시합니다.": string;
+      readonly "또는 npx로 직접 실행": string;
+      readonly "명령어 옵션": string;
+      readonly "모든 키가 알파벳 순으로 정렬되어 찾기 쉽고 git diff가 깔끔합니다.": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "미리보기 모드": string;
+      readonly "번역 키를 추출하고 기존 파일과 지능적으로 병합합니다": string;
+      readonly "번역 파일 버전 관리": string;
+      readonly "번역 파일을 저장할 디렉토리 경로를 지정합니다.": string;
+      readonly "병합 시 보장되는 사항": string;
+      readonly "병합 후": string;
+      readonly "빌드 프로세스에 --dry-run을 추가하여 누락된 키가 있는지 확인하세요.": string;
+      readonly "상세한 통계 및 보고서": string;
+      readonly "새 기능을 추가할 때마다 extractor를 실행하여 번역 파일을 최신 상태로 유지하세요.": string;
+      readonly "새 키만 추가": string;
+      readonly "새 키만 추가하는 스마트 병합": string;
+      readonly "생성된 번역 파일을 Git에 커밋하여 팀원들과 공유하세요.": string;
+      readonly "생성할 언어 파일을 쉼표로 구분하여 지정합니다. 기본값: en,ko": string;
+      readonly 설치: string;
+      readonly "스마트 병합 기능": string;
+      readonly "스캔할 파일의 glob 패턴을 지정합니다.": string;
+      readonly "실제로 파일을 생성하지 않고 추출될 키와 통계만 표시합니다.": string;
+      readonly "알파벳 순 정렬": string;
+      readonly "알파벳 순으로 키 정렬": string;
+      readonly "언어별 독립 관리": string;
+      readonly 연동: string;
+      readonly "영어 번역 추가하기": string;
+      readonly "영어, 한국어, 일본어 번역 파일을 생성합니다.": string;
+      readonly "예제 출력": string;
+      readonly "이미 번역된 키는 절대 덮어쓰지 않습니다. 수동으로 작성한 번역이 안전하게 유지됩니다.": string;
+      readonly "자주 실행하기": string;
+      readonly "작동 방식": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "정렬된 키로 각 언어의 JSON 파일을 저장하고 통계를 표시합니다.": string;
+      readonly "증분 업데이트 (기존 프로젝트)": string;
+      readonly "지정된 패턴의 모든 파일을 스캔하여 t() 함수 호출을 찾습니다.": string;
+      readonly "초기 추출 (새 프로젝트)": string;
+      readonly "코드 스캔": string;
+      readonly "코드에 새로 추가된 키만 번역 파일에 추가됩니다.": string;
+      readonly "코드에서 자동으로 번역 키 추출": string;
+      readonly "키 추출": string;
+      readonly "특정 언어 파일 생성": string;
+      readonly "팀 협업을 위한 Google Sheets 연동 설정하기": string;
+      readonly "파일 저장": string;
+      readonly "파일을 수정하지 않고 추출될 키와 통계만 확인합니다.": string;
+      readonly 플래그: string;
+      readonly "한국어 텍스트를 자동으로 래핑하는 방법 알아보기": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '// 이런 코드를 찾습니다:\nt("환영합니다")\nt("시작하기")\nt(\\`안녕하세요 \\${name}님\\`)': string;
+      readonly '// 추출된 키:\n"환영합니다"\n"시작하기"\n"안녕하세요 \\${name}님"': string;
+      readonly "CI/CD에 통합하기": string;
+      readonly "app 디렉토리의 모든 .tsx 파일에서 번역 키를 추출하고 locales 폴더에 저장합니다.": string;
+      readonly "extractor 실행 후 en.json 파일을 열어 새로 추가된 키에 영어 번역을 추가하세요.": string;
+      readonly "i18nexus-tools": string;
+      readonly "t() 함수의 첫 번째 인자를 번역 키로 추출합니다.": string;
+      readonly '{\n  "안녕": "Hello",\n  "시작하기": "시작하기",\n  "환영합니다": "Welcome"\n}': string;
+      readonly '{\n  "안녕": "Hello",\n  "환영합니다": "Welcome"\n}': string;
+      readonly "✓ 추출 완료\n  - 새 키: 5개\n  - 기존 키: 120개\n  - 총 키: 125개\n  - 파일: locales/ko.json, locales/en.json": string;
+      readonly "각 언어 파일은 독립적으로 관리되며, 한 언어의 변경이 다른 언어에 영향을 주지 않습니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기본 추출 및 병합": string;
+      readonly "기존 번역 100% 보존": string;
+      readonly "기존 번역 모두 보존": string;
+      readonly "기존 번역 파일을 읽고, 새로운 키만 추가하며 기존 번역은 모두 보존합니다.": string;
+      readonly "기존 번역과 병합": string;
+      readonly "기존 파일": string;
+      readonly "는 코드에서 t() 함수로 래핑된 모든 번역 키를 추출하여 언어별 JSON 파일을 생성하고, 기존 번역과 지능적으로 병합하는 CLI 도구입니다.": string;
+      readonly "다음 단계": string;
+      readonly "도움말 메시지를 표시합니다.": string;
+      readonly "또는 npx로 직접 실행": string;
+      readonly "명령어 옵션": string;
+      readonly "모든 키가 알파벳 순으로 정렬되어 찾기 쉽고 git diff가 깔끔합니다.": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "미리보기 모드": string;
+      readonly "번역 키를 추출하고 기존 파일과 지능적으로 병합합니다": string;
+      readonly "번역 파일 버전 관리": string;
+      readonly "번역 파일을 저장할 디렉토리 경로를 지정합니다.": string;
+      readonly "병합 시 보장되는 사항": string;
+      readonly "병합 후": string;
+      readonly "빌드 프로세스에 --dry-run을 추가하여 누락된 키가 있는지 확인하세요.": string;
+      readonly "상세한 통계 및 보고서": string;
+      readonly "새 기능을 추가할 때마다 extractor를 실행하여 번역 파일을 최신 상태로 유지하세요.": string;
+      readonly "새 키만 추가": string;
+      readonly "새 키만 추가하는 스마트 병합": string;
+      readonly "생성된 번역 파일을 Git에 커밋하여 팀원들과 공유하세요.": string;
+      readonly "생성할 언어 파일을 쉼표로 구분하여 지정합니다. 기본값: en,ko": string;
+      readonly 설치: string;
+      readonly "스마트 병합 기능": string;
+      readonly "스캔할 파일의 glob 패턴을 지정합니다.": string;
+      readonly "실제로 파일을 생성하지 않고 추출될 키와 통계만 표시합니다.": string;
+      readonly "알파벳 순 정렬": string;
+      readonly "알파벳 순으로 키 정렬": string;
+      readonly "언어별 독립 관리": string;
+      readonly 연동: string;
+      readonly "영어 번역 추가하기": string;
+      readonly "영어, 한국어, 일본어 번역 파일을 생성합니다.": string;
+      readonly "예제 출력": string;
+      readonly "이미 번역된 키는 절대 덮어쓰지 않습니다. 수동으로 작성한 번역이 안전하게 유지됩니다.": string;
+      readonly "자주 실행하기": string;
+      readonly "작동 방식": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "정렬된 키로 각 언어의 JSON 파일을 저장하고 통계를 표시합니다.": string;
+      readonly "증분 업데이트 (기존 프로젝트)": string;
+      readonly "지정된 패턴의 모든 파일을 스캔하여 t() 함수 호출을 찾습니다.": string;
+      readonly "초기 추출 (새 프로젝트)": string;
+      readonly "코드 스캔": string;
+      readonly "코드에 새로 추가된 키만 번역 파일에 추가됩니다.": string;
+      readonly "코드에서 자동으로 번역 키 추출": string;
+      readonly "키 추출": string;
+      readonly "특정 언어 파일 생성": string;
+      readonly "팀 협업을 위한 Google Sheets 연동 설정하기": string;
+      readonly "파일 저장": string;
+      readonly "파일을 수정하지 않고 추출될 키와 통계만 확인합니다.": string;
+      readonly 플래그: string;
+      readonly "한국어 텍스트를 자동으로 래핑하는 방법 알아보기": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-google-sheets": {
+    readonly en: {
+      readonly '"Google Sheets API" 검색': string;
+      readonly '# .github/workflows/sync-translations.yml\nname: Sync Translations\n\non:\n  schedule:\n    - cron: \'0 2 * * *\'  # 매일 오전 2시\n  workflow_dispatch:  # 수동 실행 가능\n\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      \n      - name: Download translations\n        run: |\n          npx i18n-download \\\\\n            --spreadsheet-id "\\${{ secrets.SHEET_ID }}" \\\\\n            --credentials ./credentials.json\n      \n      - name: Create PR if changes\n        uses: peter-evans/create-pull-request@v5\n        with:\n          title: "Update translations from Sheets"\n          commit-message: "chore: sync translations"': string;
+      readonly '# 1. 개발자: 새로운 기능 추가 후 키 추출\nnpx i18n-extractor\n\n# 2. 개발자: 새 키를 Sheets에 업로드\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. 번역가: Google Sheets에서 번역 작업\n\n# 4. 개발자: 번역 완료 후 로컬로 다운로드\nnpx i18n-download --spreadsheet-id "YOUR_ID"\n\n# 5. Git에 변경사항 커밋\ngit add locales/\ngit commit -m "Update translations"': string;
+      readonly '# 1. 코드에서 번역 키 추출\nnpx i18n-extractor -p "app/**/*.tsx" -d "./locales"\n\n# 2. 로컬 번역을 Google Sheets로 업로드\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. 팀원들이 Google Sheets에서 번역 작업 시작': string;
+      readonly "API 및 서비스 > 라이브러리로 이동": string;
+      readonly "API 및 서비스 > 사용자 인증 정보로 이동": string;
+      readonly "CI/CD 통합": string;
+      readonly "CLI 도구 전체 워크플로우 보기": string;
+      readonly "Google Cloud Console에서 Google Sheets API가 활성화되었는지 확인": string;
+      readonly "Google Cloud 프로젝트 생성": string;
+      readonly "Google Sheets API 활성화": string;
+      readonly "Google Sheets 생성 및 공유": string;
+      readonly "Google Sheets 통합을 통해 번역가, 기획자, 개발자가 함께 번역 작업을 할 수 있습니다. 로컬 JSON 파일과 Google Sheets를 양방향으로 동기화할 수 있습니다.": string;
+      readonly "Google Sheets가 서비스 계정 이메일과 공유되었는지 확인": string;
+      readonly "Google Sheets에서 모든 번역을 읽어옴": string;
+      readonly "Google Sheets의 Spreadsheet ID": string;
+      readonly "Google Sheets의 데이터로 로컬 번역 파일을 완전히 덮어씁니다.": string;
+      readonly "Google Sheets의 번역을 로컬 파일로 다운로드합니다. 증분 업데이트 방식으로 기존 번역을 보존합니다.": string;
+      readonly "Google Sheets의 첫 행은 언어 코드여야 하며, 첫 열은 번역 키여야 합니다. 이 구조를 변경하지 마세요.": string;
+      readonly "JSON 유형 선택": string;
+      readonly "Sheets 구조 유지": string;
+      readonly "Sheets를 단일 진실 공급원(Single Source of Truth)로 사용할 때만 사용하세요": string;
+      readonly "Sheets에 새로 추가된 키: 로컬에 추가": string;
+      readonly "Sheets에 있는 키: 값을 업데이트": string;
+      readonly "Sheets에서 로컬로": string;
+      readonly "Sheets의 번역으로 업데이트하되, 로컬에만 있는 번역은 보존": string;
+      readonly "URL에서 Spreadsheet ID 복사 (예: 1abc...xyz)": string;
+      readonly "credentials.json 파일이 올바른 경로에 있는지 확인": string;
+      readonly "credentials.json을 .gitignore에 추가하고 환경 변수나 시크릿으로 관리하세요.": string;
+      readonly "i18n-download는 기존 번역을 보존하면서 Sheets의 변경사항만 가져옵니다:": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json 파일에 Google Sheets 정보 추가:": string;
+      readonly "강제 동기화": string;
+      readonly "강제 동기화 옵션 제공": string;
+      readonly 개요: string;
+      readonly 경고: string;
+      readonly "공유 버튼 클릭": string;
+      readonly "기본 사용법": string;
+      readonly "다운로드된 JSON 파일을 프로젝트 루트에 저장 (예: credentials.json)": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 i18n-download를 사용하세요. 안전하게 변경사항만 가져옵니다.": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 삭제": string;
+      readonly "로컬 번역 파일을 Google Sheets로 업로드합니다. 기존 Sheets의 데이터는 완전히 대체됩니다.": string;
+      readonly "로컬 파일의 기존 번역을 읽어옴": string;
+      readonly "로컬에만 있는 번역이 모두 삭제됩니다": string;
+      readonly "로컬에만 있는 키: 그대로 유지": string;
+      readonly "로컬에서 Sheets로": string;
+      readonly "명령어 옵션": string;
+      readonly "모범 사례": string;
+      readonly "문제 해결": string;
+      readonly "번역 키 추출 방법 알아보기": string;
+      readonly "병합된 결과를 로컬 파일에 저장": string;
+      readonly "비개발자도 쉽게 번역 작업 가능": string;
+      readonly "사용 설정 클릭": string;
+      readonly "사용자 인증 정보 만들기 > 서비스 계정 선택": string;
+      readonly "새 프로젝트 생성 또는 기존 프로젝트 선택": string;
+      readonly "생성한 서비스 계정 클릭": string;
+      readonly "서비스 계정 생성": string;
+      readonly "서비스 계정 이름 입력 (예: i18n-sync)": string;
+      readonly "서비스 계정 이메일 추가 (credentials.json의 client_email)": string;
+      readonly "서비스 계정 인증 정보 JSON 파일 경로": string;
+      readonly "설정 파일 업데이트": string;
+      readonly '시트 이름 (기본값: "Translations")': string;
+      readonly "안전한 증분 업데이트": string;
+      readonly 안전함: string;
+      readonly "업로드는 Sheets의 기존 데이터를 완전히 대체합니다": string;
+      readonly "에 접속": string;
+      readonly "에서 새 스프레드시트 생성": string;
+      readonly "역할: 편집자 선택": string;
+      readonly 연동: string;
+      readonly "오류: API가 활성화되지 않음": string;
+      readonly "오류: 권한이 없습니다": string;
+      readonly "오류: 인증 정보를 찾을 수 없음": string;
+      readonly "올바른 프로젝트를 선택했는지 확인": string;
+      readonly "완료 클릭": string;
+      readonly "워크플로우 예제": string;
+      readonly "이 명령어는 로컬 번역 파일을 완전히 덮어씁니다": string;
+      readonly "인증 정보 JSON 다운로드": string;
+      readonly "인증 정보 안전하게 관리": string;
+      readonly "일반 download와 차이점": string;
+      readonly "일반적으로 프로젝트 초기에 한 번만 사용합니다": string;
+      readonly "일상적인 동기화": string;
+      readonly "작동 방식": string;
+      readonly "전체 덮어쓰기": string;
+      readonly "전체 워크플로우": string;
+      readonly "정기적인 동기화": string;
+      readonly "주기적으로 동기화하여 번역이 최신 상태로 유지되도록 하세요.": string;
+      readonly "주의 필요": string;
+      readonly "주의: credentials.json 파일은 절대 Git에 커밋하지 마세요! .gitignore에 추가하세요.": string;
+      readonly 주의사항: string;
+      readonly "중요한 Sheets 데이터가 있다면 먼저 백업하세요": string;
+      readonly "증분 다운로드 우선 사용": string;
+      readonly "증분 업데이트": string;
+      readonly "증분 업데이트로 안전한 동기화": string;
+      readonly "초기 설정": string;
+      readonly "초기 설정 및 업로드": string;
+      readonly "키 추가 > 새 키 만들기": string;
+      readonly "키 탭으로 이동": string;
+      readonly "팀 협업을 위해 Google Sheets와 번역을 동기화합니다": string;
+      readonly "팀원들과 실시간 협업": string;
+      readonly "파일 경로를 절대 경로로 시도": string;
+      readonly "편집자 권한 부여": string;
+      readonly "편집자 권한이 부여되었는지 확인": string;
+      readonly "해결 방법": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '"Google Sheets API" 검색': string;
+      readonly '# .github/workflows/sync-translations.yml\nname: Sync Translations\n\non:\n  schedule:\n    - cron: \'0 2 * * *\'  # 매일 오전 2시\n  workflow_dispatch:  # 수동 실행 가능\n\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      \n      - name: Download translations\n        run: |\n          npx i18n-download \\\\\n            --spreadsheet-id "\\${{ secrets.SHEET_ID }}" \\\\\n            --credentials ./credentials.json\n      \n      - name: Create PR if changes\n        uses: peter-evans/create-pull-request@v5\n        with:\n          title: "Update translations from Sheets"\n          commit-message: "chore: sync translations"': string;
+      readonly '# 1. 개발자: 새로운 기능 추가 후 키 추출\nnpx i18n-extractor\n\n# 2. 개발자: 새 키를 Sheets에 업로드\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. 번역가: Google Sheets에서 번역 작업\n\n# 4. 개발자: 번역 완료 후 로컬로 다운로드\nnpx i18n-download --spreadsheet-id "YOUR_ID"\n\n# 5. Git에 변경사항 커밋\ngit add locales/\ngit commit -m "Update translations"': string;
+      readonly '# 1. 코드에서 번역 키 추출\nnpx i18n-extractor -p "app/**/*.tsx" -d "./locales"\n\n# 2. 로컬 번역을 Google Sheets로 업로드\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. 팀원들이 Google Sheets에서 번역 작업 시작': string;
+      readonly "API 및 서비스 > 라이브러리로 이동": string;
+      readonly "API 및 서비스 > 사용자 인증 정보로 이동": string;
+      readonly "CI/CD 통합": string;
+      readonly "CLI 도구 전체 워크플로우 보기": string;
+      readonly "Google Cloud Console에서 Google Sheets API가 활성화되었는지 확인": string;
+      readonly "Google Cloud 프로젝트 생성": string;
+      readonly "Google Sheets API 활성화": string;
+      readonly "Google Sheets 생성 및 공유": string;
+      readonly "Google Sheets 통합을 통해 번역가, 기획자, 개발자가 함께 번역 작업을 할 수 있습니다. 로컬 JSON 파일과 Google Sheets를 양방향으로 동기화할 수 있습니다.": string;
+      readonly "Google Sheets가 서비스 계정 이메일과 공유되었는지 확인": string;
+      readonly "Google Sheets에서 모든 번역을 읽어옴": string;
+      readonly "Google Sheets의 Spreadsheet ID": string;
+      readonly "Google Sheets의 데이터로 로컬 번역 파일을 완전히 덮어씁니다.": string;
+      readonly "Google Sheets의 번역을 로컬 파일로 다운로드합니다. 증분 업데이트 방식으로 기존 번역을 보존합니다.": string;
+      readonly "Google Sheets의 첫 행은 언어 코드여야 하며, 첫 열은 번역 키여야 합니다. 이 구조를 변경하지 마세요.": string;
+      readonly "JSON 유형 선택": string;
+      readonly "Sheets 구조 유지": string;
+      readonly "Sheets를 단일 진실 공급원(Single Source of Truth)로 사용할 때만 사용하세요": string;
+      readonly "Sheets에 새로 추가된 키: 로컬에 추가": string;
+      readonly "Sheets에 있는 키: 값을 업데이트": string;
+      readonly "Sheets에서 로컬로": string;
+      readonly "Sheets의 번역으로 업데이트하되, 로컬에만 있는 번역은 보존": string;
+      readonly "URL에서 Spreadsheet ID 복사 (예: 1abc...xyz)": string;
+      readonly "credentials.json 파일이 올바른 경로에 있는지 확인": string;
+      readonly "credentials.json을 .gitignore에 추가하고 환경 변수나 시크릿으로 관리하세요.": string;
+      readonly "i18n-download는 기존 번역을 보존하면서 Sheets의 변경사항만 가져옵니다:": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json 파일에 Google Sheets 정보 추가:": string;
+      readonly "강제 동기화": string;
+      readonly "강제 동기화 옵션 제공": string;
+      readonly 개요: string;
+      readonly 경고: string;
+      readonly "공유 버튼 클릭": string;
+      readonly "기본 사용법": string;
+      readonly "다운로드된 JSON 파일을 프로젝트 루트에 저장 (예: credentials.json)": string;
+      readonly "다음 단계": string;
+      readonly "대부분의 경우 i18n-download를 사용하세요. 안전하게 변경사항만 가져옵니다.": string;
+      readonly "로컬 번역 보존": string;
+      readonly "로컬 번역 삭제": string;
+      readonly "로컬 번역 파일을 Google Sheets로 업로드합니다. 기존 Sheets의 데이터는 완전히 대체됩니다.": string;
+      readonly "로컬 파일의 기존 번역을 읽어옴": string;
+      readonly "로컬에만 있는 번역이 모두 삭제됩니다": string;
+      readonly "로컬에만 있는 키: 그대로 유지": string;
+      readonly "로컬에서 Sheets로": string;
+      readonly "명령어 옵션": string;
+      readonly "모범 사례": string;
+      readonly "문제 해결": string;
+      readonly "번역 키 추출 방법 알아보기": string;
+      readonly "병합된 결과를 로컬 파일에 저장": string;
+      readonly "비개발자도 쉽게 번역 작업 가능": string;
+      readonly "사용 설정 클릭": string;
+      readonly "사용자 인증 정보 만들기 > 서비스 계정 선택": string;
+      readonly "새 프로젝트 생성 또는 기존 프로젝트 선택": string;
+      readonly "생성한 서비스 계정 클릭": string;
+      readonly "서비스 계정 생성": string;
+      readonly "서비스 계정 이름 입력 (예: i18n-sync)": string;
+      readonly "서비스 계정 이메일 추가 (credentials.json의 client_email)": string;
+      readonly "서비스 계정 인증 정보 JSON 파일 경로": string;
+      readonly "설정 파일 업데이트": string;
+      readonly '시트 이름 (기본값: "Translations")': string;
+      readonly "안전한 증분 업데이트": string;
+      readonly 안전함: string;
+      readonly "업로드는 Sheets의 기존 데이터를 완전히 대체합니다": string;
+      readonly "에 접속": string;
+      readonly "에서 새 스프레드시트 생성": string;
+      readonly "역할: 편집자 선택": string;
+      readonly 연동: string;
+      readonly "오류: API가 활성화되지 않음": string;
+      readonly "오류: 권한이 없습니다": string;
+      readonly "오류: 인증 정보를 찾을 수 없음": string;
+      readonly "올바른 프로젝트를 선택했는지 확인": string;
+      readonly "완료 클릭": string;
+      readonly "워크플로우 예제": string;
+      readonly "이 명령어는 로컬 번역 파일을 완전히 덮어씁니다": string;
+      readonly "인증 정보 JSON 다운로드": string;
+      readonly "인증 정보 안전하게 관리": string;
+      readonly "일반 download와 차이점": string;
+      readonly "일반적으로 프로젝트 초기에 한 번만 사용합니다": string;
+      readonly "일상적인 동기화": string;
+      readonly "작동 방식": string;
+      readonly "전체 덮어쓰기": string;
+      readonly "전체 워크플로우": string;
+      readonly "정기적인 동기화": string;
+      readonly "주기적으로 동기화하여 번역이 최신 상태로 유지되도록 하세요.": string;
+      readonly "주의 필요": string;
+      readonly "주의: credentials.json 파일은 절대 Git에 커밋하지 마세요! .gitignore에 추가하세요.": string;
+      readonly 주의사항: string;
+      readonly "중요한 Sheets 데이터가 있다면 먼저 백업하세요": string;
+      readonly "증분 다운로드 우선 사용": string;
+      readonly "증분 업데이트": string;
+      readonly "증분 업데이트로 안전한 동기화": string;
+      readonly "초기 설정": string;
+      readonly "초기 설정 및 업로드": string;
+      readonly "키 추가 > 새 키 만들기": string;
+      readonly "키 탭으로 이동": string;
+      readonly "팀 협업을 위해 Google Sheets와 번역을 동기화합니다": string;
+      readonly "팀원들과 실시간 협업": string;
+      readonly "파일 경로를 절대 경로로 시도": string;
+      readonly "편집자 권한 부여": string;
+      readonly "편집자 권한이 부여되었는지 확인": string;
+      readonly "해결 방법": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-upload": {
+    readonly en: {
+      readonly "Google Cloud 서비스 계정 인증 정보 JSON 파일 경로 (필수)": string;
+      readonly "Google Sheets 초기 설정 가이드 보기": string;
+      readonly "Google Sheets의 Spreadsheet ID (필수)": string;
+      readonly "Google Sheets의 기존 데이터를 지우고 새 데이터로 완전히 대체합니다.": string;
+      readonly "JSON 데이터를 Google Sheets 형식으로 변환합니다. 첫 행은 언어 코드, 첫 열은 번역 키가 됩니다.": string;
+      readonly "Sheets URL에서 확인: https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit": string;
+      readonly "Sheets 업데이트": string;
+      readonly "Sheets에서 번역을 안전하게 다운로드하는 방법": string;
+      readonly "Sheets에서 직접 수정한 번역이 있다면 먼저 백업하세요": string;
+      readonly "i18n-upload는 Google Sheets의 기존 데이터를 완전히 삭제하고 새 데이터로 대체합니다": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json에 Google Sheets 정보가 설정되어 있다면:": string;
+      readonly "locales 디렉토리의 모든 JSON 파일을 읽어옵니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기존 Sheets 데이터 완전 대체": string;
+      readonly "는 로컬의 번역 JSON 파일들을 Google Sheets로 업로드하는 CLI 도구입니다. 팀원들과 번역 작업을 협업하기 위한 첫 단계입니다.": string;
+      readonly "다음 단계": string;
+      readonly "데이터 덮어쓰기": string;
+      readonly "데이터 변환": string;
+      readonly "로컬 번역 파일을 Google Sheets로 업로드합니다": string;
+      readonly "로컬 번역 파일이 최신 상태인지 확인 후 업로드하세요.": string;
+      readonly "로컬 파일 읽기": string;
+      readonly "명령어 옵션": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "모든 언어 파일을 한 번에 업로드": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly '번역 파일 디렉토리 (기본값: "./locales")': string;
+      readonly 설정: string;
+      readonly "설정 파일 사용": string;
+      readonly "업로드 완료 메시지와 함께 통계를 표시합니다.": string;
+      readonly "업로드 전 확인": string;
+      readonly "업로드 프로세스": string;
+      readonly "업로드 후 Sheets URL을 팀원들과 공유하여 함께 번역 작업을 시작하세요.": string;
+      readonly '업로드할 시트 이름 (기본값: "Translations")': string;
+      readonly "예제 출력": string;
+      readonly 완료: string;
+      readonly "이후에는 i18n-download를 사용하여 Sheets에서 번역을 가져옵니다": string;
+      readonly "일반적으로 프로젝트 초기 설정 시 한 번만 사용합니다": string;
+      readonly "자동으로 Sheets 포맷 생성": string;
+      readonly 주의사항: string;
+      readonly "초기 설정에만 사용": string;
+      readonly "팀원과 공유": string;
+      readonly "프로젝트 시작 시 한 번만 업로드하고, 이후에는 Sheets에서 번역 작업을 진행하세요.": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly "Google Cloud 서비스 계정 인증 정보 JSON 파일 경로 (필수)": string;
+      readonly "Google Sheets 초기 설정 가이드 보기": string;
+      readonly "Google Sheets의 Spreadsheet ID (필수)": string;
+      readonly "Google Sheets의 기존 데이터를 지우고 새 데이터로 완전히 대체합니다.": string;
+      readonly "JSON 데이터를 Google Sheets 형식으로 변환합니다. 첫 행은 언어 코드, 첫 열은 번역 키가 됩니다.": string;
+      readonly "Sheets URL에서 확인: https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit": string;
+      readonly "Sheets 업데이트": string;
+      readonly "Sheets에서 번역을 안전하게 다운로드하는 방법": string;
+      readonly "Sheets에서 직접 수정한 번역이 있다면 먼저 백업하세요": string;
+      readonly "i18n-upload는 Google Sheets의 기존 데이터를 완전히 삭제하고 새 데이터로 대체합니다": string;
+      readonly "i18nexus-tools": string;
+      readonly "i18nexus.config.json에 Google Sheets 정보가 설정되어 있다면:": string;
+      readonly "locales 디렉토리의 모든 JSON 파일을 읽어옵니다.": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "기존 Sheets 데이터 완전 대체": string;
+      readonly "는 로컬의 번역 JSON 파일들을 Google Sheets로 업로드하는 CLI 도구입니다. 팀원들과 번역 작업을 협업하기 위한 첫 단계입니다.": string;
+      readonly "다음 단계": string;
+      readonly "데이터 덮어쓰기": string;
+      readonly "데이터 변환": string;
+      readonly "로컬 번역 파일을 Google Sheets로 업로드합니다": string;
+      readonly "로컬 번역 파일이 최신 상태인지 확인 후 업로드하세요.": string;
+      readonly "로컬 파일 읽기": string;
+      readonly "명령어 옵션": string;
+      readonly "명령줄 옵션 사용": string;
+      readonly "모든 언어 파일을 한 번에 업로드": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly '번역 파일 디렉토리 (기본값: "./locales")': string;
+      readonly 설정: string;
+      readonly "설정 파일 사용": string;
+      readonly "업로드 완료 메시지와 함께 통계를 표시합니다.": string;
+      readonly "업로드 전 확인": string;
+      readonly "업로드 프로세스": string;
+      readonly "업로드 후 Sheets URL을 팀원들과 공유하여 함께 번역 작업을 시작하세요.": string;
+      readonly '업로드할 시트 이름 (기본값: "Translations")': string;
+      readonly "예제 출력": string;
+      readonly 완료: string;
+      readonly "이후에는 i18n-download를 사용하여 Sheets에서 번역을 가져옵니다": string;
+      readonly "일반적으로 프로젝트 초기 설정 시 한 번만 사용합니다": string;
+      readonly "자동으로 Sheets 포맷 생성": string;
+      readonly 주의사항: string;
+      readonly "초기 설정에만 사용": string;
+      readonly "팀원과 공유": string;
+      readonly "프로젝트 시작 시 한 번만 업로드하고, 이후에는 Sheets에서 번역 작업을 진행하세요.": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-tools-wrapper": {
+    readonly en: {
+      readonly '<div title="제목"> → <div title={t("제목")}>': string;
+      readonly '<div>한국어 텍스트</div> → <div>{t("한국어 텍스트")}</div>': string;
+      readonly "Git 등의 버전 관리를 사용하여 변경사항을 되돌릴 수 있도록 준비하세요.": string;
+      readonly "JSX 속성값": string;
+      readonly "JSX 요소 내 한국어 텍스트 자동 감지": string;
+      readonly "JSX 텍스트 노드": string;
+      readonly "app 디렉토리 내 모든 .tsx 파일에서 한국어 텍스트를 래핑합니다.": string;
+      readonly "const msg = \\`안녕 \\${name}\\`; → const msg = t(\\`안녕 \\${name}\\`);": string;
+      readonly 'const text = "안녕"; → const text = t("안녕");': string;
+      readonly 'const title = "제목";\nconst msg = \\`안녕하세요 \\${name}님\\`;\n\nreturn (\n  <div title="툴팁 텍스트">\n    <p>{"문자열"}</p>\n  </div>\n);': string;
+      readonly 'const { t } = useTranslation();\nconst title = t("제목");\nconst msg = t(\\`안녕하세요 \\${name}님\\`);\n\nreturn (\n  <div title={t("툴팁 텍스트")}>\n    <p>{t("문자열")}</p>\n  </div>\n);': string;
+      readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n      <button>시작하기</button>\n    </div>\n  );\n}": string;
+      readonly "i18nexus-tools": string;
+      readonly 'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <p>{t("i18nexus 사용법")}</p>\n      <button>{t("시작하기")}</button>\n    </div>\n  );\n}': string;
+      readonly "useTranslation import 자동 추가": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "는 코드에서 하드코딩된 한국어 텍스트를 자동으로 감지하여 t() 함수로 래핑하고, 필요한 import 문을 추가하는 CLI 도구입니다.": string;
+      readonly "다음 단계": string;
+      readonly "단일 파일만 처리합니다.": string;
+      readonly "도움말 메시지를 표시합니다.": string;
+      readonly "또는 npx로 직접 실행": string;
+      readonly "래핑된 텍스트에서 번역 키를 추출하세요": string;
+      readonly "먼저 dry-run으로 확인하기": string;
+      readonly "명령어 옵션": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "문자열 리터럴": string;
+      readonly "문자열 리터럴 및 템플릿 리터럴 지원": string;
+      readonly "미리보기 모드": string;
+      readonly "버전 관리 시스템 사용": string;
+      readonly "변환 예제": string;
+      readonly "복잡한 예제": string;
+      readonly 설치: string;
+      readonly "수동 검토 필요": string;
+      readonly "숫자나 특수문자만 포함된 텍스트": string;
+      readonly "스마트 감지 기능": string;
+      readonly "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요.": string;
+      readonly "실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다.": string;
+      readonly "영어만 포함된 텍스트": string;
+      readonly "이미 t()로 래핑된 텍스트": string;
+      readonly "이미 래핑된 텍스트 자동 건너뛰기": string;
+      readonly 이전: string;
+      readonly 이후: string;
+      readonly "자동 변환 후에는 항상 변경된 파일들을 검토하여 의도하지 않은 변경이 없는지 확인하세요.": string;
+      readonly "자동으로 건너뛰는 경우": string;
+      readonly "자동으로 처리되는 경우": string;
+      readonly "작은 범위부터 시작": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "전체 CLI 도구 워크플로우 보기": string;
+      readonly "전체 앱 디렉토리 처리": string;
+      readonly "전체 워크플로우": string;
+      readonly "주석 내부의 텍스트": string;
+      readonly "처리할 파일의 glob 패턴을 지정합니다.": string;
+      readonly "처음에는 단일 파일이나 작은 디렉토리부터 시작하여 결과를 확인하세요.": string;
+      readonly "코드 포매팅 보존": string;
+      readonly "템플릿 리터럴": string;
+      readonly "특정 파일만 처리": string;
+      readonly "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다.": string;
+      readonly 플래그: string;
+      readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '<div title="제목"> → <div title={t("제목")}>': string;
+      readonly '<div>한국어 텍스트</div> → <div>{t("한국어 텍스트")}</div>': string;
+      readonly "Git 등의 버전 관리를 사용하여 변경사항을 되돌릴 수 있도록 준비하세요.": string;
+      readonly "JSX 속성값": string;
+      readonly "JSX 요소 내 한국어 텍스트 자동 감지": string;
+      readonly "JSX 텍스트 노드": string;
+      readonly "app 디렉토리 내 모든 .tsx 파일에서 한국어 텍스트를 래핑합니다.": string;
+      readonly "const msg = \\`안녕 \\${name}\\`; → const msg = t(\\`안녕 \\${name}\\`);": string;
+      readonly 'const text = "안녕"; → const text = t("안녕");': string;
+      readonly 'const title = "제목";\nconst msg = \\`안녕하세요 \\${name}님\\`;\n\nreturn (\n  <div title="툴팁 텍스트">\n    <p>{"문자열"}</p>\n  </div>\n);': string;
+      readonly 'const { t } = useTranslation();\nconst title = t("제목");\nconst msg = t(\\`안녕하세요 \\${name}님\\`);\n\nreturn (\n  <div title={t("툴팁 텍스트")}>\n    <p>{t("문자열")}</p>\n  </div>\n);': string;
+      readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n      <button>시작하기</button>\n    </div>\n  );\n}": string;
+      readonly "i18nexus-tools": string;
+      readonly 'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <p>{t("i18nexus 사용법")}</p>\n      <button>{t("시작하기")}</button>\n    </div>\n  );\n}': string;
+      readonly "useTranslation import 자동 추가": string;
+      readonly 개요: string;
+      readonly "기본 사용법": string;
+      readonly "는 코드에서 하드코딩된 한국어 텍스트를 자동으로 감지하여 t() 함수로 래핑하고, 필요한 import 문을 추가하는 CLI 도구입니다.": string;
+      readonly "다음 단계": string;
+      readonly "단일 파일만 처리합니다.": string;
+      readonly "도움말 메시지를 표시합니다.": string;
+      readonly "또는 npx로 직접 실행": string;
+      readonly "래핑된 텍스트에서 번역 키를 추출하세요": string;
+      readonly "먼저 dry-run으로 확인하기": string;
+      readonly "명령어 옵션": string;
+      readonly "모범 사례": string;
+      readonly 문자열: string;
+      readonly "문자열 리터럴": string;
+      readonly "문자열 리터럴 및 템플릿 리터럴 지원": string;
+      readonly "미리보기 모드": string;
+      readonly "버전 관리 시스템 사용": string;
+      readonly "변환 예제": string;
+      readonly "복잡한 예제": string;
+      readonly 설치: string;
+      readonly "수동 검토 필요": string;
+      readonly "숫자나 특수문자만 포함된 텍스트": string;
+      readonly "스마트 감지 기능": string;
+      readonly "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요.": string;
+      readonly "실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다.": string;
+      readonly "영어만 포함된 텍스트": string;
+      readonly "이미 t()로 래핑된 텍스트": string;
+      readonly "이미 래핑된 텍스트 자동 건너뛰기": string;
+      readonly 이전: string;
+      readonly 이후: string;
+      readonly "자동 변환 후에는 항상 변경된 파일들을 검토하여 의도하지 않은 변경이 없는지 확인하세요.": string;
+      readonly "자동으로 건너뛰는 경우": string;
+      readonly "자동으로 처리되는 경우": string;
+      readonly "작은 범위부터 시작": string;
+      readonly "전역 설치 (권장)": string;
+      readonly "전체 CLI 도구 워크플로우 보기": string;
+      readonly "전체 앱 디렉토리 처리": string;
+      readonly "전체 워크플로우": string;
+      readonly "주석 내부의 텍스트": string;
+      readonly "처리할 파일의 glob 패턴을 지정합니다.": string;
+      readonly "처음에는 단일 파일이나 작은 디렉토리부터 시작하여 결과를 확인하세요.": string;
+      readonly "코드 포매팅 보존": string;
+      readonly "템플릿 리터럴": string;
+      readonly "특정 파일만 처리": string;
+      readonly "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다.": string;
+      readonly 플래그: string;
+      readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-use-language-switcher": {
+    readonly en: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function LanguageSelector() {\n  const currentLanguage = getCurrentLanguage();\n  const availableLanguages = getAvailableLanguages();\n\n  return (\n    <div>\n      <p>현재 언어: {currentLanguage}</p>\n\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}': string;
+      readonly '// ✅ 새로운 방식 (권장)\nchangeLanguage("en");\nchangeLanguage("ko");\n\n// ❌ 레거시 방식 (deprecated)\nconst { changeLanguage } = useLanguageSwitcher();': string;
+      readonly "// ✅ 새로운 방식 (권장)\nconst availableLanguages = getAvailableLanguages();\n\n// Language 타입:\n// { code: string, name: string, flag?: string }\n\navailableLanguages.map(lang => (\n  <button onClick={() => changeLanguage(lang.code)}>\n    {lang.flag} {lang.name}\n  </button>\n))\n\n// ❌ 레거시 방식 (deprecated)\nconst { availableLanguages } = useLanguageSwitcher();": string;
+      readonly '// ✅ 새로운 방식 (권장)\nconst currentLanguage = getCurrentLanguage();\nconsole.log(currentLanguage); // "ko" or "en"\n\n// ❌ 레거시 방식 (deprecated)\nconst { currentLanguage } = useLanguageSwitcher();': string;
+      readonly "API 레퍼런스": string;
+      readonly "Provider 설정 방법 알아보기": string;
+      readonly "Return Value": string;
+      readonly i18nexus: string;
+      readonly "i18nexus는 자동으로 모든 컴포넌트를 업데이트합니다. 수동으로 페이지를 리로드할 필요가 없습니다.": string;
+      readonly "useLanguageSwitcher는 클라이언트 훅입니다. 서버 컴포넌트에서는 사용할 수 없습니다.": string;
+      readonly 개요: string;
+      readonly "고급 예제 - 플래그와 함께": string;
+      readonly "권장: 사용자 경험을 위한 시각적 피드백": string;
+      readonly "권장: 언어 변경 후 전체 페이지 리로드하지 않기": string;
+      readonly "기본 사용법": string;
+      readonly "는 현재 언어 상태를 관리하고 언어를 전환하는 기능을 제공하는 React 훅입니다.": string;
+      readonly "동적 언어 전환": string;
+      readonly "드롭다운 선택기": string;
+      readonly "모범 사례": string;
+      readonly "비권장: 서버 컴포넌트에서 사용": string;
+      readonly "사용 가능한 언어 목록 조회": string;
+      readonly "사용 가능한 언어 목록입니다.": string;
+      readonly "사용 예제": string;
+      readonly "언어 전환 및 관리를 위한 React 훅": string;
+      readonly "언어를 변경하는 함수입니다. 변경된 언어는 쿠키에 자동으로 저장됩니다.": string;
+      readonly "언어를 전환해보세요. 쿠키에 자동으로 저장됩니다!": string;
+      readonly "인터랙티브 데모": string;
+      readonly "자동 쿠키 저장": string;
+      readonly "참고 자료": string;
+      readonly "컴포넌트에서 번역을 사용하는 방법 알아보기": string;
+      readonly "현재 선택된 언어를 명확하게 표시하여 사용자가 현재 언어를 쉽게 알 수 있도록 하세요.": string;
+      readonly "현재 언어": string;
+      readonly "현재 언어 상태 조회": string;
+      readonly "현재 활성화된 언어 코드입니다.": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function LanguageSelector() {\n  const currentLanguage = getCurrentLanguage();\n  const availableLanguages = getAvailableLanguages();\n\n  return (\n    <div>\n      <p>현재 언어: {currentLanguage}</p>\n\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}': string;
+      readonly '// ✅ 새로운 방식 (권장)\nchangeLanguage("en");\nchangeLanguage("ko");\n\n// ❌ 레거시 방식 (deprecated)\nconst { changeLanguage } = useLanguageSwitcher();': string;
+      readonly "// ✅ 새로운 방식 (권장)\nconst availableLanguages = getAvailableLanguages();\n\n// Language 타입:\n// { code: string, name: string, flag?: string }\n\navailableLanguages.map(lang => (\n  <button onClick={() => changeLanguage(lang.code)}>\n    {lang.flag} {lang.name}\n  </button>\n))\n\n// ❌ 레거시 방식 (deprecated)\nconst { availableLanguages } = useLanguageSwitcher();": string;
+      readonly '// ✅ 새로운 방식 (권장)\nconst currentLanguage = getCurrentLanguage();\nconsole.log(currentLanguage); // "ko" or "en"\n\n// ❌ 레거시 방식 (deprecated)\nconst { currentLanguage } = useLanguageSwitcher();': string;
+      readonly "API 레퍼런스": string;
+      readonly "Provider 설정 방법 알아보기": string;
+      readonly "Return Value": string;
+      readonly i18nexus: string;
+      readonly "i18nexus는 자동으로 모든 컴포넌트를 업데이트합니다. 수동으로 페이지를 리로드할 필요가 없습니다.": string;
+      readonly "useLanguageSwitcher는 클라이언트 훅입니다. 서버 컴포넌트에서는 사용할 수 없습니다.": string;
+      readonly 개요: string;
+      readonly "고급 예제 - 플래그와 함께": string;
+      readonly "권장: 사용자 경험을 위한 시각적 피드백": string;
+      readonly "권장: 언어 변경 후 전체 페이지 리로드하지 않기": string;
+      readonly "기본 사용법": string;
+      readonly "는 현재 언어 상태를 관리하고 언어를 전환하는 기능을 제공하는 React 훅입니다.": string;
+      readonly "동적 언어 전환": string;
+      readonly "드롭다운 선택기": string;
+      readonly "모범 사례": string;
+      readonly "비권장: 서버 컴포넌트에서 사용": string;
+      readonly "사용 가능한 언어 목록 조회": string;
+      readonly "사용 가능한 언어 목록입니다.": string;
+      readonly "사용 예제": string;
+      readonly "언어 전환 및 관리를 위한 React 훅": string;
+      readonly "언어를 변경하는 함수입니다. 변경된 언어는 쿠키에 자동으로 저장됩니다.": string;
+      readonly "언어를 전환해보세요. 쿠키에 자동으로 저장됩니다!": string;
+      readonly "인터랙티브 데모": string;
+      readonly "자동 쿠키 저장": string;
+      readonly "참고 자료": string;
+      readonly "컴포넌트에서 번역을 사용하는 방법 알아보기": string;
+      readonly "현재 선택된 언어를 명확하게 표시하여 사용자가 현재 언어를 쉽게 알 수 있도록 하세요.": string;
+      readonly "현재 언어": string;
+      readonly "현재 언어 상태 조회": string;
+      readonly "현재 활성화된 언어 코드입니다.": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-i18nexus-use-translation": {
+    readonly en: {
+      readonly " is a React hook that provides access to the translation function (t) and current language state. It can only be used in Client Components.": string;
+      readonly '"use client";\n\nimport { useTranslation } from "i18nexus";\n\nexport default function StatusMessage({ status }) {\n  const { t } = useTranslation();\n  \n  // Dynamically construct translation keys\n  const message = t(\\`status.\\${status}\\`);\n  \n  return <div>{message}</div>;\n}\n\n// Translations:\n// "status.success": "작업이 성공했습니다"\n// "status.error": "오류가 발생했습니다"\n// "status.pending": "처리 중입니다"': string;
+      readonly "API Reference": string;
+      readonly "Automatic re-rendering on language change": string;
+      readonly "Basic Usage": string;
+      readonly "Best Practices": string;
+      readonly "Displaying Current Language": string;
+      readonly "Do: Handle missing translations gracefully": string;
+      readonly "Do: Use descriptive keys": string;
+      readonly "Don't: Construct keys with complex logic": string;
+      readonly "Don't: Use in Server Components": string;
+      readonly "Dynamic Translation Keys": string;
+      readonly "Fallback to key if translation missing": string;
+      readonly "Keep translation key logic simple and predictable.": string;
+      readonly "Learn how to set up the translation provider": string;
+      readonly "Learn how to use translations in Server Components": string;
+      readonly "Real-World Example": string;
+      readonly "Return Value": string;
+      readonly "See Also": string;
+      readonly "Simple API with t() function": string;
+      readonly "The currently active language code.": string;
+      readonly "Translation function that returns the translated string for the given key.": string;
+      readonly "Type-safe with TypeScript": string;
+      readonly "Usage Examples": string;
+      readonly "Use clear, descriptive translation keys that indicate the content.": string;
+      readonly 'const { t } = useTranslation();\nconst welcomeText = t("Welcome"); // "환영합니다" or "Welcome"': string;
+      readonly i18nexus: string;
+      readonly "i18nexus automatically returns the key if translation is missing, making debugging easier.": string;
+      readonly "useTranslation is a client-side hook. For Server Components, use createServerTranslation().": string;
+      readonly 개요: string;
+      readonly 결과: string;
+      readonly "번역 키": string;
+      readonly "번역 키를 입력하세요": string;
+      readonly "인터랙티브 데모": string;
+      readonly "입력해보세요: Welcome, Getting Started, CLI Tools 등": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 React 훅": string;
+      readonly 홈: string;
+    };
+    readonly ko: {
+      readonly " is a React hook that provides access to the translation function (t) and current language state. It can only be used in Client Components.": string;
+      readonly '"use client";\n\nimport { useTranslation } from "i18nexus";\n\nexport default function StatusMessage({ status }) {\n  const { t } = useTranslation();\n  \n  // Dynamically construct translation keys\n  const message = t(\\`status.\\${status}\\`);\n  \n  return <div>{message}</div>;\n}\n\n// Translations:\n// "status.success": "작업이 성공했습니다"\n// "status.error": "오류가 발생했습니다"\n// "status.pending": "처리 중입니다"': string;
+      readonly "API Reference": string;
+      readonly "Automatic re-rendering on language change": string;
+      readonly "Basic Usage": string;
+      readonly "Best Practices": string;
+      readonly "Displaying Current Language": string;
+      readonly "Do: Handle missing translations gracefully": string;
+      readonly "Do: Use descriptive keys": string;
+      readonly "Don't: Construct keys with complex logic": string;
+      readonly "Don't: Use in Server Components": string;
+      readonly "Dynamic Translation Keys": string;
+      readonly "Fallback to key if translation missing": string;
+      readonly "Keep translation key logic simple and predictable.": string;
+      readonly "Learn how to set up the translation provider": string;
+      readonly "Learn how to use translations in Server Components": string;
+      readonly "Real-World Example": string;
+      readonly "Return Value": string;
+      readonly "See Also": string;
+      readonly "Simple API with t() function": string;
+      readonly "The currently active language code.": string;
+      readonly "Translation function that returns the translated string for the given key.": string;
+      readonly "Type-safe with TypeScript": string;
+      readonly "Usage Examples": string;
+      readonly "Use clear, descriptive translation keys that indicate the content.": string;
+      readonly 'const { t } = useTranslation();\nconst welcomeText = t("Welcome"); // "환영합니다" or "Welcome"': string;
+      readonly i18nexus: string;
+      readonly "i18nexus automatically returns the key if translation is missing, making debugging easier.": string;
+      readonly "useTranslation is a client-side hook. For Server Components, use createServerTranslation().": string;
+      readonly 개요: string;
+      readonly 결과: string;
+      readonly "번역 키": string;
+      readonly "번역 키를 입력하세요": string;
+      readonly "인터랙티브 데모": string;
+      readonly "입력해보세요: Welcome, Getting Started, CLI Tools 등": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 React 훅": string;
+      readonly 홈: string;
+    };
+  };
+  readonly "docs-lazy-loading": {
+    readonly en: {
+      readonly "I18nProvider에 연결": string;
+      readonly "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다.": string;
+      readonly "fallback namespace는 공통 문구를 위해 미리 로드합니다.": string;
+      readonly "namespace loader 작성": string;
+      readonly "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다.": string;
+      readonly "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다.": string;
+      readonly "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다.": string;
+      readonly "관련 문서": string;
+      readonly "문서로 돌아가기": string;
+      readonly "설정 순서": string;
+      readonly "컴포넌트에서 namespace 요청": string;
+      readonly "현재 API 기준": string;
+    };
+    readonly ko: {
+      readonly "I18nProvider에 연결": string;
+      readonly "Lazy loading은 createI18n 옵션이 아닙니다. I18nProvider에 loadNamespace를 전달하면 자동으로 lazy mode가 활성화됩니다.": string;
+      readonly "fallback namespace는 공통 문구를 위해 미리 로드합니다.": string;
+      readonly "namespace loader 작성": string;
+      readonly "namespace 번역 파일을 처음 필요한 시점에 불러와 초기 번들 부담을 줄입니다.": string;
+      readonly "namespace와 language를 받아 해당 JSON 파일을 동적으로 import합니다.": string;
+      readonly "useTranslation(namespace)가 필요한 namespace를 자동으로 요청합니다.": string;
+      readonly "관련 문서": string;
+      readonly "문서로 돌아가기": string;
+      readonly "설정 순서": string;
+      readonly "컴포넌트에서 namespace 요청": string;
+      readonly "현재 API 기준": string;
+    };
+  };
+  readonly "dx-lab": {
+    readonly en: {
+      readonly "Devtools 상태": string;
+      readonly "Devtools는 Provider 근처에 한 번만 mount되어 페이지 코드는 번역 흐름에 집중할 수 있습니다.": string;
+      readonly "Devtools는 페이지가 아니라 Provider 근처에 한 번만 mount하는 패턴이 가장 이해하기 쉬웠습니다.": string;
+      readonly "Fallback lookup": string;
+      readonly "Lazy namespace": string;
+      readonly "Loading...": string;
+      readonly "dx-lab에 없는 공통 키는 common에서 해결": string;
+      readonly "fallback namespace가 자연스럽게 섞여서 공통 로딩/버튼 문구를 중복하지 않아도 됩니다.": string;
+      readonly "lazy namespace, fallback 문구, ready 상태를 한 화면에서 확인합니다.": string;
+      readonly "namespace 이름만 넘기면 lazy load가 시작되어서, 소비자 코드는 생각보다 짧았습니다.": string;
+      readonly "preloadNamespaces에 없는 namespace를 자동 요청": string;
+      readonly "t identity": string;
+      readonly "강점 1": string;
+      readonly "강점 2": string;
+      readonly "라이브러리를 직접 써보며 만든 데모": string;
+      readonly "로드 완료": string;
+      readonly "로딩 중": string;
+      readonly "마찰 1": string;
+      readonly "마찰 2": string;
+      readonly "버튼을 누르면 Provider 상태, 쿠키, 현재 페이지 번역이 함께 바뀝니다.": string;
+      readonly "사용하면서 느낀 피드백": string;
+      readonly "새 namespace를 추가해도 생성 타입은 자동 갱신되지 않습니다. typed workflow라면 extractor 실행 안내가 더 선명해야 합니다.": string;
+      readonly "소비자 코드 예시": string;
+      readonly "실사용 DX 점검": string;
+      readonly "언어 변경 시 t snapshot이 새로 계산됨": string;
+      readonly "언어 변경 후 새 번역 snapshot을 렌더링": string;
+      readonly "언어 전환": string;
+      readonly '이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation("dx-lab") 호출만으로 불러옵니다.': string;
+      readonly 준비됨: string;
+      readonly "현재 언어": string;
+    };
+    readonly ko: {
+      readonly "Devtools 상태": string;
+      readonly "Devtools는 Provider 근처에 한 번만 mount되어 페이지 코드는 번역 흐름에 집중할 수 있습니다.": string;
+      readonly "Devtools는 페이지가 아니라 Provider 근처에 한 번만 mount하는 패턴이 가장 이해하기 쉬웠습니다.": string;
+      readonly "Fallback lookup": string;
+      readonly "Lazy namespace": string;
+      readonly "Loading...": string;
+      readonly "dx-lab에 없는 공통 키는 common에서 해결": string;
+      readonly "fallback namespace가 자연스럽게 섞여서 공통 로딩/버튼 문구를 중복하지 않아도 됩니다.": string;
+      readonly "lazy namespace, fallback 문구, ready 상태를 한 화면에서 확인합니다.": string;
+      readonly "namespace 이름만 넘기면 lazy load가 시작되어서, 소비자 코드는 생각보다 짧았습니다.": string;
+      readonly "preloadNamespaces에 없는 namespace를 자동 요청": string;
+      readonly "t identity": string;
+      readonly "강점 1": string;
+      readonly "강점 2": string;
+      readonly "라이브러리를 직접 써보며 만든 데모": string;
+      readonly "로드 완료": string;
+      readonly "로딩 중": string;
+      readonly "마찰 1": string;
+      readonly "마찰 2": string;
+      readonly "버튼을 누르면 Provider 상태, 쿠키, 현재 페이지 번역이 함께 바뀝니다.": string;
+      readonly "사용하면서 느낀 피드백": string;
+      readonly "새 namespace를 추가해도 생성 타입은 자동 갱신되지 않습니다. typed workflow라면 extractor 실행 안내가 더 선명해야 합니다.": string;
+      readonly "소비자 코드 예시": string;
+      readonly "실사용 DX 점검": string;
+      readonly "언어 변경 시 t snapshot이 새로 계산됨": string;
+      readonly "언어 변경 후 새 번역 snapshot을 렌더링": string;
+      readonly "언어 전환": string;
+      readonly '이 페이지는 preload하지 않은 dx-lab namespace를 useTranslation("dx-lab") 호출만으로 불러옵니다.': string;
+      readonly 준비됨: string;
+      readonly "현재 언어": string;
+    };
+  };
+  readonly "getting-started": {
+    readonly en: {
+      readonly '"use client";\nimport { useTranslation } from "i18nexus";\n\nexport default function Page() {\n  const { t } = i18n.useTranslation();\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly '"use client";\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function Page() {\n  const { t } = useTranslation("getting-started");\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly "App 디렉토리 참고사항": string;
+      readonly "CLI 도구 살펴보기": string;
+      readonly "I18nProvider 자세히 알아보기": string;
+      readonly "Lazy loading은 createI18n 옵션이 아니라 I18nProvider props로 설정합니다.": string;
+      readonly "Next.js App Router를 사용하는 경우, -p 플래그를 사용하여 올바른 디렉토리를 지정하세요": string;
+      readonly "Next.js App Router의 경우": string;
+      readonly "React 컴포넌트와 CLI 도구를 모두 설치합니다": string;
+      readonly "Root Layout": string;
+      readonly "i18n 설정": string;
+      readonly "i18n-wrapper 실행 후 일부 파일에서 에러가 발생할 수 있습니다:": string;
+      readonly 'import { headers } from "next/headers";\nimport { getServerLanguage, \n  createServerTranslation } from "i18nexus/server";\n\nexport default async function Page() {\n  const lang = getServerLanguage(await headers());\n  const t = createServerTranslation(lang, translations);\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly "lib/i18n.ts 생성": string;
+      readonly "locales/en.json 파일을 열고 영어 번역을 추가하세요": string;
+      readonly "locales/index.ts 파일 생성": string;
+      readonly "root layout.tsx에 추가하세요": string;
+      readonly '{\n  "안녕하세요": "Hello",\n  "환영합니다": "Welcome"\n}': string;
+      readonly '{\n  "안녕하세요": "안녕하세요",\n  "환영합니다": "환영합니다"\n}': string;
+      readonly "결과 파일": string;
+      readonly "다음을 생성합니다": string;
+      readonly "모든 한국어 텍스트를 자동으로 t()로 감쌉니다": string;
+      readonly "번역 다운로드": string;
+      readonly "번역 업로드": string;
+      readonly "번역 키 추출": string;
+      readonly "번역 파일": string;
+      readonly "번역 파일 디렉토리 (ko.json, en.json)": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트의 경우": string;
+      readonly "선택사항: Google Sheets 연동": string;
+      readonly 설치: string;
+      readonly "수동으로 수정": string;
+      readonly 시작하기: string;
+      readonly "앱이 완전히 국제화되었으며 배포할 준비가 되었습니다": string;
+      readonly "영어 번역 (수동 번역 필요)": string;
+      readonly "영어 번역 추가": string;
+      readonly "완료!": string;
+      readonly "을 사용하고, 서버 컴포넌트는": string;
+      readonly "을 사용합니다.": string;
+      readonly "이전 (자동 생성)": string;
+      readonly "이후 (번역됨)": string;
+      readonly "중요: 서버 컴포넌트 확인": string;
+      readonly "코드를 스캔하여 번역 파일을 생성/업데이트합니다": string;
+      readonly "클라이언트 컴포넌트는": string;
+      readonly "클라이언트 컴포넌트의 경우": string;
+      readonly "팀 협업을 위해 Google Sheets와 동기화할 수 있습니다": string;
+      readonly "파일이 서버 컴포넌트인 경우 (use client가 없는 경우), 훅 대신 서버 유틸리티를 사용해야 합니다": string;
+      readonly "프로젝트 설정 파일": string;
+      readonly "프로젝트 초기화": string;
+      readonly "프로젝트에 i18nexus를 설정하는 완벽한 단계별 가이드": string;
+      readonly "한국어 번역 (자동 채워짐)": string;
+      readonly "한국어 텍스트 감싸기": string;
+      readonly "홈으로 돌아가기": string;
+    };
+    readonly ko: {
+      readonly '"use client";\nimport { useTranslation } from "i18nexus";\n\nexport default function Page() {\n  const { t } = i18n.useTranslation();\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly '"use client";\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function Page() {\n  const { t } = useTranslation("getting-started");\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly "App 디렉토리 참고사항": string;
+      readonly "CLI 도구 살펴보기": string;
+      readonly "I18nProvider 자세히 알아보기": string;
+      readonly "Lazy loading은 createI18n 옵션이 아니라 I18nProvider props로 설정합니다.": string;
+      readonly "Next.js App Router를 사용하는 경우, -p 플래그를 사용하여 올바른 디렉토리를 지정하세요": string;
+      readonly "Next.js App Router의 경우": string;
+      readonly "React 컴포넌트와 CLI 도구를 모두 설치합니다": string;
+      readonly "Root Layout": string;
+      readonly "i18n 설정": string;
+      readonly "i18n-wrapper 실행 후 일부 파일에서 에러가 발생할 수 있습니다:": string;
+      readonly 'import { headers } from "next/headers";\nimport { getServerLanguage, \n  createServerTranslation } from "i18nexus/server";\n\nexport default async function Page() {\n  const lang = getServerLanguage(await headers());\n  const t = createServerTranslation(lang, translations);\n  return <div>{t("안녕하세요")}</div>;\n}': string;
+      readonly "lib/i18n.ts 생성": string;
+      readonly "locales/en.json 파일을 열고 영어 번역을 추가하세요": string;
+      readonly "locales/index.ts 파일 생성": string;
+      readonly "root layout.tsx에 추가하세요": string;
+      readonly '{\n  "안녕하세요": "Hello",\n  "환영합니다": "Welcome"\n}': string;
+      readonly '{\n  "안녕하세요": "안녕하세요",\n  "환영합니다": "환영합니다"\n}': string;
+      readonly "결과 파일": string;
+      readonly "다음을 생성합니다": string;
+      readonly "모든 한국어 텍스트를 자동으로 t()로 감쌉니다": string;
+      readonly "번역 다운로드": string;
+      readonly "번역 업로드": string;
+      readonly "번역 키 추출": string;
+      readonly "번역 파일": string;
+      readonly "번역 파일 디렉토리 (ko.json, en.json)": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트의 경우": string;
+      readonly "선택사항: Google Sheets 연동": string;
+      readonly 설치: string;
+      readonly "수동으로 수정": string;
+      readonly 시작하기: string;
+      readonly "앱이 완전히 국제화되었으며 배포할 준비가 되었습니다": string;
+      readonly "영어 번역 (수동 번역 필요)": string;
+      readonly "영어 번역 추가": string;
+      readonly "완료!": string;
+      readonly "을 사용하고, 서버 컴포넌트는": string;
+      readonly "을 사용합니다.": string;
+      readonly "이전 (자동 생성)": string;
+      readonly "이후 (번역됨)": string;
+      readonly "중요: 서버 컴포넌트 확인": string;
+      readonly "코드를 스캔하여 번역 파일을 생성/업데이트합니다": string;
+      readonly "클라이언트 컴포넌트는": string;
+      readonly "클라이언트 컴포넌트의 경우": string;
+      readonly "팀 협업을 위해 Google Sheets와 동기화할 수 있습니다": string;
+      readonly "파일이 서버 컴포넌트인 경우 (use client가 없는 경우), 훅 대신 서버 유틸리티를 사용해야 합니다": string;
+      readonly "프로젝트 설정 파일": string;
+      readonly "프로젝트 초기화": string;
+      readonly "프로젝트에 i18nexus를 설정하는 완벽한 단계별 가이드": string;
+      readonly "한국어 번역 (자동 채워짐)": string;
+      readonly "한국어 텍스트 감싸기": string;
+      readonly "홈으로 돌아가기": string;
+    };
+  };
+  readonly home: {
+    readonly en: {
+      readonly '// app/page.tsx\n"use client";\nimport { useTranslation } from \'i18nexus\';\n\nexport default function Home() {\n  const { t } = useTranslation();\n\n  return (\n    <div>\n      <h1>{t("안녕하세요!")}</h1>\n      <p>{t("다국어 지원이 활성화되었습니다")}</p>\n    </div>\n  );\n}': string;
+      readonly "10초": string;
+      readonly "20초": string;
+      readonly "30초": string;
+      readonly "3줄의 코드만으로 즉시 시작. 복잡한 설정은 필요 없습니다.": string;
+      readonly "5분 설치": string;
+      readonly "CLI가 자동으로 텍스트를 감지하고 번역 함수를 적용합니다": string;
+      readonly "CLI로 자동 텍스트 래핑": string;
+      readonly "Google Sheets 연동": string;
+      readonly "Google Sheets와 양방향 자동 동기화": string;
+      readonly "Next.js App Router와 완벽 호환, 하이드레이션 안정성": string;
+      readonly "Provider 설정": string;
+      readonly "SSR 최적화": string;
+      readonly "SSR 환경에서 서버와 클라이언트 언어가 달라 발생하는 hydration mismatch 에러.": string;
+      readonly "TypeScript 완벽 지원으로 컴파일 타임 오류 방지": string;
+      readonly "TypeScript 지원": string;
+      readonly "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다.": string;
+      readonly "i18next 설정, 라우팅, 미들웨어 등 초기 셋업이 복잡하고 시간이 오래 걸립니다.": string;
+      readonly "i18nexus 라이브러리": string;
+      readonly "i18nexus 솔루션": string;
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus는 자동화와 최적화로 번역 관리의 모든 고민을 끝냅니다": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "layout.tsx에 I18nProvider를 추가합니다": string;
+      readonly "npm으로 i18nexus를 설치합니다": string;
+      readonly "개발자를 위해 설계된 완전한 i18n 도구 모음": string;
+      readonly "글로벌 앱을 위한": string;
+      readonly "글로벌 앱을 위한 다국어 타입안전 라이브러리": string;
+      readonly "기본값으로 간단한 설정": string;
+      readonly "기존 방식의 문제": string;
+      readonly "다국어 타입안전 라이브러리": string;
+      readonly "더 알아보기": string;
+      readonly "더 이상 수동 번역 관리에 시간을 낭비하지 마세요": string;
+      readonly "모든 문제를 한 번에 해결합니다": string;
+      readonly "모든 텍스트를 일일이 t() 함수로 감싸는 반복 작업. 실수하면 번역이 누락됩니다.": string;
+      readonly "무료 오픈소스": string;
+      readonly "무료로 시작하기": string;
+      readonly "문서 둘러보기": string;
+      readonly "문서 보기": string;
+      readonly 바로가기: string;
+      readonly "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다.": string;
+      readonly "복잡한 설정": string;
+      readonly "복잡한 설정 없이 3단계로 즉시 시작하세요": string;
+      readonly "복잡한 파일 관리": string;
+      readonly 사용하기: string;
+      readonly "상세 가이드 보기": string;
+      readonly "상세한 사용법과 API 레퍼런스를 확인하세요": string;
+      readonly "서버 컴포넌트": string;
+      readonly 설치: string;
+      readonly "수동 텍스트 래핑": string;
+      readonly "수천 명의 개발자가 i18nexus로 번역 관리를 자동화하고 있습니다": string;
+      readonly 시작하기: string;
+      readonly "신뢰받는 i18n 솔루션": string;
+      readonly "신용카드 불필요": string;
+      readonly "실시간 동기화": string;
+      readonly "여러 JSON 파일을 수동으로 관리하고 동기화해야 하는 번거로움.": string;
+      readonly 오픈소스: string;
+      readonly "완료!": string;
+      readonly "이런 고민, 하고 계신가요?": string;
+      readonly "이제 다국어 지원이 활성화되었습니다": string;
+      readonly "자동 번역 래핑": string;
+      readonly "자동화된 워크플로우로 다국어 지원을 1분 안에 설정하세요": string;
+      readonly "전 세계 개발자들이 선택한 번역 관리 도구": string;
+      readonly "전통적인 i18n 방식은 개발 속도를 늦추고 유지보수를 어렵게 만듭니다": string;
+      readonly "정말 1분이면 됩니다": string;
+      readonly "지금 바로 시작하세요": string;
+      readonly "컴포넌트에서 useTranslation() 훅을 사용합니다": string;
+      readonly "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": string;
+      readonly "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷": string;
+      readonly "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다.": string;
+      readonly "타입 안전성": string;
+      readonly "하이드레이션 문제 제로": string;
+      readonly "하이드레이션 오류": string;
+      readonly "핵심 기능": string;
+      readonly "활발한 커뮤니티": string;
+    };
+    readonly ko: {
+      readonly '// app/page.tsx\n"use client";\nimport { useTranslation } from \'i18nexus\';\n\nexport default function Home() {\n  const { t } = useTranslation();\n\n  return (\n    <div>\n      <h1>{t("안녕하세요!")}</h1>\n      <p>{t("다국어 지원이 활성화되었습니다")}</p>\n    </div>\n  );\n}': string;
+      readonly "10초": string;
+      readonly "20초": string;
+      readonly "30초": string;
+      readonly "3줄의 코드만으로 즉시 시작. 복잡한 설정은 필요 없습니다.": string;
+      readonly "5분 설치": string;
+      readonly "CLI가 자동으로 텍스트를 감지하고 번역 함수를 적용합니다": string;
+      readonly "CLI로 자동 텍스트 래핑": string;
+      readonly "Google Sheets 연동": string;
+      readonly "Google Sheets와 양방향 자동 동기화": string;
+      readonly "Next.js App Router와 완벽 호환, 하이드레이션 안정성": string;
+      readonly "Provider 설정": string;
+      readonly "SSR 최적화": string;
+      readonly "SSR 환경에서 서버와 클라이언트 언어가 달라 발생하는 hydration mismatch 에러.": string;
+      readonly "TypeScript 완벽 지원으로 컴파일 타임 오류 방지": string;
+      readonly "TypeScript 지원": string;
+      readonly "i18n-wrapper CLI가 코드를 분석해 자동으로 번역 함수를 적용합니다.": string;
+      readonly "i18next 설정, 라우팅, 미들웨어 등 초기 셋업이 복잡하고 시간이 오래 걸립니다.": string;
+      readonly "i18nexus 라이브러리": string;
+      readonly "i18nexus 솔루션": string;
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus는 자동화와 최적화로 번역 관리의 모든 고민을 끝냅니다": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "layout.tsx에 I18nProvider를 추가합니다": string;
+      readonly "npm으로 i18nexus를 설치합니다": string;
+      readonly "개발자를 위해 설계된 완전한 i18n 도구 모음": string;
+      readonly "글로벌 앱을 위한": string;
+      readonly "글로벌 앱을 위한 다국어 타입안전 라이브러리": string;
+      readonly "기본값으로 간단한 설정": string;
+      readonly "기존 방식의 문제": string;
+      readonly "다국어 타입안전 라이브러리": string;
+      readonly "더 알아보기": string;
+      readonly "더 이상 수동 번역 관리에 시간을 낭비하지 마세요": string;
+      readonly "모든 문제를 한 번에 해결합니다": string;
+      readonly "모든 텍스트를 일일이 t() 함수로 감싸는 반복 작업. 실수하면 번역이 누락됩니다.": string;
+      readonly "무료 오픈소스": string;
+      readonly "무료로 시작하기": string;
+      readonly "문서 둘러보기": string;
+      readonly "문서 보기": string;
+      readonly 바로가기: string;
+      readonly "번역 파일을 Google Sheets로 관리하고 자동 동기화할 수 있습니다.": string;
+      readonly "복잡한 설정": string;
+      readonly "복잡한 설정 없이 3단계로 즉시 시작하세요": string;
+      readonly "복잡한 파일 관리": string;
+      readonly 사용하기: string;
+      readonly "상세 가이드 보기": string;
+      readonly "상세한 사용법과 API 레퍼런스를 확인하세요": string;
+      readonly "서버 컴포넌트": string;
+      readonly 설치: string;
+      readonly "수동 텍스트 래핑": string;
+      readonly "수천 명의 개발자가 i18nexus로 번역 관리를 자동화하고 있습니다": string;
+      readonly 시작하기: string;
+      readonly "신뢰받는 i18n 솔루션": string;
+      readonly "신용카드 불필요": string;
+      readonly "실시간 동기화": string;
+      readonly "여러 JSON 파일을 수동으로 관리하고 동기화해야 하는 번거로움.": string;
+      readonly 오픈소스: string;
+      readonly "완료!": string;
+      readonly "이런 고민, 하고 계신가요?": string;
+      readonly "이제 다국어 지원이 활성화되었습니다": string;
+      readonly "자동 번역 래핑": string;
+      readonly "자동화된 워크플로우로 다국어 지원을 1분 안에 설정하세요": string;
+      readonly "전 세계 개발자들이 선택한 번역 관리 도구": string;
+      readonly "전통적인 i18n 방식은 개발 속도를 늦추고 유지보수를 어렵게 만듭니다": string;
+      readonly "정말 1분이면 됩니다": string;
+      readonly "지금 바로 시작하세요": string;
+      readonly "컴포넌트에서 useTranslation() 훅을 사용합니다": string;
+      readonly "코드 변환부터 Google Sheets 통합까지 i18n 워크플로우를 자동화하는 강력한 CLI 도구": string;
+      readonly "쿠키 기반 언어 관리 및 SSR 지원을 갖춘 완전한 React i18n 툴킷": string;
+      readonly "쿠키 기반 언어 관리로 서버와 클라이언트가 항상 동일한 언어를 사용합니다.": string;
+      readonly "타입 안전성": string;
+      readonly "하이드레이션 문제 제로": string;
+      readonly "하이드레이션 오류": string;
+      readonly "핵심 기능": string;
+      readonly "활발한 커뮤니티": string;
+    };
+  };
+  readonly provider: {
+    readonly en: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function HomePage() {\n  const { t } = i18n.useTranslation();\n  const { currentLanguage, changeLanguage } = useLanguageSwitcher();\n\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <button onClick={() => changeLanguage("en")}>\n        English\n      </button>\n    </div>\n  );\n}': string;
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function HomePage() {\n  const { t } = useTranslation("provider");\n\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <button onClick={() => changeLanguage("en")}>\n        English\n      </button>\n    </div>\n  );\n}': string;
+      readonly '// ❌ 옛날 방식 (Provider 필요)\nimport { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "한국어", flag: "🇰🇷" },\n              { code: "en", name: "English", flag: "🇺🇸" },\n            ],\n          }}\n          translations={{\n            ko: { "환영합니다": "환영합니다" },\n            en: { "환영합니다": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}\n\n// ✅ 새로운 방식 (Provider 불필요)\n// locales/index.ts에서 createI18n으로 설정\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="ko">\n      <body>{children}</body>\n    </html>\n  );\n}': string;
+      readonly '// 어디서나 직접 호출 가능\nchangeLanguage("en");\n\n// 가능한 언어 목록\nconst languages = getAvailableLanguages();\n\n// 현재 언어\nconst current = getCurrentLanguage();': string;
+      readonly "API 레퍼런스": string;
+      readonly "Provider를 대체하는 API가 아니라, 타입 추론을 강화하는 선택지입니다.": string;
+      readonly "SSR 준비 완료": string;
+      readonly TypeScript: string;
+      readonly 'const { t } = i18n.useTranslation();\n\n// Simple usage\nt("key")\nt("한국어 텍스트")': string;
+      readonly 'const { t } = useTranslation("provider");\n\n// Simple usage\nt("key")\nt("한국어 텍스트")': string;
+      readonly 'import { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "한국어", flag: "🇰🇷" },\n              { code: "en", name: "English", flag: "🇺🇸" },\n            ],\n          }}\n          translations={{\n            ko: { "환영합니다": "환영합니다" },\n            en: { "환영합니다": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}': string;
+      readonly "기본 설정": string;
+      readonly "라이브 데모": string;
+      readonly "로드 시 레이아웃 이동 없음": string;
+      readonly "번역 예제": string;
+      readonly "빠른 시작": string;
+      readonly "서버 레이아웃 (app/layout.tsx)": string;
+      readonly "언어 선택을 자동으로 저장": string;
+      readonly "언어 전환": string;
+      readonly "언어 전환 및 상태 관리를 위한 메서드": string;
+      readonly "언어 전환 및 상태 관리를 위한 훅": string;
+      readonly "완벽한 Next.js 호환성": string;
+      readonly "완전한 타입 안정성 포함": string;
+      readonly "왜 i18nexus인가?": string;
+      readonly "전환해보세요 - 쿠키에 저장됩니다!": string;
+      readonly "제로 하이드레이션": string;
+      readonly "주요 기능": string;
+      readonly "초급 사용자는 I18nProvider와 root useTranslation을 사용합니다. createI18n은 번역 객체에서 namespace/key 타입 추론이 필요할 때 쓰는 고급 typed API입니다.": string;
+      readonly "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider": string;
+      readonly "쿠키 영속성": string;
+      readonly "클라이언트 컴포넌트 (app/page.tsx)": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 훅": string;
+      readonly "현재 권장 경로": string;
+      readonly "현재 언어": string;
+      readonly 환영합니다: string;
+    };
+    readonly ko: {
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function HomePage() {\n  const { t } = i18n.useTranslation();\n  const { currentLanguage, changeLanguage } = useLanguageSwitcher();\n\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <button onClick={() => changeLanguage("en")}>\n        English\n      </button>\n    </div>\n  );\n}': string;
+      readonly '"use client";\n\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function HomePage() {\n  const { t } = useTranslation("provider");\n\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <button onClick={() => changeLanguage("en")}>\n        English\n      </button>\n    </div>\n  );\n}': string;
+      readonly '// ❌ 옛날 방식 (Provider 필요)\nimport { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "한국어", flag: "🇰🇷" },\n              { code: "en", name: "English", flag: "🇺🇸" },\n            ],\n          }}\n          translations={{\n            ko: { "환영합니다": "환영합니다" },\n            en: { "환영합니다": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}\n\n// ✅ 새로운 방식 (Provider 불필요)\n// locales/index.ts에서 createI18n으로 설정\nimport { useTranslation, useLanguageSwitcher } from "i18nexus";\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="ko">\n      <body>{children}</body>\n    </html>\n  );\n}': string;
+      readonly '// 어디서나 직접 호출 가능\nchangeLanguage("en");\n\n// 가능한 언어 목록\nconst languages = getAvailableLanguages();\n\n// 현재 언어\nconst current = getCurrentLanguage();': string;
+      readonly "API 레퍼런스": string;
+      readonly "Provider를 대체하는 API가 아니라, 타입 추론을 강화하는 선택지입니다.": string;
+      readonly "SSR 준비 완료": string;
+      readonly TypeScript: string;
+      readonly 'const { t } = i18n.useTranslation();\n\n// Simple usage\nt("key")\nt("한국어 텍스트")': string;
+      readonly 'const { t } = useTranslation("provider");\n\n// Simple usage\nt("key")\nt("한국어 텍스트")': string;
+      readonly 'import { I18nProvider } from "i18nexus";\nimport { cookies } from "next/headers";\n\nexport default function RootLayout({ children }) {\n  const language = cookies().get("i18n-language")?.value || "ko";\n\n  return (\n    <html lang={language}>\n      <body>\n        <I18nProvider\n          initialLanguage={language}\n          languageManagerOptions={{\n            defaultLanguage: "ko",\n            availableLanguages: [\n              { code: "ko", name: "한국어", flag: "🇰🇷" },\n              { code: "en", name: "English", flag: "🇺🇸" },\n            ],\n          }}\n          translations={{\n            ko: { "환영합니다": "환영합니다" },\n            en: { "환영합니다": "Welcome" },\n          }}\n        >\n          {children}\n        </I18nProvider>\n      </body>\n    </html>\n  );\n}': string;
+      readonly "기본 설정": string;
+      readonly "라이브 데모": string;
+      readonly "로드 시 레이아웃 이동 없음": string;
+      readonly "번역 예제": string;
+      readonly "빠른 시작": string;
+      readonly "서버 레이아웃 (app/layout.tsx)": string;
+      readonly "언어 선택을 자동으로 저장": string;
+      readonly "언어 전환": string;
+      readonly "언어 전환 및 상태 관리를 위한 메서드": string;
+      readonly "언어 전환 및 상태 관리를 위한 훅": string;
+      readonly "완벽한 Next.js 호환성": string;
+      readonly "완전한 타입 안정성 포함": string;
+      readonly "왜 i18nexus인가?": string;
+      readonly "전환해보세요 - 쿠키에 저장됩니다!": string;
+      readonly "제로 하이드레이션": string;
+      readonly "주요 기능": string;
+      readonly "초급 사용자는 I18nProvider와 root useTranslation을 사용합니다. createI18n은 번역 객체에서 namespace/key 타입 추론이 필요할 때 쓰는 고급 typed API입니다.": string;
+      readonly "쿠키 기반 언어 영속성 및 SSR 지원을 갖춘 React Context Provider": string;
+      readonly "쿠키 영속성": string;
+      readonly "클라이언트 컴포넌트 (app/page.tsx)": string;
+      readonly "클라이언트 컴포넌트에서 번역 함수에 접근하기 위한 훅": string;
+      readonly "현재 권장 경로": string;
+      readonly "현재 언어": string;
+      readonly 환영합니다: string;
+    };
+  };
+  readonly "server-example": {
+    readonly en: {
+      readonly "'use client' 필요": string;
+      readonly "useTranslation() 훅 사용": string;
+      readonly "더 나은 SEO": string;
+      readonly "더 나은 성능": string;
+      readonly "더 빠른 초기 로딩": string;
+      readonly "더 작은 JavaScript 번들": string;
+      readonly "더 작은 번들 크기": string;
+      readonly "더 큰 번들 크기": string;
+      readonly "동적 언어 전환": string;
+      readonly "번역 방법": string;
+      readonly "사용 방법": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 예제": string;
+      readonly "서버 컴포넌트의 이점": string;
+      readonly "서버에서 렌더링된 번역": string;
+      readonly "서버와 클라이언트가 항상 동기화됨": string;
+      readonly "언어 전환 불가": string;
+      readonly "올바른 언어로 완전히 렌더링된 HTML": string;
+      readonly "완전한 상호작용": string;
+      readonly "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!": string;
+      readonly "이 페이지에서 언어를 변경하려면 헤더의 언어 전환기(클라이언트 컴포넌트)를 사용하세요. 쿠키에서 새 언어로 페이지가 다시 로드됩니다.": string;
+      readonly 참고: string;
+      readonly "컴포넌트 타입": string;
+      readonly "클라이언트 상호작용 불가": string;
+      readonly "클라이언트 컴포넌트": string;
+      readonly "클라이언트로 전송되는 React Context나 훅 없음": string;
+      readonly "하이드레이션 불일치 없음": string;
+      readonly "현재 상태": string;
+      readonly "현재 언어": string;
+      readonly "홈으로 돌아가기": string;
+    };
+    readonly ko: {
+      readonly "'use client' 필요": string;
+      readonly "useTranslation() 훅 사용": string;
+      readonly "더 나은 SEO": string;
+      readonly "더 나은 성능": string;
+      readonly "더 빠른 초기 로딩": string;
+      readonly "더 작은 JavaScript 번들": string;
+      readonly "더 작은 번들 크기": string;
+      readonly "더 큰 번들 크기": string;
+      readonly "동적 언어 전환": string;
+      readonly "번역 방법": string;
+      readonly "사용 방법": string;
+      readonly "서버 컴포넌트": string;
+      readonly "서버 컴포넌트 예제": string;
+      readonly "서버 컴포넌트의 이점": string;
+      readonly "서버에서 렌더링된 번역": string;
+      readonly "서버와 클라이언트가 항상 동기화됨": string;
+      readonly "언어 전환 불가": string;
+      readonly "올바른 언어로 완전히 렌더링된 HTML": string;
+      readonly "완전한 상호작용": string;
+      readonly "이 페이지는 서버 컴포넌트입니다 - 'use client' 지시문이 필요 없습니다!": string;
+      readonly "이 페이지에서 언어를 변경하려면 헤더의 언어 전환기(클라이언트 컴포넌트)를 사용하세요. 쿠키에서 새 언어로 페이지가 다시 로드됩니다.": string;
+      readonly 참고: string;
+      readonly "컴포넌트 타입": string;
+      readonly "클라이언트 상호작용 불가": string;
+      readonly "클라이언트 컴포넌트": string;
+      readonly "클라이언트로 전송되는 React Context나 훅 없음": string;
+      readonly "하이드레이션 불일치 없음": string;
+      readonly "현재 상태": string;
+      readonly "현재 언어": string;
+      readonly "홈으로 돌아가기": string;
+    };
+  };
+  readonly showcase: {
+    readonly en: {
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "내 프로젝트 등록하기": string;
+      readonly "아직 등록된 프로젝트가 없습니다": string;
+      readonly "첫 번째 프로젝트 등록하기": string;
+      readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
+      readonly "프로젝트 등록": string;
+      readonly "프로젝트 등록하기": string;
+    };
+    readonly ko: {
+      readonly "i18nexus 쇼케이스": string;
+      readonly "i18nexus와 i18nexus-tools를 사용하는 실제 프로젝트들": string;
+      readonly "내 프로젝트 등록하기": string;
+      readonly "아직 등록된 프로젝트가 없습니다": string;
+      readonly "첫 번째 프로젝트 등록하기": string;
+      readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
+      readonly "프로젝트 등록": string;
+      readonly "프로젝트 등록하기": string;
+    };
+  };
+};
+
+export type I18nexusGeneratedNamespace = keyof I18nexusGeneratedTranslations &
+  string;
+
+export type I18nexusGeneratedTranslationKeys<
+  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace,
+> = TranslationKeys[NS] | CommonKeys;
+
+export type I18nexusGeneratedServerTranslationFunction<
+  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace,
+> = (
+  key: I18nexusGeneratedTranslationKeys<NS>,
+  variables?: Record<string, string | number>,
+  fallback?: string
+) => string;
+
+export type I18nexusGeneratedClientTranslationFunction<
+  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace,
+> = (
+  key: I18nexusGeneratedTranslationKeys<NS>,
+  variables?: Record<string, string | number>
+) => string;
+
+export type I18nexusGeneratedTranslationFunction<
+  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace,
+> = I18nexusGeneratedServerTranslationFunction<NS>;
 // ============================================
 // Module Augmentation
 // ============================================
 
-import type {
-  UseTranslationReturn,
-  UseLanguageSwitcherReturn,
-  I18nProviderProps,
-} from "i18nexus";
+import type { UseTranslationReturn } from "i18nexus";
 import type {
   GetTranslationReturn,
   GetTranslationOptions,
@@ -1224,54 +3651,6 @@ declare module "i18nexus" {
   export function useTranslation<
     NS extends TranslationNamespace = TranslationNamespace,
   >(namespace: NS): UseTranslationReturn<TranslationKeys[NS] | CommonKeys>;
-
-  /**
-   * Language switcher hook (Client Component)
-   *
-   * @returns Language switching utilities
-   *
-   * @example
-   * ```tsx
-   * const { changeLanguage, availableLanguages } = useLanguageSwitcher();
-   * changeLanguage("en");  // ✅ Change to English
-   * ```
-   */
-  export function useLanguageSwitcher(): UseLanguageSwitcherReturn;
-
-  /**
-   * I18nProvider component (Client Component)
-   *
-   * Provides i18n context to child components. Supports both eager and lazy loading.
-   *
-   * @template TTranslations - The namespace translations structure
-   * @param props - Props for the I18nProvider
-   * @returns React.ReactElement
-   *
-   * @example
-   * ```tsx
-   * // Lazy loading (recommended)
-   * <I18nProvider
-   *   loadNamespace={async (ns, lang) => {
-   *     const data = await import(\`./locales/\${ns}/\${lang}.json\`);
-   *     return data.default;
-   *   }}
-   *   fallbackNamespace="common"
-   * >
-   *   <App />
-   * </I18nProvider>
-   *
-   * // Eager loading
-   * <I18nProvider translations={translations}>
-   *   <App />
-   * </I18nProvider>
-   * ```
-   */
-  export function I18nProvider<
-    TTranslations extends Record<
-      string,
-      Record<string, Record<string, string>>
-    > = Record<string, Record<string, Record<string, string>>>,
-  >(props: I18nProviderProps<TTranslations>): React.ReactElement;
 
   // Individual namespace key types (for use in constants and type definitions)
   export type AdminDashboardKeys = TranslationKeys["admin-dashboard"];
@@ -1300,6 +3679,7 @@ declare module "i18nexus" {
     TranslationKeys["docs-i18nexus-use-language-switcher"];
   export type DocsI18nexusUseTranslationKeys =
     TranslationKeys["docs-i18nexus-use-translation"];
+  export type DocsLazyLoadingKeys = TranslationKeys["docs-lazy-loading"];
   export type DxLabKeys = TranslationKeys["dx-lab"];
   export type GettingStartedKeys = TranslationKeys["getting-started"];
   export type HomeKeys = TranslationKeys["home"];
@@ -1328,6 +3708,6 @@ declare module "i18nexus/server" {
     NS extends TranslationNamespace = TranslationNamespace,
   >(
     namespace?: NS,
-    options?: GetTranslationOptions,
+    options?: GetTranslationOptions
   ): Promise<GetTranslationReturn<NS, TranslationKeys[NS] | CommonKeys>>;
 }
