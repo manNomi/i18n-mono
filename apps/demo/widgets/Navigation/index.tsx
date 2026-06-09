@@ -160,15 +160,12 @@ export default function Navigation() {
               onClick={closeSidebar}
             >
               <Image
-                src="/i18n-icon-no-bg.png"
+                src="/i18nexus-logo.png"
                 alt="i18nexus"
-                width={36}
-                height={28}
-                className="object-contain"
+                width={136}
+                height={38}
+                className="h-8 w-auto object-contain"
               />
-              <span className="text-base font-semibold text-slate-950">
-                i18nexus
-              </span>
             </Link>
             <button
               aria-label={String(t("닫기"))}
@@ -228,16 +225,13 @@ export default function Navigation() {
 
             <Link href="/" className="flex min-w-0 items-center gap-2">
               <Image
-                src="/i18n-icon-no-bg.png"
+                src="/i18nexus-logo.png"
                 alt="i18nexus"
-                width={40}
-                height={30}
-                className="shrink-0 object-contain"
+                width={148}
+                height={41}
+                className="h-8 w-auto shrink-0 object-contain sm:h-9"
                 priority
               />
-              <span className="truncate text-base font-semibold text-slate-950 sm:text-lg">
-                i18nexus
-              </span>
             </Link>
           </div>
 
