@@ -50,11 +50,7 @@ function NavLink({
     <Link
       href={item.href}
       onClick={onClick}
-      className={`block rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-        active
-          ? "bg-blue-50 text-blue-700"
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-      }`}
+      className={`demo-nav-link ${active ? "demo-nav-link-active" : ""}`}
     >
       {item.label}
     </Link>
@@ -91,6 +87,7 @@ export default function Navigation() {
     { href: "/getting-started", label: t("시작하기") },
     { href: "/server-example", label: t("서버 예제") },
     { href: "/dx-lab", label: t("DX Lab") },
+    { href: "/tags", label: t("태그") },
     { href: "/showcase", label: t("쇼케이스") },
     { href: "/showcase/submit", label: t("프로젝트 등록") },
   ];
@@ -142,44 +139,41 @@ export default function Navigation() {
       {sidebarOpen ? (
         <button
           aria-label={String(t("닫기"))}
-          className="fixed inset-0 z-40 cursor-default bg-slate-950/20"
+          className="fixed inset-0 z-40 cursor-default bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={closeSidebar}
         />
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-slate-200 bg-white shadow-[8px_0_24px_rgba(0,12,30,0.06)] transition-transform duration-200 ${
+        className={`demo-sidebar fixed inset-y-0 left-0 z-50 transition-transform duration-200 lg:top-[var(--nav-h)] lg:z-20 lg:translate-x-0 lg:shadow-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div className="flex h-[var(--nav-h)] items-center justify-between border-b border-[color:var(--border-soft)] px-4 lg:hidden">
             <Link
               href="/"
               className="flex items-center gap-2"
               onClick={closeSidebar}
             >
               <Image
-                src="/i18n-icon-no-bg.png"
+                src="/i18nexus-logo.png"
                 alt="i18nexus"
-                width={36}
-                height={28}
-                className="object-contain"
+                width={136}
+                height={38}
+                className="h-8 w-auto object-contain"
               />
-              <span className="text-base font-semibold text-slate-950">
-                i18nexus
-              </span>
             </Link>
             <button
               aria-label={String(t("닫기"))}
-              className="rounded-md border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-[color:var(--border-soft)] bg-[color:var(--bg-1)] p-2 text-[color:var(--text-dim)] hover:bg-[color:var(--bg-2)] hover:text-[color:var(--text)]"
               onClick={closeSidebar}
             >
               <MenuIcon open />
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <nav className="flex-1 overflow-y-auto px-3 py-6">
             <div className="space-y-1">
               {primaryItems.map((item) => (
                 <NavLink
@@ -194,11 +188,9 @@ export default function Navigation() {
             {navGroups.map((group) => (
               <div
                 key={group.label}
-                className="mt-6 border-t border-slate-200 pt-4"
+                className="mt-6 border-t border-[color:var(--border-soft)] pt-4"
               >
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {group.label}
-                </p>
+                <p className="demo-sidebar-heading">{group.label}</p>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <NavLink
@@ -215,12 +207,12 @@ export default function Navigation() {
         </div>
       </aside>
 
-      <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <nav className="demo-top-nav">
+        <div className="flex h-full items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <button
               aria-label={String(sidebarOpen ? t("닫기") : t("메뉴 열기"))}
-              className="shrink-0 rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-[0_1px_2px_rgba(0,12,30,0.04)] transition-colors hover:bg-slate-50"
+              className="shrink-0 rounded-lg border border-[color:var(--border-soft)] bg-[color:var(--bg-1)] p-2 text-[color:var(--text-dim)] transition-colors hover:bg-[color:var(--bg-2)] hover:text-[color:var(--text)] lg:hidden"
               onClick={() => setSidebarOpen((open) => !open)}
             >
               <MenuIcon open={sidebarOpen} />
@@ -228,17 +220,26 @@ export default function Navigation() {
 
             <Link href="/" className="flex min-w-0 items-center gap-2">
               <Image
-                src="/i18n-icon-no-bg.png"
+                src="/i18nexus-logo.png"
                 alt="i18nexus"
-                width={40}
-                height={30}
-                className="shrink-0 object-contain"
+                width={148}
+                height={41}
+                className="h-8 w-auto shrink-0 object-contain sm:h-9"
                 priority
               />
-              <span className="truncate text-base font-semibold text-slate-950 sm:text-lg">
-                i18nexus
-              </span>
             </Link>
+
+            <div className="ml-5 hidden items-center gap-1 md:flex">
+              <Link href="/docs/i18nexus" className="demo-top-link">
+                {t("문서")}
+              </Link>
+              <Link href="/docs/i18nexus-tools" className="demo-top-link">
+                API
+              </Link>
+              <Link href="/cli" className="demo-top-link">
+                CLI
+              </Link>
+            </div>
           </div>
 
           <LanguageSwitcher />

@@ -40,7 +40,8 @@ declare type TranslationNamespace =
   | "home"
   | "provider"
   | "server-example"
-  | "showcase";
+  | "showcase"
+  | "tags";
 
 declare type AdminDashboardKeys =
   | "Firestore Database가 설정되지 않았습니다. FIREBASE_QUICK_SETUP.md를 참고하세요."
@@ -254,6 +255,7 @@ declare type CommonKeys =
   | "첫 번째 프로젝트 등록하기"
   | "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!"
   | "클라이언트 컴포넌트 제목"
+  | "태그"
   | "프로젝트 URL (필수)"
   | "프로젝트 등록"
   | "프로젝트 등록하기"
@@ -1205,6 +1207,74 @@ declare type ShowcaseKeys =
   | "프로젝트 등록"
   | "프로젝트 등록하기";
 
+declare type TagsKeys =
+  | "3 min read"
+  | "4 min read"
+  | "5 min read"
+  | "6 min read"
+  | "7 min read"
+  | "8 min read"
+  | "A hands-on page for checking lazy loading, fallback behavior, and devtools together."
+  | "All tagged posts"
+  | "App Router, Server Components, SSR, and hydration-safe usage."
+  | "Automatically wrap source text with translation calls before extraction."
+  | "Automation"
+  | "Browse docs by tag"
+  | "CLI"
+  | "CLI flows for wrapping, extracting, and syncing translation resources."
+  | "Clear filter"
+  | "Core API"
+  | "Core runtime"
+  | "DX Lab"
+  | "Each card groups pages around one product concern so the docs feel closer to a reading path."
+  | "Extract keys, generate namespace files, and keep translation resources organized."
+  | "Getting Started"
+  | "Google Sheets"
+  | "Google Sheets and review-friendly translation operations for teams."
+  | "Guide"
+  | "Home"
+  | "I18nProvider"
+  | "Install i18nexus and wire the provider in a small, production-shaped setup."
+  | "Lab"
+  | "Lazy Loading"
+  | "Lazy loading"
+  | "Learn how t() resolves keys, readiness, interpolation, and lazy namespaces."
+  | "Load namespace JSON only when a page or component actually needs it."
+  | "Load requested namespaces on demand and keep initial bundles small."
+  | "Loading..."
+  | "Next.js"
+  | "Performance"
+  | "Pick a topic card to see only the guides and reference pages that share the same tag."
+  | "Posts tagged {{tag}}"
+  | "Provider, hooks, language switching, and server translation behavior."
+  | "Pull translations back from Sheets while preserving local namespace structure."
+  | "Push local namespace files to Google Sheets for collaborative translation work."
+  | "SSR"
+  | "Selected"
+  | "Server Components"
+  | "Tags"
+  | "Team workflow"
+  | "Topic cards"
+  | "TypeScript"
+  | "Typed namespaces, generated declarations, and safer translation keys."
+  | "Understand the provider contract, fallback namespace, and language persistence."
+  | "Use server translations in Next.js without hydration mismatches."
+  | "View tagged posts"
+  | "i18n-download"
+  | "i18n-extractor"
+  | "i18n-upload"
+  | "i18n-wrapper"
+  | "useTranslation"
+  | "{{count}} posts"
+  | "{{count}} posts found";
+
+/** Interpolation variables for "tags" namespace keys */
+declare type TagsKeyVariables = {
+  "Posts tagged {{tag}}": "tag";
+  "{{count}} posts found": "count";
+  "{{count}} posts": "count";
+};
+
 /**
  * Maps namespace names to their translation keys
  */
@@ -1232,6 +1302,7 @@ declare type TranslationKeys = {
   provider: ProviderKeys;
   "server-example": ServerExampleKeys;
   showcase: ShowcaseKeys;
+  tags: TagsKeys;
 };
 
 /**
@@ -1531,6 +1602,7 @@ export type I18nexusGeneratedTranslations = {
       readonly "첫 번째 프로젝트 등록하기": string;
       readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
       readonly "클라이언트 컴포넌트 제목": string;
+      readonly 태그: string;
       readonly "프로젝트 URL (필수)": string;
       readonly "프로젝트 등록": string;
       readonly "프로젝트 등록하기": string;
@@ -1680,6 +1752,7 @@ export type I18nexusGeneratedTranslations = {
       readonly "첫 번째 프로젝트 등록하기": string;
       readonly "첫 번째 프로젝트를 등록하고 커뮤니티에 공유해보세요!": string;
       readonly "클라이언트 컴포넌트 제목": string;
+      readonly 태그: string;
       readonly "프로젝트 URL (필수)": string;
       readonly "프로젝트 등록": string;
       readonly "프로젝트 등록하기": string;
@@ -3593,6 +3666,130 @@ export type I18nexusGeneratedTranslations = {
       readonly "프로젝트 등록하기": string;
     };
   };
+  readonly tags: {
+    readonly en: {
+      readonly "3 min read": string;
+      readonly "4 min read": string;
+      readonly "5 min read": string;
+      readonly "6 min read": string;
+      readonly "7 min read": string;
+      readonly "8 min read": string;
+      readonly "A hands-on page for checking lazy loading, fallback behavior, and devtools together.": string;
+      readonly "All tagged posts": string;
+      readonly "App Router, Server Components, SSR, and hydration-safe usage.": string;
+      readonly "Automatically wrap source text with translation calls before extraction.": string;
+      readonly Automation: string;
+      readonly "Browse docs by tag": string;
+      readonly CLI: string;
+      readonly "CLI flows for wrapping, extracting, and syncing translation resources.": string;
+      readonly "Clear filter": string;
+      readonly "Core API": string;
+      readonly "Core runtime": string;
+      readonly "DX Lab": string;
+      readonly "Each card groups pages around one product concern so the docs feel closer to a reading path.": string;
+      readonly "Extract keys, generate namespace files, and keep translation resources organized.": string;
+      readonly "Getting Started": string;
+      readonly "Google Sheets": string;
+      readonly "Google Sheets and review-friendly translation operations for teams.": string;
+      readonly Guide: string;
+      readonly Home: string;
+      readonly I18nProvider: string;
+      readonly "Install i18nexus and wire the provider in a small, production-shaped setup.": string;
+      readonly Lab: string;
+      readonly "Lazy Loading": string;
+      readonly "Lazy loading": string;
+      readonly "Learn how t() resolves keys, readiness, interpolation, and lazy namespaces.": string;
+      readonly "Load namespace JSON only when a page or component actually needs it.": string;
+      readonly "Load requested namespaces on demand and keep initial bundles small.": string;
+      readonly "Loading...": string;
+      readonly "Next.js": string;
+      readonly Performance: string;
+      readonly "Pick a topic card to see only the guides and reference pages that share the same tag.": string;
+      readonly "Posts tagged {{tag}}": string;
+      readonly "Provider, hooks, language switching, and server translation behavior.": string;
+      readonly "Pull translations back from Sheets while preserving local namespace structure.": string;
+      readonly "Push local namespace files to Google Sheets for collaborative translation work.": string;
+      readonly SSR: string;
+      readonly Selected: string;
+      readonly "Server Components": string;
+      readonly Tags: string;
+      readonly "Team workflow": string;
+      readonly "Topic cards": string;
+      readonly TypeScript: string;
+      readonly "Typed namespaces, generated declarations, and safer translation keys.": string;
+      readonly "Understand the provider contract, fallback namespace, and language persistence.": string;
+      readonly "Use server translations in Next.js without hydration mismatches.": string;
+      readonly "View tagged posts": string;
+      readonly "i18n-download": string;
+      readonly "i18n-extractor": string;
+      readonly "i18n-upload": string;
+      readonly "i18n-wrapper": string;
+      readonly useTranslation: string;
+      readonly "{{count}} posts": string;
+      readonly "{{count}} posts found": string;
+    };
+    readonly ko: {
+      readonly "3 min read": string;
+      readonly "4 min read": string;
+      readonly "5 min read": string;
+      readonly "6 min read": string;
+      readonly "7 min read": string;
+      readonly "8 min read": string;
+      readonly "A hands-on page for checking lazy loading, fallback behavior, and devtools together.": string;
+      readonly "All tagged posts": string;
+      readonly "App Router, Server Components, SSR, and hydration-safe usage.": string;
+      readonly "Automatically wrap source text with translation calls before extraction.": string;
+      readonly Automation: string;
+      readonly "Browse docs by tag": string;
+      readonly CLI: string;
+      readonly "CLI flows for wrapping, extracting, and syncing translation resources.": string;
+      readonly "Clear filter": string;
+      readonly "Core API": string;
+      readonly "Core runtime": string;
+      readonly "DX Lab": string;
+      readonly "Each card groups pages around one product concern so the docs feel closer to a reading path.": string;
+      readonly "Extract keys, generate namespace files, and keep translation resources organized.": string;
+      readonly "Getting Started": string;
+      readonly "Google Sheets": string;
+      readonly "Google Sheets and review-friendly translation operations for teams.": string;
+      readonly Guide: string;
+      readonly Home: string;
+      readonly I18nProvider: string;
+      readonly "Install i18nexus and wire the provider in a small, production-shaped setup.": string;
+      readonly Lab: string;
+      readonly "Lazy Loading": string;
+      readonly "Lazy loading": string;
+      readonly "Learn how t() resolves keys, readiness, interpolation, and lazy namespaces.": string;
+      readonly "Load namespace JSON only when a page or component actually needs it.": string;
+      readonly "Load requested namespaces on demand and keep initial bundles small.": string;
+      readonly "Loading...": string;
+      readonly "Next.js": string;
+      readonly Performance: string;
+      readonly "Pick a topic card to see only the guides and reference pages that share the same tag.": string;
+      readonly "Posts tagged {{tag}}": string;
+      readonly "Provider, hooks, language switching, and server translation behavior.": string;
+      readonly "Pull translations back from Sheets while preserving local namespace structure.": string;
+      readonly "Push local namespace files to Google Sheets for collaborative translation work.": string;
+      readonly SSR: string;
+      readonly Selected: string;
+      readonly "Server Components": string;
+      readonly Tags: string;
+      readonly "Team workflow": string;
+      readonly "Topic cards": string;
+      readonly TypeScript: string;
+      readonly "Typed namespaces, generated declarations, and safer translation keys.": string;
+      readonly "Understand the provider contract, fallback namespace, and language persistence.": string;
+      readonly "Use server translations in Next.js without hydration mismatches.": string;
+      readonly "View tagged posts": string;
+      readonly "i18n-download": string;
+      readonly "i18n-extractor": string;
+      readonly "i18n-upload": string;
+      readonly "i18n-wrapper": string;
+      readonly useTranslation: string;
+      readonly "{{count}} posts": string;
+      readonly "{{count}} posts found": string;
+    };
+  };
 };
 
 export type I18nexusGeneratedNamespace = keyof I18nexusGeneratedTranslations &
@@ -3686,6 +3883,7 @@ declare module "i18nexus" {
   export type ProviderKeys = TranslationKeys["provider"];
   export type ServerExampleKeys = TranslationKeys["server-example"];
   export type ShowcaseKeys = TranslationKeys["showcase"];
+  export type TagsKeys = TranslationKeys["tags"];
 }
 
 declare module "i18nexus/server" {

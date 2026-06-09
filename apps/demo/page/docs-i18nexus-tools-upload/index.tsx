@@ -26,7 +26,7 @@ export default function I18nUploadPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
           <span className="text-white font-bold text-2xl">📤</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">i18n-upload</h1>
@@ -144,7 +144,7 @@ export default function I18nUploadPage() {
               <span className="text-sm text-slate-500">{t("문자열")}</span>
             </div>
             <p className="text-slate-300 mb-2">
-              {t("업로드할 시트 이름 (기본값: \"Translations\")")}
+              {t('업로드할 시트 이름 (기본값: "Translations")')}
             </p>
             <pre className="bg-slate-950 rounded-lg p-3 text-sm mt-2">
               <code className="text-slate-400">
@@ -159,7 +159,7 @@ export default function I18nUploadPage() {
               <span className="text-sm text-slate-500">{t("문자열")}</span>
             </div>
             <p className="text-slate-300 mb-2">
-              {t("번역 파일 디렉토리 (기본값: \"./locales\")")}
+              {t('번역 파일 디렉토리 (기본값: "./locales")')}
             </p>
             <pre className="bg-slate-950 rounded-lg p-3 text-sm mt-2">
               <code className="text-slate-400">

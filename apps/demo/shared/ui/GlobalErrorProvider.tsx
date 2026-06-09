@@ -19,17 +19,17 @@ export function GlobalErrorProvider({ children }: { children: ReactNode }) {
     <ErrorContext.Provider value={{ error, setError, clearError }}>
       {children}
       {error && (
-        <div className="fixed bottom-4 left-4 right-4 z-50 rounded-lg border border-red-200 bg-white px-5 py-4 text-red-900 md:left-auto md:right-4 md:w-96">
+        <div className="fixed bottom-4 left-4 right-4 z-50 rounded-lg border border-red-400/20 bg-[#171717]/95 px-5 py-4 text-red-100 shadow-[0_18px_60px_rgba(0,0,0,0.32)] backdrop-blur md:left-auto md:right-4 md:w-96">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
               <div>
                 <h3 className="mb-1 font-semibold">Error</h3>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-red-200">{error}</p>
               </div>
             </div>
             <button
               onClick={clearError}
-              className="ml-4 text-red-700 hover:text-red-950"
+              className="ml-4 text-red-200 hover:text-white"
             >
               <svg
                 className="w-5 h-5"

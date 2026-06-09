@@ -26,7 +26,7 @@ export default function GoogleSheetsPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
           <span className="text-white font-bold text-2xl">📊</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
@@ -81,7 +81,7 @@ export default function GoogleSheetsPage() {
 
         <div className="space-y-6">
           {/* Step 1 */}
-          <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 border border-blue-700/50 rounded-xl p-6">
+          <div className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 1
@@ -109,7 +109,7 @@ export default function GoogleSheetsPage() {
           </div>
 
           {/* Step 2 */}
-          <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-700/50 rounded-xl p-6">
+          <div className="bg-green-950/40 border border-green-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 2
@@ -120,7 +120,7 @@ export default function GoogleSheetsPage() {
                 </h3>
                 <ol className="space-y-2 text-slate-300 text-sm list-decimal list-inside">
                   <li>{t("API 및 서비스 > 라이브러리로 이동")}</li>
-                  <li>{t("\"Google Sheets API\" 검색")}</li>
+                  <li>{t('"Google Sheets API" 검색')}</li>
                   <li>{t("사용 설정 클릭")}</li>
                 </ol>
               </div>
@@ -128,7 +128,7 @@ export default function GoogleSheetsPage() {
           </div>
 
           {/* Step 3 */}
-          <div className="bg-gradient-to-r from-purple-900/30 to-purple-800/30 border border-purple-700/50 rounded-xl p-6">
+          <div className="bg-purple-950/40 border border-purple-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 3
@@ -149,7 +149,7 @@ export default function GoogleSheetsPage() {
           </div>
 
           {/* Step 4 */}
-          <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 border border-orange-700/50 rounded-xl p-6">
+          <div className="bg-orange-950/40 border border-orange-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 4
@@ -182,7 +182,7 @@ export default function GoogleSheetsPage() {
           </div>
 
           {/* Step 5 */}
-          <div className="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-700/50 rounded-xl p-6">
+          <div className="bg-yellow-950/40 border border-yellow-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-yellow-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 5
@@ -217,7 +217,7 @@ export default function GoogleSheetsPage() {
           </div>
 
           {/* Step 6 */}
-          <div className="bg-gradient-to-r from-indigo-900/30 to-indigo-800/30 border border-indigo-700/50 rounded-xl p-6">
+          <div className="bg-indigo-950/40 border border-indigo-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold mr-4 shadow-lg">
                 6
@@ -269,7 +269,7 @@ export default function GoogleSheetsPage() {
           <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 mb-4">
             <code className="text-green-400">
               {
-                "npx i18n-upload --spreadsheet-id \"YOUR_ID\" --credentials \"./credentials.json\""
+                'npx i18n-upload --spreadsheet-id "YOUR_ID" --credentials "./credentials.json"'
               }
             </code>
           </pre>
@@ -293,7 +293,7 @@ export default function GoogleSheetsPage() {
             <div className="border-l-4 border-yellow-500 pl-4">
               <code className="text-yellow-400">--sheet-name</code>
               <p className="text-slate-400 text-sm mt-1">
-                {t("시트 이름 (기본값: \"Translations\")")}
+                {t('시트 이름 (기본값: "Translations")')}
               </p>
             </div>
           </div>
@@ -342,7 +342,7 @@ export default function GoogleSheetsPage() {
           <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 mb-4">
             <code className="text-green-400">
               {
-                "npx i18n-download --spreadsheet-id \"YOUR_ID\" --credentials \"./credentials.json\""
+                'npx i18n-download --spreadsheet-id "YOUR_ID" --credentials "./credentials.json"'
               }
             </code>
           </pre>
@@ -416,7 +416,7 @@ export default function GoogleSheetsPage() {
           <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 mb-4">
             <code className="text-green-400">
               {
-                "npx i18n-download-force --spreadsheet-id \"YOUR_ID\" --credentials \"./credentials.json\""
+                'npx i18n-download-force --spreadsheet-id "YOUR_ID" --credentials "./credentials.json"'
               }
             </code>
           </pre>
@@ -500,42 +500,42 @@ export default function GoogleSheetsPage() {
 
         <div className="space-y-6">
           {/* Initial Setup */}
-          <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-700/50 rounded-xl p-6">
+          <div className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-blue-300 mb-4">
               {t("초기 설정 및 업로드")}
             </h3>
             <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
               <code className="text-slate-300">
                 {t(
-                  "# 1. \uCF54\uB4DC\uC5D0\uC11C \uBC88\uC5ED \uD0A4 \uCD94\uCD9C\nnpx i18n-extractor -p \"app/**/*.tsx\" -d \"./locales\"\n\n# 2. \uB85C\uCEEC \uBC88\uC5ED\uC744 Google Sheets\uB85C \uC5C5\uB85C\uB4DC\nnpx i18n-upload --spreadsheet-id \"YOUR_ID\"\n\n# 3. \uD300\uC6D0\uB4E4\uC774 Google Sheets\uC5D0\uC11C \uBC88\uC5ED \uC791\uC5C5 \uC2DC\uC791"
+                  '# 1. \uCF54\uB4DC\uC5D0\uC11C \uBC88\uC5ED \uD0A4 \uCD94\uCD9C\nnpx i18n-extractor -p "app/**/*.tsx" -d "./locales"\n\n# 2. \uB85C\uCEEC \uBC88\uC5ED\uC744 Google Sheets\uB85C \uC5C5\uB85C\uB4DC\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. \uD300\uC6D0\uB4E4\uC774 Google Sheets\uC5D0\uC11C \uBC88\uC5ED \uC791\uC5C5 \uC2DC\uC791'
                 )}
               </code>
             </pre>
           </div>
 
           {/* Regular Sync */}
-          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-700/50 rounded-xl p-6">
+          <div className="bg-green-950/40 border border-green-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-green-300 mb-4">
               {t("일상적인 동기화")}
             </h3>
             <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
               <code className="text-slate-300">
                 {t(
-                  "# 1. \uAC1C\uBC1C\uC790: \uC0C8\uB85C\uC6B4 \uAE30\uB2A5 \uCD94\uAC00 \uD6C4 \uD0A4 \uCD94\uCD9C\nnpx i18n-extractor\n\n# 2. \uAC1C\uBC1C\uC790: \uC0C8 \uD0A4\uB97C Sheets\uC5D0 \uC5C5\uB85C\uB4DC\nnpx i18n-upload --spreadsheet-id \"YOUR_ID\"\n\n# 3. \uBC88\uC5ED\uAC00: Google Sheets\uC5D0\uC11C \uBC88\uC5ED \uC791\uC5C5\n\n# 4. \uAC1C\uBC1C\uC790: \uBC88\uC5ED \uC644\uB8CC \uD6C4 \uB85C\uCEEC\uB85C \uB2E4\uC6B4\uB85C\uB4DC\nnpx i18n-download --spreadsheet-id \"YOUR_ID\"\n\n# 5. Git\uC5D0 \uBCC0\uACBD\uC0AC\uD56D \uCEE4\uBC0B\ngit add locales/\ngit commit -m \"Update translations\""
+                  '# 1. \uAC1C\uBC1C\uC790: \uC0C8\uB85C\uC6B4 \uAE30\uB2A5 \uCD94\uAC00 \uD6C4 \uD0A4 \uCD94\uCD9C\nnpx i18n-extractor\n\n# 2. \uAC1C\uBC1C\uC790: \uC0C8 \uD0A4\uB97C Sheets\uC5D0 \uC5C5\uB85C\uB4DC\nnpx i18n-upload --spreadsheet-id "YOUR_ID"\n\n# 3. \uBC88\uC5ED\uAC00: Google Sheets\uC5D0\uC11C \uBC88\uC5ED \uC791\uC5C5\n\n# 4. \uAC1C\uBC1C\uC790: \uBC88\uC5ED \uC644\uB8CC \uD6C4 \uB85C\uCEEC\uB85C \uB2E4\uC6B4\uB85C\uB4DC\nnpx i18n-download --spreadsheet-id "YOUR_ID"\n\n# 5. Git\uC5D0 \uBCC0\uACBD\uC0AC\uD56D \uCEE4\uBC0B\ngit add locales/\ngit commit -m "Update translations"'
                 )}
               </code>
             </pre>
           </div>
 
           {/* CI/CD Integration */}
-          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-700/50 rounded-xl p-6">
+          <div className="bg-purple-950/40 border border-purple-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-purple-300 mb-4">
               {t("CI/CD 통합")}
             </h3>
             <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
               <code className="text-slate-300">
                 {t(
-                  "# .github/workflows/sync-translations.yml\nname: Sync Translations\n\non:\n  schedule:\n    - cron: '0 2 * * *'  # \uB9E4\uC77C \uC624\uC804 2\uC2DC\n  workflow_dispatch:  # \uC218\uB3D9 \uC2E4\uD589 \uAC00\uB2A5\n\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      \n      - name: Download translations\n        run: |\n          npx i18n-download \\\\\n            --spreadsheet-id \"\\${{ secrets.SHEET_ID }}\" \\\\\n            --credentials ./credentials.json\n      \n      - name: Create PR if changes\n        uses: peter-evans/create-pull-request@v5\n        with:\n          title: \"Update translations from Sheets\"\n          commit-message: \"chore: sync translations\""
+                  '# .github/workflows/sync-translations.yml\nname: Sync Translations\n\non:\n  schedule:\n    - cron: \'0 2 * * *\'  # \uB9E4\uC77C \uC624\uC804 2\uC2DC\n  workflow_dispatch:  # \uC218\uB3D9 \uC2E4\uD589 \uAC00\uB2A5\n\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      \n      - name: Download translations\n        run: |\n          npx i18n-download \\\\\n            --spreadsheet-id "\\${{ secrets.SHEET_ID }}" \\\\\n            --credentials ./credentials.json\n      \n      - name: Create PR if changes\n        uses: peter-evans/create-pull-request@v5\n        with:\n          title: "Update translations from Sheets"\n          commit-message: "chore: sync translations"'
                 )}
               </code>
             </pre>

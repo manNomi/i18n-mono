@@ -125,7 +125,7 @@ export default async function Page() {
           <pre className="text-sm text-slate-300">
             <code>
               {t(
-                "import { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\n\n// \u2705 \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8 (\uAE30\uBCF8\uAC12)\nexport default async function ServerPage() {\n  // 1. \uCFE0\uD0A4\uC5D0\uC11C \uC5B8\uC5B4 \uAC00\uC838\uC624\uAE30\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. \uBC88\uC5ED \uD568\uC218 \uC0DD\uC131\n  const t = createServerTranslation(language, translations);\n\n  // 3. \uBC88\uC5ED \uC0AC\uC6A9\n  return (\n    <div>\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This is a server component\")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}"
+                'import { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\n\n// \u2705 \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8 (\uAE30\uBCF8\uAC12)\nexport default async function ServerPage() {\n  // 1. \uCFE0\uD0A4\uC5D0\uC11C \uC5B8\uC5B4 \uAC00\uC838\uC624\uAE30\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n\n  // 2. \uBC88\uC5ED \uD568\uC218 \uC0DD\uC131\n  const t = createServerTranslation(language, translations);\n\n  // 3. \uBC88\uC5ED \uC0AC\uC6A9\n  return (\n    <div>\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This is a server component")}</p>\n      <p>Current language: {language}</p>\n    </div>\n  );\n}'
               )}
             </code>
           </pre>
@@ -139,7 +139,7 @@ export default async function Page() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-blue-950/50 to-blue-900/30 rounded-xl border border-blue-800/50 p-6">
+          <div className="bg-blue-950/40 rounded-xl border border-blue-800/50 p-6">
             <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center">
               <span className="mr-2">🖥️</span>
               {t("서버 컴포넌트")}
@@ -177,7 +177,7 @@ export default async function Page() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-950/50 to-purple-900/30 rounded-xl border border-purple-800/50 p-6">
+          <div className="bg-purple-950/40 rounded-xl border border-purple-800/50 p-6">
             <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center">
               <span className="mr-2">⚡</span>
               {t("클라이언트 컴포넌트")}
@@ -270,7 +270,7 @@ export default async function Page() {
           <pre className="text-sm text-slate-300">
             <code>
               {t(
-                "// app/page.tsx (\uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8)\nimport { headers } from \"next/headers\";\nimport { getServerLanguage, createServerTranslation } from \"i18nexus/server\";\nimport { translations } from \"@/locales\";\nimport LanguageSwitcher from \"./LanguageSwitcher\"; // \uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* \uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8: \uC5B8\uC5B4 \uC804\uD658 */}\n      <LanguageSwitcher />\n\n      {/* \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8: \uC815\uC801 \uCF58\uD150\uCE20 */}\n      <h1>{t(\"Welcome\")}</h1>\n      <p>{t(\"This content is rendered on the server\")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (\uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8)\n\"use client\";\n\nimport { useLanguageSwitcher } from \"i18nexus\";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}"
+                '// app/page.tsx (\uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8)\nimport { headers } from "next/headers";\nimport { getServerLanguage, createServerTranslation } from "i18nexus/server";\nimport { translations } from "@/locales";\nimport LanguageSwitcher from "./LanguageSwitcher"; // \uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8\n\nexport default async function HomePage() {\n  const headersList = await headers();\n  const language = getServerLanguage(headersList);\n  const t = createServerTranslation(language, translations);\n\n  return (\n    <div>\n      {/* \uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8: \uC5B8\uC5B4 \uC804\uD658 */}\n      <LanguageSwitcher />\n\n      {/* \uC11C\uBC84 \uCEF4\uD3EC\uB10C\uD2B8: \uC815\uC801 \uCF58\uD150\uCE20 */}\n      <h1>{t("Welcome")}</h1>\n      <p>{t("This content is rendered on the server")}</p>\n    </div>\n  );\n}\n\n// app/LanguageSwitcher.tsx (\uD074\uB77C\uC774\uC5B8\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8)\n"use client";\n\nimport { useLanguageSwitcher } from "i18nexus";\n\nexport default function LanguageSwitcher() {\n  const { currentLanguage, changeLanguage, availableLanguages } =\n    useLanguageSwitcher();\n\n  return (\n    <div>\n      {availableLanguages.map((lang) => (\n        <button\n          key={lang.code}\n          onClick={() => changeLanguage(lang.code)}\n        >\n          {lang.name}\n        </button>\n      ))}\n    </div>\n  );\n}'
               )}
             </code>
           </pre>

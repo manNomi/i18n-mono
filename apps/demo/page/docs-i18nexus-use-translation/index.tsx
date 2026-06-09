@@ -43,7 +43,7 @@ export default function UseTranslationPage() {
           <span className="mr-2">🎮</span>
           {t("인터랙티브 데모")}
         </h2>
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-6">
+        <div className="bg-slate-900 rounded-xl border border-slate-700 p-6">
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-300 mb-2">
               {t("번역 키")}:

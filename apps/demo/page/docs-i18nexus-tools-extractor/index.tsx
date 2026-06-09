@@ -26,7 +26,7 @@ export default function I18nExtractorPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-6 shadow-lg shadow-green-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-6 shadow-lg shadow-green-500/30">
           <span className="text-white font-bold text-2xl">🔍</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
@@ -165,7 +165,7 @@ export default function I18nExtractorPage() {
 
         <div className="space-y-6">
           {/* Step 1 */}
-          <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 border border-blue-700/50 rounded-xl p-6">
+          <div className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-4">
                 1
@@ -182,7 +182,7 @@ export default function I18nExtractorPage() {
                 <pre className="bg-slate-950 rounded p-2 text-xs mt-2 border border-slate-800">
                   <code className="text-slate-400">
                     {t(
-                      "// \uC774\uB7F0 \uCF54\uB4DC\uB97C \uCC3E\uC2B5\uB2C8\uB2E4:\nt(\"\uD658\uC601\uD569\uB2C8\uB2E4\")\nt(\"\uC2DC\uC791\uD558\uAE30\")\nt(\\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`)"
+                      '// \uC774\uB7F0 \uCF54\uB4DC\uB97C \uCC3E\uC2B5\uB2C8\uB2E4:\nt("\uD658\uC601\uD569\uB2C8\uB2E4")\nt("\uC2DC\uC791\uD558\uAE30")\nt(\\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`)'
                     )}
                   </code>
                 </pre>
@@ -191,7 +191,7 @@ export default function I18nExtractorPage() {
           </div>
 
           {/* Step 2 */}
-          <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-700/50 rounded-xl p-6">
+          <div className="bg-green-950/40 border border-green-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold mr-4">
                 2
@@ -206,7 +206,7 @@ export default function I18nExtractorPage() {
                 <pre className="bg-slate-950 rounded p-2 text-xs mt-2 border border-slate-800">
                   <code className="text-slate-400">
                     {t(
-                      "// \uCD94\uCD9C\uB41C \uD0A4:\n\"\uD658\uC601\uD569\uB2C8\uB2E4\"\n\"\uC2DC\uC791\uD558\uAE30\"\n\"\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\""
+                      '// \uCD94\uCD9C\uB41C \uD0A4:\n"\uD658\uC601\uD569\uB2C8\uB2E4"\n"\uC2DC\uC791\uD558\uAE30"\n"\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8"'
                     )}
                   </code>
                 </pre>
@@ -215,7 +215,7 @@ export default function I18nExtractorPage() {
           </div>
 
           {/* Step 3 */}
-          <div className="bg-gradient-to-r from-purple-900/30 to-purple-800/30 border border-purple-700/50 rounded-xl p-6">
+          <div className="bg-purple-950/40 border border-purple-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold mr-4">
                 3
@@ -237,7 +237,7 @@ export default function I18nExtractorPage() {
                     <pre className="bg-slate-950 rounded p-2 text-xs border border-slate-800">
                       <code className="text-slate-400">
                         {t(
-                          "{\n  \"\uC548\uB155\": \"Hello\",\n  \"\uD658\uC601\uD569\uB2C8\uB2E4\": \"Welcome\"\n}"
+                          '{\n  "\uC548\uB155": "Hello",\n  "\uD658\uC601\uD569\uB2C8\uB2E4": "Welcome"\n}'
                         )}
                       </code>
                     </pre>
@@ -249,7 +249,7 @@ export default function I18nExtractorPage() {
                     <pre className="bg-slate-950 rounded p-2 text-xs border border-slate-800">
                       <code className="text-slate-400">
                         {t(
-                          "{\n  \"\uC548\uB155\": \"Hello\",\n  \"\uC2DC\uC791\uD558\uAE30\": \"\uC2DC\uC791\uD558\uAE30\",\n  \"\uD658\uC601\uD569\uB2C8\uB2E4\": \"Welcome\"\n}"
+                          '{\n  "\uC548\uB155": "Hello",\n  "\uC2DC\uC791\uD558\uAE30": "\uC2DC\uC791\uD558\uAE30",\n  "\uD658\uC601\uD569\uB2C8\uB2E4": "Welcome"\n}'
                         )}
                       </code>
                     </pre>
@@ -260,7 +260,7 @@ export default function I18nExtractorPage() {
           </div>
 
           {/* Step 4 */}
-          <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 border border-orange-700/50 rounded-xl p-6">
+          <div className="bg-orange-950/40 border border-orange-700/50 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold mr-4">
                 4
@@ -424,7 +424,7 @@ export default function I18nExtractorPage() {
         <h2 className="text-3xl font-bold text-white mb-6">
           {t("스마트 병합 기능")}
         </h2>
-        <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl border border-green-700/50 p-6">
+        <div className="bg-green-950/40 rounded-xl border border-green-700/50 p-6">
           <h3 className="text-lg font-semibold text-green-300 mb-4">
             {t("병합 시 보장되는 사항")}:
           </h3>

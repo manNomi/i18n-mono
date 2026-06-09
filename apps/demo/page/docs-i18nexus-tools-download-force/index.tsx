@@ -26,7 +26,7 @@ export default function I18nDownloadForcePage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl mb-6 shadow-lg shadow-red-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-2xl mb-6 shadow-lg shadow-red-500/30">
           <span className="text-white font-bold text-2xl">🔄</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
@@ -38,7 +38,7 @@ export default function I18nDownloadForcePage() {
       </div>
 
       {/* Warning Banner */}
-      <div className="bg-gradient-to-r from-red-900/50 to-orange-900/50 border-2 border-red-500 rounded-xl p-6 mb-12">
+      <div className="bg-red-950/40 border-2 border-red-500 rounded-xl p-6 mb-12">
         <div className="flex items-start">
           <div className="flex-shrink-0 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
             <span className="text-white text-2xl">⚠️</span>
