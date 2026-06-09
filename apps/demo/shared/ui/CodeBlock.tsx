@@ -1,7 +1,7 @@
 "use client";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface CodeBlockProps {
   children: string;
@@ -17,32 +17,42 @@ export function CodeBlock({
   showLineNumbers = false,
 }: CodeBlockProps) {
   return (
-    <div
-      className={`overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 shadow-[0_1px_2px_rgba(0,12,30,0.04)] ${className}`}
-    >
-      <SyntaxHighlighter
-        language={language}
-        style={oneLight}
-        showLineNumbers={showLineNumbers}
-        wrapLongLines
-        customStyle={{
-          margin: 0,
-          padding: "1rem",
-          background: "#f9fafb",
-          fontSize: "0.875rem",
-          minWidth: "100%",
-        }}
-        codeTagProps={{
-          style: {
-            fontFamily:
-              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            overflowWrap: "anywhere",
-            whiteSpace: "pre-wrap",
-          },
-        }}
-      >
-        {children}
-      </SyntaxHighlighter>
+    <div className={`demo-code-block ${className}`}>
+      <div className="demo-code-bar">
+        <span className="demo-code-dot" aria-hidden="true">
+          <i style={{ background: "#ff5f57" }} />
+          <i style={{ background: "#febc2e" }} />
+          <i style={{ background: "#28c840" }} />
+        </span>
+        <span className="ml-2">example.{language}</span>
+        <span className="ml-auto uppercase tracking-[0.14em]">{language}</span>
+      </div>
+      <div className="overflow-x-auto">
+        <SyntaxHighlighter
+          language={language}
+          style={oneDark}
+          showLineNumbers={showLineNumbers}
+          wrapLongLines
+          customStyle={{
+            margin: 0,
+            padding: "1.05rem",
+            background: "transparent",
+            color: "var(--text)",
+            fontSize: "0.875rem",
+            lineHeight: 1.65,
+            minWidth: "100%",
+          }}
+          codeTagProps={{
+            style: {
+              fontFamily: "var(--font-code)",
+              overflowWrap: "anywhere",
+              whiteSpace: "pre-wrap",
+            },
+          }}
+        >
+          {children}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }

@@ -29,22 +29,23 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <div className="flex max-w-full shrink-0 items-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 p-1">
+    <div className="flex h-9 max-w-full shrink-0 items-center overflow-hidden rounded-lg border border-[color:var(--border-soft)] bg-[color:var(--bg-1)] p-1">
       {availableLanguages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => handleLanguageChange(lang.code)}
-          className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3 sm:text-sm ${
+          className={`whitespace-nowrap rounded-md px-2.5 py-1.5 font-mono text-[11px] font-bold tracking-[0.06em] transition-colors sm:px-3 ${
             currentLanguage === lang.code
-              ? "bg-white text-blue-700 shadow-[0_1px_2px_rgba(0,12,30,0.08)]"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-[color:var(--bg-3)] text-[color:var(--blue-bright)]"
+              : "text-[color:var(--text-faint)] hover:text-[color:var(--text)]"
           }`}
           aria-pressed={currentLanguage === lang.code}
         >
-          <span className="hidden md:inline">
+          {lang.code.toUpperCase()}
+          <span className="sr-only">
+            {" "}
             {getLanguageLabel(lang.code, lang.name)}
           </span>
-          <span className="md:hidden">{lang.code.toUpperCase()}</span>
         </button>
       ))}
     </div>

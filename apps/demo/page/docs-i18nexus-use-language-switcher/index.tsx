@@ -48,7 +48,7 @@ export default function UseLanguageSwitcherPage() {
           <span className="mr-2">🎮</span>
           {t("인터랙티브 데모")}
         </h2>
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-6">
+        <div className="bg-slate-900 rounded-xl border border-slate-700 p-6">
           <div className="mb-4">
             <p className="text-slate-300 mb-4">
               {t("현재 언어")}:{" "}

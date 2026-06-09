@@ -26,7 +26,7 @@ export default function I18nWrapperPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-6 shadow-lg shadow-purple-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-2xl mb-6 shadow-lg shadow-purple-500/30">
           <span className="text-white font-bold text-2xl">🔧</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
@@ -192,7 +192,7 @@ export default function I18nWrapperPage() {
             <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-green-500/30 overflow-x-auto">
               <code className="text-slate-300">
                 {t(
-                  "import { useTranslation } from \"i18nexus\";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t(\"\uD658\uC601\uD569\uB2C8\uB2E4\")}</h1>\n      <p>{t(\"i18nexus \uC0AC\uC6A9\uBC95\")}</p>\n      <button>{t(\"\uC2DC\uC791\uD558\uAE30\")}</button>\n    </div>\n  );\n}"
+                  'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("\uD658\uC601\uD569\uB2C8\uB2E4")}</h1>\n      <p>{t("i18nexus \uC0AC\uC6A9\uBC95")}</p>\n      <button>{t("\uC2DC\uC791\uD558\uAE30")}</button>\n    </div>\n  );\n}'
                 )}
               </code>
             </pre>
@@ -212,7 +212,7 @@ export default function I18nWrapperPage() {
               <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
                 <code className="text-slate-300">
                   {t(
-                    "const title = \"\uC81C\uBAA9\";\nconst msg = \\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`;\n\nreturn (\n  <div title=\"\uD234\uD301 \uD14D\uC2A4\uD2B8\">\n    <p>{\"\uBB38\uC790\uC5F4\"}</p>\n  </div>\n);"
+                    'const title = "\uC81C\uBAA9";\nconst msg = \\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`;\n\nreturn (\n  <div title="\uD234\uD301 \uD14D\uC2A4\uD2B8">\n    <p>{"\uBB38\uC790\uC5F4"}</p>\n  </div>\n);'
                   )}
                 </code>
               </pre>
@@ -224,7 +224,7 @@ export default function I18nWrapperPage() {
               <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
                 <code className="text-slate-300">
                   {t(
-                    "const { t } = useTranslation();\nconst title = t(\"\uC81C\uBAA9\");\nconst msg = t(\\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`);\n\nreturn (\n  <div title={t(\"\uD234\uD301 \uD14D\uC2A4\uD2B8\")}>\n    <p>{t(\"\uBB38\uC790\uC5F4\")}</p>\n  </div>\n);"
+                    'const { t } = useTranslation();\nconst title = t("\uC81C\uBAA9");\nconst msg = t(\\`\uC548\uB155\uD558\uC138\uC694 \\${name}\uB2D8\\`);\n\nreturn (\n  <div title={t("\uD234\uD301 \uD14D\uC2A4\uD2B8")}>\n    <p>{t("\uBB38\uC790\uC5F4")}</p>\n  </div>\n);'
                   )}
                 </code>
               </pre>
@@ -279,7 +279,7 @@ export default function I18nWrapperPage() {
         <h2 className="text-3xl font-bold text-white mb-6">
           {t("스마트 감지 기능")}
         </h2>
-        <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-xl border border-purple-700/50 p-6">
+        <div className="bg-purple-950/40 rounded-xl border border-purple-700/50 p-6">
           <h3 className="text-lg font-semibold text-purple-300 mb-4">
             {t("자동으로 처리되는 경우")}:
           </h3>
@@ -291,7 +291,7 @@ export default function I18nWrapperPage() {
                 <pre className="bg-slate-950 rounded p-2 text-xs mt-1 border border-slate-800">
                   <code>
                     {t(
-                      "<div>\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8</div> \u2192 <div>{t(\"\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8\")}</div>"
+                      '<div>\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8</div> \u2192 <div>{t("\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8")}</div>'
                     )}
                   </code>
                 </pre>
@@ -304,7 +304,7 @@ export default function I18nWrapperPage() {
                 <pre className="bg-slate-950 rounded p-2 text-xs mt-1 border border-slate-800">
                   <code>
                     {t(
-                      "<div title=\"\uC81C\uBAA9\"> \u2192 <div title={t(\"\uC81C\uBAA9\")}>"
+                      '<div title="\uC81C\uBAA9"> \u2192 <div title={t("\uC81C\uBAA9")}>'
                     )}
                   </code>
                 </pre>
@@ -317,7 +317,7 @@ export default function I18nWrapperPage() {
                 <pre className="bg-slate-950 rounded p-2 text-xs mt-1 border border-slate-800">
                   <code>
                     {t(
-                      "const text = \"\uC548\uB155\"; \u2192 const text = t(\"\uC548\uB155\");"
+                      'const text = "\uC548\uB155"; \u2192 const text = t("\uC548\uB155");'
                     )}
                   </code>
                 </pre>

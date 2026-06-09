@@ -26,7 +26,7 @@ export default function I18nDownloadPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
           <span className="text-white font-bold text-2xl">📥</span>
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
@@ -216,7 +216,7 @@ export default function I18nDownloadPage() {
               <span className="text-sm text-slate-500">{t("문자열")}</span>
             </div>
             <p className="text-slate-300">
-              {t("읽을 시트 이름 (기본값: \"Translations\")")}
+              {t('읽을 시트 이름 (기본값: "Translations")')}
             </p>
           </div>
 
@@ -226,7 +226,7 @@ export default function I18nDownloadPage() {
               <span className="text-sm text-slate-500">{t("문자열")}</span>
             </div>
             <p className="text-slate-300">
-              {t("번역 파일 저장 디렉토리 (기본값: \"./locales\")")}
+              {t('번역 파일 저장 디렉토리 (기본값: "./locales")')}
             </p>
           </div>
         </div>
@@ -270,7 +270,7 @@ export default function I18nDownloadPage() {
       {/* Safety Features */}
       <section className="mb-12">
         <h2 className="text-3xl font-bold text-white mb-6">{t("안전 기능")}</h2>
-        <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl border border-green-700/50 p-6">
+        <div className="bg-green-950/40 rounded-xl border border-green-700/50 p-6">
           <h3 className="text-lg font-semibold text-green-300 mb-4">
             {t("데이터 손실 방지")}
           </h3>
@@ -314,7 +314,7 @@ export default function I18nDownloadPage() {
           i18n-download vs i18n-download-force
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border border-blue-700/50 rounded-xl p-6">
+          <div className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-blue-300 mb-4 flex items-center">
               <span className="mr-2">📥</span>
               i18n-download
@@ -344,7 +344,7 @@ export default function I18nDownloadPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-red-900/30 to-orange-900/30 border border-red-700/50 rounded-xl p-6">
+          <div className="bg-red-950/40 border border-red-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-red-300 mb-4 flex items-center">
               <span className="mr-2">🔄</span>
               i18n-download-force

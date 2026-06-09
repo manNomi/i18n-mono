@@ -12,7 +12,10 @@ const customJestConfig = {
     "^.+\\.(ts|tsx|js|jsx)$": [
       "ts-jest",
       {
-        tsconfig: "<rootDir>/tsconfig.json",
+        tsconfig: {
+          ...require("./tsconfig.json").compilerOptions,
+          jsx: "react-jsx",
+        },
         diagnostics: false,
       },
     ],
