@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function I18nExtractorPage() {
   const { t } = useTranslation("docs-i18nexus-tools-extractor");
 
@@ -27,7 +29,7 @@ export default function I18nExtractorPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-6 shadow-lg shadow-green-500/30">
-          <span className="text-white font-bold text-2xl">🔍</span>
+          <DocIcon type="search" size={28} />
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
           i18n-extractor
@@ -369,17 +371,17 @@ export default function I18nExtractorPage() {
               <code className="text-slate-300">
                 {`$ npx i18n-extractor -p "app/**/*.tsx" -d "./locales"
 
-🔍 Scanning files...
+[scan] Scanning files...
    Found 25 files
 
-📝 Extracting translation keys...
+[extract] Extracting translation keys...
    Found 45 unique keys
 
 📁 Creating translation files...
    ✓ locales/ko.json (45 keys)
    ✓ locales/en.json (45 keys)
 
-✅ Extraction complete!
+[done] Extraction complete!
    - New keys: 45
    - Total keys: 45`}
               </code>
@@ -394,10 +396,10 @@ export default function I18nExtractorPage() {
               <code className="text-slate-300">
                 {`$ npx i18n-extractor -p "app/**/*.tsx" -d "./locales"
 
-🔍 Scanning files...
+[scan] Scanning files...
    Found 30 files
 
-📝 Extracting translation keys...
+[extract] Extracting translation keys...
    Found 52 unique keys
 
 📁 Merging with existing translations...
@@ -407,12 +409,12 @@ export default function I18nExtractorPage() {
    ✓ locales/ko.json (52 keys, +7 new)
    ✓ locales/en.json (52 keys, +7 new)
 
-✅ Extraction complete!
+[done] Extraction complete!
    - New keys: 7
    - Existing keys: 45
    - Total keys: 52
    
-💡 Don't forget to translate the new keys in en.json`}
+[note] Don't forget to translate the new keys in en.json`}
               </code>
             </pre>
           </div>
@@ -481,7 +483,7 @@ export default function I18nExtractorPage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("자주 실행하기")}
             </h4>
             <p className="text-slate-300">
@@ -493,7 +495,7 @@ export default function I18nExtractorPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("CI/CD에 통합하기")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -513,7 +515,7 @@ export default function I18nExtractorPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("번역 파일 버전 관리")}
             </h4>
             <p className="text-slate-300">
@@ -523,7 +525,7 @@ export default function I18nExtractorPage() {
 
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("영어 번역 추가하기")}
             </h4>
             <p className="text-slate-300">
@@ -556,7 +558,7 @@ export default function I18nExtractorPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-yellow-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📊</span>
+              <DocIcon type="table" className="mr-2" />
               Google Sheets {t("연동")} →
             </h4>
             <p className="text-slate-400 text-sm">

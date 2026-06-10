@@ -18,10 +18,10 @@
   --blue-dim: oklch(0.55 0.13 257);
   --blue-tint: oklch(0.665 0.165 256 / 0.13);
   --blue-line: oklch(0.665 0.165 256 / 0.32);
-  --amber: oklch(0.78 0.13 75);
-  --green: oklch(0.74 0.15 158);
-  --red: oklch(0.7 0.17 22);
-  --purple: oklch(0.72 0.13 300);
+  --amber: var(--blue-bright);
+  --green: var(--blue-bright);
+  --red: var(--blue-bright);
+  --purple: var(--blue-bright);
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 30px oklch(0 0 0 / 0.35);
   --shadow-lg: 0 24px 70px oklch(0 0 0 / 0.55);
   --font-display: var(--font-bmhanna-pro), "Noto Serif KR", Georgia, serif;
@@ -430,6 +430,23 @@ main pre code {
 }
 
 @media (max-width: 760px) {
+  main.max-w-5xl.mx-auto {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    overflow: hidden;
+  }
+
+  main.max-w-5xl.mx-auto > * {
+    max-width: 100%;
+  }
+
+  main.max-w-5xl.mx-auto :where(h1, h2, h3, h4, p, li, span, a) {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
   .demo-page-hero,
   .demo-section,
   .demo-muted-section,
@@ -499,6 +516,77 @@ main .text-blue-600,
 main .text-indigo-700,
 main .text-indigo-600 {
   color: var(--blue-bright) !important;
+}
+
+/* Keep legacy documentation pages inside the restrained three-color palette:
+   dark surfaces, neutral text/borders, and one blue accent. */
+main [class*="bg-green-"],
+main [class*="bg-emerald-"],
+main [class*="bg-purple-"],
+main [class*="bg-pink-"],
+main [class*="bg-orange-"],
+main [class*="bg-yellow-"],
+main [class*="bg-red-"],
+main [class*="bg-cyan-"],
+main [class*="bg-indigo-"] {
+  background-color: var(--bg-1) !important;
+}
+
+main [class*="text-green-"],
+main [class*="text-emerald-"],
+main [class*="text-purple-"],
+main [class*="text-pink-"],
+main [class*="text-orange-"],
+main [class*="text-yellow-"],
+main [class*="text-red-"],
+main [class*="text-cyan-"],
+main [class*="text-indigo-"] {
+  color: var(--text-dim) !important;
+}
+
+main :where(h1, h2, h3, h4)[class*="text-green-"],
+main :where(h1, h2, h3, h4)[class*="text-emerald-"],
+main :where(h1, h2, h3, h4)[class*="text-purple-"],
+main :where(h1, h2, h3, h4)[class*="text-pink-"],
+main :where(h1, h2, h3, h4)[class*="text-orange-"],
+main :where(h1, h2, h3, h4)[class*="text-yellow-"],
+main :where(h1, h2, h3, h4)[class*="text-red-"],
+main :where(h1, h2, h3, h4)[class*="text-cyan-"],
+main :where(h1, h2, h3, h4)[class*="text-indigo-"] {
+  color: var(--text) !important;
+}
+
+main code[class*="text-green-"],
+main code[class*="text-emerald-"],
+main code[class*="text-purple-"],
+main code[class*="text-pink-"],
+main code[class*="text-orange-"],
+main code[class*="text-yellow-"],
+main code[class*="text-red-"],
+main code[class*="text-cyan-"],
+main code[class*="text-indigo-"] {
+  color: var(--blue-bright) !important;
+}
+
+main [class*="border-green-"],
+main [class*="border-emerald-"],
+main [class*="border-purple-"],
+main [class*="border-pink-"],
+main [class*="border-orange-"],
+main [class*="border-yellow-"],
+main [class*="border-red-"],
+main [class*="border-cyan-"],
+main [class*="border-indigo-"],
+main [class*="hover:border-green-"],
+main [class*="hover:border-emerald-"],
+main [class*="hover:border-purple-"],
+main [class*="hover:border-pink-"],
+main [class*="hover:border-orange-"],
+main [class*="hover:border-yellow-"],
+main [class*="hover:border-red-"],
+main [class*="hover:border-cyan-"],
+main [class*="hover:border-indigo-"] {
+  border-color: var(--border) !important;
 }
 
 main .border-slate-300,

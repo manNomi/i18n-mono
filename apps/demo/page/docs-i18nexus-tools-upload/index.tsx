@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function I18nUploadPage() {
   const { t } = useTranslation("docs-i18nexus-tools-upload");
 
@@ -27,7 +29,7 @@ export default function I18nUploadPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
-          <span className="text-white font-bold text-2xl">📤</span>
+          <DocIcon type="upload" size={28} />
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">i18n-upload</h1>
         <p className="text-xl text-slate-400">
@@ -243,7 +245,7 @@ export default function I18nUploadPage() {
         <h2 className="text-3xl font-bold text-white mb-6">{t("주의사항")}</h2>
         <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
           <h4 className="text-lg font-semibold text-red-300 mb-3 flex items-center">
-            <span className="mr-2">⚠️</span>
+            <DocIcon type="warning" className="mr-2" />
             {t("데이터 덮어쓰기")}
           </h4>
           <ul className="space-y-2 text-slate-300 text-sm">
@@ -286,23 +288,23 @@ export default function I18nUploadPage() {
           <code className="text-slate-300">
             {`$ npx i18n-upload --spreadsheet-id "1abc...xyz"
 
-📤 Uploading translations to Google Sheets...
+[upload] Uploading translations to Google Sheets...
 
 📁 Reading local files...
    ✓ locales/ko.json (125 keys)
    ✓ locales/en.json (125 keys)
 
-🔄 Converting to Sheets format...
+[sync] Converting to Sheets format...
    Languages: ko, en
    Total keys: 125
 
-📊 Updating Google Sheets...
+[sheets] Updating Google Sheets...
    Spreadsheet: "i18n Translations"
    Sheet: "Translations"
    ✓ Cleared existing data
    ✓ Uploaded 126 rows (including header)
 
-✅ Upload complete!
+[done] Upload complete!
    🔗 View: https://docs.google.com/spreadsheets/d/1abc...xyz`}
           </code>
         </pre>
@@ -314,7 +316,7 @@ export default function I18nUploadPage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("초기 설정에만 사용")}
             </h4>
             <p className="text-slate-300">
@@ -326,7 +328,7 @@ export default function I18nUploadPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("업로드 전 확인")}
             </h4>
             <p className="text-slate-300">
@@ -336,7 +338,7 @@ export default function I18nUploadPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("팀원과 공유")}
             </h4>
             <p className="text-slate-300">
@@ -357,7 +359,7 @@ export default function I18nUploadPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📥</span>
+              <DocIcon type="download" className="mr-2" />
               i18n-download →
             </h4>
             <p className="text-slate-400 text-sm">
@@ -369,7 +371,7 @@ export default function I18nUploadPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-yellow-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📊</span>
+              <DocIcon type="table" className="mr-2" />
               Google Sheets {t("설정")} →
             </h4>
             <p className="text-slate-400 text-sm">

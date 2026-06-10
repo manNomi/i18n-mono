@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function GoogleSheetsPage() {
   const { t } = useTranslation("docs-i18nexus-tools-google-sheets");
 
@@ -27,7 +29,7 @@ export default function GoogleSheetsPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-600 rounded-2xl mb-6 shadow-lg shadow-yellow-500/30">
-          <span className="text-white font-bold text-2xl">📊</span>
+          <DocIcon type="table" size={28} />
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
           Google Sheets {t("연동")}
@@ -171,7 +173,7 @@ export default function GoogleSheetsPage() {
                 </ol>
                 <div className="mt-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
                   <p className="text-yellow-300 text-xs">
-                    ⚠️{" "}
+                    <DocIcon type="warning" className="mr-1" />{" "}
                     {t(
                       "주의: credentials.json 파일은 절대 Git에 커밋하지 마세요! .gitignore에 추가하세요."
                     )}
@@ -301,7 +303,7 @@ export default function GoogleSheetsPage() {
 
         <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
           <h4 className="text-lg font-semibold text-yellow-300 mb-2 flex items-center">
-            <span className="mr-2">⚠️</span>
+            <DocIcon type="warning" className="mr-2" />
             {t("주의사항")}
           </h4>
           <ul className="space-y-2 text-slate-300 text-sm">
@@ -468,7 +470,7 @@ export default function GoogleSheetsPage() {
 
         <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-6">
           <h4 className="text-lg font-semibold text-red-300 mb-2 flex items-center">
-            <span className="mr-2">⚠️</span>
+            <DocIcon type="warning" className="mr-2" />
             {t("경고")}
           </h4>
           <ul className="space-y-2 text-slate-300 text-sm">
@@ -549,7 +551,7 @@ export default function GoogleSheetsPage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("증분 다운로드 우선 사용")}
             </h4>
             <p className="text-slate-300">
@@ -561,7 +563,7 @@ export default function GoogleSheetsPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("인증 정보 안전하게 관리")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -580,7 +582,7 @@ credentials.json
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("Sheets 구조 유지")}
             </h4>
             <p className="text-slate-300">
@@ -592,7 +594,7 @@ credentials.json
 
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("정기적인 동기화")}
             </h4>
             <p className="text-slate-300">
@@ -656,7 +658,7 @@ credentials.json
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-green-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">🔍</span>
+              <DocIcon type="search" className="mr-2" />
               i18n-extractor →
             </h4>
             <p className="text-slate-400 text-sm">
@@ -668,7 +670,7 @@ credentials.json
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">⚡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("전체 워크플로우")} →
             </h4>
             <p className="text-slate-400 text-sm">

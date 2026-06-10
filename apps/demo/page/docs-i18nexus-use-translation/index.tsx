@@ -66,7 +66,8 @@ export default function UseTranslationPage() {
           </div>
           <div className="mt-4 text-sm text-slate-400">
             <p>
-              💡 {t("입력해보세요: Welcome, Getting Started, CLI Tools 등")}
+              <DocIcon type="bolt" className="mr-2" />{" "}
+              {t("입력해보세요: Welcome, Getting Started, CLI Tools 등")}
             </p>
           </div>
         </div>
@@ -238,6 +239,7 @@ export default function LanguageDisplay() {
               {`"use client";
 
 import { useTranslation } from "i18nexus";
+import { DocIcon } from "@/shared/ui/DocIcon";
 
 interface Product {
   id: string;
@@ -273,7 +275,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("Do: Use descriptive keys")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -294,7 +296,7 @@ t("msg")`}</code>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("Do: Handle missing translations gracefully")}
             </h4>
             <p className="text-slate-300">
@@ -320,7 +322,7 @@ export default async function Page() {
   const { t } = useTranslation(); // Error!
 }
 
-// ✅ Correct - Client Component
+// [ok] Correct - Client Component
 "use client";
 export default function Page() {
   const { t } = useTranslation(); // Works!

@@ -1,13 +1,11 @@
 "use client";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, limit, query } from "firebase/firestore";
-import { useTranslation } from "i18nexus";
 import { useEffect, useState } from "react";
 
 import { auth, db } from "@/shared/lib/firebase";
 
 export default function FirebaseStatus() {
-  const { t } = useTranslation<"common">("common");
   const [status, setStatus] = useState<{
     auth: boolean;
     firestore: boolean;
@@ -20,58 +18,46 @@ export default function FirebaseStatus() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkFirebase = async () => {
-      try {
-        // Check if Firebase is configured
-        if (!auth || !db) {
-          setStatus({
-            auth: false,
-            firestore: false,
-            user: null,
-          });
-          setLoading(false);
-          return;
-        }
+    // Do not expose Firebase diagnostics to public visitors.
+    if (!auth || !db) {
+      setLoading(false);
+      return;
+    }
 
-        // Check Auth
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          setStatus((prev) => ({
-            ...prev,
-            auth: true,
-            user: user?.email || null,
-          }));
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setStatus({
+          auth: false,
+          firestore: false,
+          user: null,
         });
-
-        // Check Firestore
-        try {
-          const q = query(collection(db, "submissions"), limit(1));
-          await getDocs(q);
-          setStatus((prev) => ({ ...prev, firestore: true }));
-        } catch (error) {
-          console.warn("Firestore not accessible yet:", error);
-          setStatus((prev) => ({ ...prev, firestore: false }));
-        }
-
         setLoading(false);
-        return () => unsubscribe();
+        return;
+      }
+
+      setStatus({
+        auth: true,
+        firestore: false,
+        user: user.email || null,
+      });
+
+      try {
+        const q = query(collection(db, "submissions"), limit(1));
+        await getDocs(q);
+        setStatus((prev) => ({ ...prev, firestore: true }));
       } catch (error) {
-        console.error("Firebase check error:", error);
+        console.warn("Firestore not accessible yet:", error);
+        setStatus((prev) => ({ ...prev, firestore: false }));
+      } finally {
         setLoading(false);
       }
-    };
+    });
 
-    checkFirebase();
+    return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="fixed bottom-4 right-4 hidden rounded-lg border border-white/10 bg-[#171717]/95 px-4 py-2 text-zinc-300 shadow-[0_18px_60px_rgba(0,0,0,0.32)] backdrop-blur sm:block">
-        <div className="flex items-center space-x-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-zinc-400" />
-          <span className="text-sm">{t("Firebase 연결 확인 중...")}</span>
-        </div>
-      </div>
-    );
+  if (loading || !status.user) {
+    return null;
   }
 
   return (
@@ -82,24 +68,22 @@ export default function FirebaseStatus() {
       <div className="space-y-1 text-xs">
         <div className="flex items-center justify-between space-x-4">
           <span>Authentication:</span>
-          <span className={status.auth ? "text-green-300" : "text-red-300"}>
+          <span className={status.auth ? "text-blue-300" : "text-zinc-400"}>
             {status.auth ? "Connected" : "Failed"}
           </span>
         </div>
         <div className="flex items-center justify-between space-x-4">
           <span>Firestore:</span>
           <span
-            className={status.firestore ? "text-green-300" : "text-amber-300"}
+            className={status.firestore ? "text-blue-300" : "text-zinc-400"}
           >
             {status.firestore ? "Connected" : "Setup Needed"}
           </span>
         </div>
-        {status.user && (
-          <div className="mt-2 border-t border-white/10 pt-2">
-            <span className="text-zinc-500">Logged in: </span>
-            <span className="text-blue-300">{status.user}</span>
-          </div>
-        )}
+        <div className="mt-2 border-t border-white/10 pt-2">
+          <span className="text-zinc-500">Logged in: </span>
+          <span className="text-blue-300">{status.user}</span>
+        </div>
       </div>
     </div>
   );

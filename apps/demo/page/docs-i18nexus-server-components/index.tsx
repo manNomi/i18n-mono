@@ -59,7 +59,7 @@ export default function ServerComponentsPage() {
               <span className="text-slate-300">{t("더 나은 SEO")}</span>
             </div>
             <div className="flex items-start">
-              <span className="text-yellow-400 mr-2">⚠</span>
+              <DocIcon type="warning" className="mr-2" />
               <span className="text-slate-300">{t("동적 언어 전환 불가")}</span>
             </div>
           </div>
@@ -103,6 +103,7 @@ export default async function Page() {
             <pre className="bg-slate-950 rounded-lg p-4 overflow-x-auto border border-slate-800">
               <code className="text-sm text-slate-300">{`import { createServerTranslation } from "i18nexus/server";
 import { translations } from "@/locales";
+import { DocIcon } from "@/shared/ui/DocIcon";
 
 export default async function Page() {
   const language = getServerLanguage(headersList);
@@ -141,7 +142,7 @@ export default async function Page() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-blue-950/40 rounded-xl border border-blue-800/50 p-6">
             <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center">
-              <span className="mr-2">🖥️</span>
+              <DocIcon type="file" className="mr-2" />
               {t("서버 컴포넌트")}
             </h3>
             <div className="space-y-3 text-sm text-slate-300">
@@ -179,7 +180,7 @@ export default async function Page() {
 
           <div className="bg-purple-950/40 rounded-xl border border-purple-800/50 p-6">
             <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center">
-              <span className="mr-2">⚡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("클라이언트 컴포넌트")}
             </h3>
             <div className="space-y-3 text-sm text-slate-300">
@@ -200,11 +201,11 @@ export default async function Page() {
                 <span>{t("이벤트 핸들러 사용")}</span>
               </div>
               <div className="flex items-start">
-                <span className="text-yellow-400 mr-2">⚠</span>
+                <DocIcon type="warning" className="mr-2" />
                 <span>{t("더 큰 번들 크기")}</span>
               </div>
               <div className="flex items-start">
-                <span className="text-yellow-400 mr-2">⚠</span>
+                <DocIcon type="warning" className="mr-2" />
                 <span>{t("'use client' 필요")}</span>
               </div>
             </div>
@@ -224,7 +225,7 @@ export default async function Page() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("서버 컴포넌트 사용")}
             </h4>
             <ul className="space-y-2 text-slate-300 text-sm ml-6">
@@ -239,7 +240,7 @@ export default async function Page() {
 
           <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-purple-400 mb-2 flex items-center">
-              <span className="mr-2">⚡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("클라이언트 컴포넌트 사용")}
             </h4>
             <ul className="space-y-2 text-slate-300 text-sm ml-6">
@@ -286,7 +287,7 @@ export default async function Page() {
         <div className="space-y-4">
           <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("하이드레이션 불일치 방지")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -305,7 +306,7 @@ export default async function Page() {
 
           <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-blue-400 mb-2 flex items-center">
-              <span className="mr-2">🔄</span>
+              <DocIcon type="sync" className="mr-2" />
               {t("언어 변경 시 페이지 리로드")}
             </h4>
             <p className="text-slate-300">
