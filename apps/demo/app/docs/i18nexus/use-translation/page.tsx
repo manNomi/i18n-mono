@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsUseTranslationPage from "@/page/docs-i18nexus-use-translation";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "useTranslation Hook - i18nexus Documentation",
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsUseTranslationPage />;
+  return (
+    <TranslationGate namespace="docs-i18nexus-use-translation" skeleton="docs">
+      <DocsUseTranslationPage />
+    </TranslationGate>
+  );
 }

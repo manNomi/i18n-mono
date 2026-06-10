@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsDownloadForcePage from "@/page/docs-i18nexus-tools-download-force";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "i18n-download-force - i18nexus Tools Documentation",
@@ -15,5 +16,12 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsDownloadForcePage />;
+  return (
+    <TranslationGate
+      namespace="docs-i18nexus-tools-download-force"
+      skeleton="docs"
+    >
+      <DocsDownloadForcePage />
+    </TranslationGate>
+  );
 }

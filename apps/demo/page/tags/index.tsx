@@ -3,7 +3,7 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
-import { PageShell, Section } from "@/shared/ui/PageLayout";
+import { PageShell, PageSkeleton, Section } from "@/shared/ui/PageLayout";
 
 import {
   getPostCountByTag,
@@ -38,13 +38,7 @@ export default function TagsPage({ selectedTag }: TagsPageProps) {
   const visiblePosts = getPostsForTag(activeTag?.id);
 
   if (!isReady) {
-    return (
-      <PageShell eyebrow="Tags" title="Loading tags...">
-        <Section>
-          <p className="text-sm text-zinc-400">Loading...</p>
-        </Section>
-      </PageShell>
-    );
+    return <PageSkeleton variant="cards" />;
   }
 
   return (

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsLazyLoadingPage from "@/page/docs-lazy-loading";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Lazy Loading - i18nexus Documentation",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsLazyLoadingPage />;
+  return (
+    <TranslationGate namespace="docs-lazy-loading" skeleton="docs">
+      <DocsLazyLoadingPage />
+    </TranslationGate>
+  );
 }

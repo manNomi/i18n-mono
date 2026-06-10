@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsToolsPage from "@/page/docs-i18nexus-tools";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "CLI Tools - i18nexus Documentation",
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsToolsPage />;
+  return (
+    <TranslationGate namespace="docs-i18nexus-tools" skeleton="cards">
+      <DocsToolsPage />
+    </TranslationGate>
+  );
 }

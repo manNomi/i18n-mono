@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsServerComponentsPage from "@/page/docs-i18nexus-server-components";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Server Components - i18nexus Documentation",
@@ -15,5 +16,12 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsServerComponentsPage />;
+  return (
+    <TranslationGate
+      namespace="docs-i18nexus-server-components"
+      skeleton="docs"
+    >
+      <DocsServerComponentsPage />
+    </TranslationGate>
+  );
 }

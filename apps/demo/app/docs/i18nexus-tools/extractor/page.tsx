@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsExtractorPage from "@/page/docs-i18nexus-tools-extractor";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "i18n-extractor - i18nexus Tools Documentation",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsExtractorPage />;
+  return (
+    <TranslationGate namespace="docs-i18nexus-tools-extractor" skeleton="docs">
+      <DocsExtractorPage />
+    </TranslationGate>
+  );
 }

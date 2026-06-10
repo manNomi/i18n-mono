@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import ProviderPage from "@/page/provider";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "I18nProvider - i18nexus Documentation",
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <ProviderPage />;
+  return (
+    <TranslationGate namespace="provider" skeleton="docs">
+      <ProviderPage />
+    </TranslationGate>
+  );
 }

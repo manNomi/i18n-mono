@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsGoogleSheetsPage from "@/page/docs-i18nexus-tools-google-sheets";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Google Sheets Integration - i18nexus Tools Documentation",
@@ -15,5 +16,12 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsGoogleSheetsPage />;
+  return (
+    <TranslationGate
+      namespace="docs-i18nexus-tools-google-sheets"
+      skeleton="docs"
+    >
+      <DocsGoogleSheetsPage />
+    </TranslationGate>
+  );
 }

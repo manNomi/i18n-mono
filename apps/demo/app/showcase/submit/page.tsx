@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import ShowcaseSubmitPage from "@/page/showcase-submit";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Submit Project - Showcase - i18nexus",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <ShowcaseSubmitPage />;
+  return (
+    <TranslationGate namespace="common" skeleton="form">
+      <ShowcaseSubmitPage />
+    </TranslationGate>
+  );
 }

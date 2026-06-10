@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import HomePage from "@/page/home";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "i18nexus - Complete React i18n Toolkit",
@@ -24,5 +25,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <HomePage />;
+  return (
+    <TranslationGate namespace="home" skeleton="landing">
+      <HomePage />
+    </TranslationGate>
+  );
 }

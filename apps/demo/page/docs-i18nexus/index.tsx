@@ -27,11 +27,12 @@ export function ClientProvider({ children, language }) {
 const hookQuickStart = `"use client";
 
 import { useTranslation } from "i18nexus";
+import { PageSkeleton } from "@/shared/ui";
 
 export default function MyComponent() {
   const { t, isReady } = useTranslation("docs-i18nexus");
 
-  if (!isReady) return null;
+  if (!isReady) return <PageSkeleton variant="docs" />;
 
   return <h1>{t("Welcome")}</h1>;
 }`;

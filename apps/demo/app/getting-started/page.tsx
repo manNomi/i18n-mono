@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import GettingStartedPage from "@/page/getting-started";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Getting Started - i18nexus",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <GettingStartedPage />;
+  return (
+    <TranslationGate namespace="getting-started" skeleton="docs">
+      <GettingStartedPage />
+    </TranslationGate>
+  );
 }
