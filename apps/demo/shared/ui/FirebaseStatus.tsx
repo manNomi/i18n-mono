@@ -82,14 +82,14 @@ export default function FirebaseStatus() {
       <div className="space-y-1 text-xs">
         <div className="flex items-center justify-between space-x-4">
           <span>Authentication:</span>
-          <span className={status.auth ? "text-green-300" : "text-red-300"}>
+          <span className={status.auth ? "text-blue-300" : "text-zinc-400"}>
             {status.auth ? "Connected" : "Failed"}
           </span>
         </div>
         <div className="flex items-center justify-between space-x-4">
           <span>Firestore:</span>
           <span
-            className={status.firestore ? "text-green-300" : "text-amber-300"}
+            className={status.firestore ? "text-blue-300" : "text-zinc-400"}
           >
             {status.firestore ? "Connected" : "Setup Needed"}
           </span>

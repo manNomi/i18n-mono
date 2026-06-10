@@ -71,7 +71,10 @@ export default function UseLanguageSwitcherPage() {
             </div>
           </div>
           <div className="mt-4 text-sm text-slate-400">
-            <p>💡 {t("언어를 전환해보세요. 쿠키에 자동으로 저장됩니다!")}</p>
+            <p>
+              <DocIcon type="bolt" className="mr-2" />{" "}
+              {t("언어를 전환해보세요. 쿠키에 자동으로 저장됩니다!")}
+            </p>
           </div>
         </div>
       </section>
@@ -296,7 +299,7 @@ export default function FancyLanguageSwitcher() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("권장: 언어 변경 후 전체 페이지 리로드하지 않기")}
             </h4>
             <p className="text-slate-300">
@@ -308,7 +311,7 @@ export default function FancyLanguageSwitcher() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("권장: 사용자 경험을 위한 시각적 피드백")}
             </h4>
             <p className="text-slate-300">
@@ -343,6 +346,7 @@ export default function Page() {
 
 // 서버 컴포넌트 번역은 getTranslation()을 사용합니다.
 import { getTranslation } from "i18nexus/server";
+import { DocIcon } from "@/shared/ui/DocIcon";
 
 export default async function ServerPage() {
   const { t } = await getTranslation<"common">("common");

@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     // screenshot=true로 스크린샷 생성, embed 없이 JSON 응답 받기
     const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`;
 
-    console.log("🔍 Fetching metadata from:", microlinkUrl);
+    console.log("Fetching metadata from:", microlinkUrl);
 
     const response = await fetch(microlinkUrl, {
       headers: {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     // Content-Type 확인
     const contentType = response.headers.get("content-type");
-    console.log("📋 Response content-type:", contentType);
+    console.log("Response content-type:", contentType);
 
     if (!contentType?.includes("application/json")) {
       console.error("❌ Unexpected content type:", contentType);
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log("📦 Microlink response status:", data.status);
+    console.log("Microlink response status:", data.status);
 
     if (data.status !== "success") {
       console.error("❌ Microlink returned error:", data);
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       url,
     };
 
-    console.log("✅ Metadata extracted successfully:", {
+    console.log("Metadata extracted successfully:", {
       hasOgImage: !!ogImage,
       hasScreenshot: !!screenshotImage,
     });

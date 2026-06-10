@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function I18nDownloadForcePage() {
   const { t } = useTranslation("docs-i18nexus-tools-download-force");
 
@@ -27,7 +29,7 @@ export default function I18nDownloadForcePage() {
       {/* Header */}
       <div className="mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-2xl mb-6 shadow-lg shadow-red-500/30">
-          <span className="text-white font-bold text-2xl">🔄</span>
+          <DocIcon type="sync" size={28} />
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
           i18n-download-force
@@ -41,7 +43,7 @@ export default function I18nDownloadForcePage() {
       <div className="bg-red-950/40 border-2 border-red-500 rounded-xl p-6 mb-12">
         <div className="flex items-start">
           <div className="flex-shrink-0 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
-            <span className="text-white text-2xl">⚠️</span>
+            <DocIcon type="warning" size={28} />
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-bold text-red-300 mb-2">
@@ -70,17 +72,17 @@ export default function I18nDownloadForcePage() {
           </p>
           <div className="space-y-2">
             <div className="flex items-start">
-              <span className="text-red-400 mr-2">⚠</span>
+              <DocIcon type="warning" className="mr-2" />
               <span className="text-slate-300">
                 {t("로컬 번역 완전 덮어쓰기")}
               </span>
             </div>
             <div className="flex items-start">
-              <span className="text-red-400 mr-2">⚠</span>
+              <DocIcon type="warning" className="mr-2" />
               <span className="text-slate-300">{t("로컬 전용 번역 삭제")}</span>
             </div>
             <div className="flex items-start">
-              <span className="text-red-400 mr-2">⚠</span>
+              <DocIcon type="warning" className="mr-2" />
               <span className="text-slate-300">
                 {t("되돌릴 수 없음 (Git 미사용 시)")}
               </span>
@@ -95,7 +97,7 @@ export default function I18nDownloadForcePage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("Google Sheets를 마스터로 사용")}
             </h4>
             <p className="text-slate-300 text-sm">
@@ -107,7 +109,7 @@ export default function I18nDownloadForcePage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("로컬 변경사항이 없음을 확신")}
             </h4>
             <p className="text-slate-300 text-sm">
@@ -119,7 +121,7 @@ export default function I18nDownloadForcePage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("로컬 파일 리셋 필요")}
             </h4>
             <p className="text-slate-300 text-sm">
@@ -213,19 +215,19 @@ export default function I18nDownloadForcePage() {
           <code className="text-slate-300">
             {`$ npx i18n-download-force --spreadsheet-id "1abc...xyz"
 
-⚠️  WARNING: This will overwrite all local translations!
-📊 Reading from Google Sheets...
+[warning] WARNING: This will overwrite all local translations!
+[sheets] Reading from Google Sheets...
    Spreadsheet: "i18n Translations"
    Sheet: "Translations"
    ✓ Found 128 translation keys
    Languages: ko, en
 
-🔄 Force overwriting local files...
+[sync] Force overwriting local files...
    ✗ Removed all existing local data
    ✓ locales/ko.json (128 keys)
    ✓ locales/en.json (128 keys)
 
-✅ Force download complete!
+[done] Force download complete!
    Total keys: 128
    All local files replaced with Sheets data`}
           </code>
@@ -309,7 +311,7 @@ export default function I18nDownloadForcePage() {
         <div className="space-y-4">
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("실행 전 Git 커밋")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -328,7 +330,7 @@ npx i18n-download-force`}
 
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("백업 생성")}
             </h4>
             <p className="text-slate-300">
@@ -338,7 +340,7 @@ npx i18n-download-force`}
 
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">💡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("Sheets 내용 확인")}
             </h4>
             <p className="text-slate-300">
@@ -364,7 +366,7 @@ npx i18n-download-force`}
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("명확한 워크플로우 정의")}
             </h4>
             <p className="text-slate-300">
@@ -376,7 +378,7 @@ npx i18n-download-force`}
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("CI/CD에서 사용")}
             </h4>
             <p className="text-slate-300">
@@ -397,7 +399,7 @@ npx i18n-download-force`}
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📥</span>
+              <DocIcon type="download" className="mr-2" />
               i18n-download →
             </h4>
             <p className="text-slate-400 text-sm">
@@ -409,7 +411,7 @@ npx i18n-download-force`}
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-yellow-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📊</span>
+              <DocIcon type="table" className="mr-2" />
               Google Sheets {t("가이드")} →
             </h4>
             <p className="text-slate-400 text-sm">

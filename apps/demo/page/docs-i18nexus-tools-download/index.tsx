@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function I18nDownloadPage() {
   const { t } = useTranslation("docs-i18nexus-tools-download");
 
@@ -27,7 +29,7 @@ export default function I18nDownloadPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
-          <span className="text-white font-bold text-2xl">📥</span>
+          <DocIcon type="download" size={28} />
         </div>
         <h1 className="text-5xl font-extrabold text-white mb-4">
           i18n-download
@@ -239,9 +241,9 @@ export default function I18nDownloadPage() {
           <code className="text-slate-300">
             {`$ npx i18n-download --spreadsheet-id "1abc...xyz"
 
-📥 Downloading translations from Google Sheets...
+[download] Downloading translations from Google Sheets...
 
-📊 Reading from Sheets...
+[sheets] Reading from Sheets...
    Spreadsheet: "i18n Translations"
    Sheet: "Translations"
    ✓ Found 130 translation keys
@@ -251,7 +253,7 @@ export default function I18nDownloadPage() {
    ✓ locales/ko.json (125 keys)
    ✓ locales/en.json (125 keys)
 
-🔄 Merging translations...
+[sync] Merging translations...
    ✓ Updated: 3 keys
    ✓ Added: 5 new keys
    ✓ Preserved: 122 local keys
@@ -260,7 +262,7 @@ export default function I18nDownloadPage() {
    ✓ locales/ko.json (130 keys)
    ✓ locales/en.json (130 keys)
 
-✅ Download complete!
+[done] Download complete!
    Total keys: 130
    Changes: +5 new, ~3 updated`}
           </code>
@@ -316,7 +318,7 @@ export default function I18nDownloadPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-blue-300 mb-4 flex items-center">
-              <span className="mr-2">📥</span>
+              <DocIcon type="download" className="mr-2" />
               i18n-download
             </h3>
             <ul className="space-y-2 text-slate-300 text-sm">
@@ -339,14 +341,15 @@ export default function I18nDownloadPage() {
             </ul>
             <div className="mt-4 p-3 bg-blue-950/50 rounded-lg">
               <p className="text-xs text-blue-300">
-                💡 {t("대부분의 경우 이것을 사용하세요")}
+                <DocIcon type="bolt" className="mr-2" />{" "}
+                {t("대부분의 경우 이것을 사용하세요")}
               </p>
             </div>
           </div>
 
           <div className="bg-red-950/40 border border-red-700/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-red-300 mb-4 flex items-center">
-              <span className="mr-2">🔄</span>
+              <DocIcon type="sync" className="mr-2" />
               i18n-download-force
             </h3>
             <ul className="space-y-2 text-slate-300 text-sm">
@@ -369,7 +372,8 @@ export default function I18nDownloadPage() {
             </ul>
             <div className="mt-4 p-3 bg-red-950/50 rounded-lg">
               <p className="text-xs text-red-300">
-                ⚠️ {t("특별한 경우에만 사용하세요")}
+                <DocIcon type="warning" className="mr-2" />{" "}
+                {t("특별한 경우에만 사용하세요")}
               </p>
             </div>
           </div>
@@ -382,7 +386,7 @@ export default function I18nDownloadPage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("정기적으로 다운로드")}
             </h4>
             <p className="text-slate-300">
@@ -394,7 +398,7 @@ export default function I18nDownloadPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("Git 커밋")}
             </h4>
             <p className="text-slate-300">
@@ -404,7 +408,7 @@ export default function I18nDownloadPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("변경 내역 검토")}
             </h4>
             <p className="text-slate-300">
@@ -425,7 +429,7 @@ export default function I18nDownloadPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-red-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">🔄</span>
+              <DocIcon type="sync" className="mr-2" />
               i18n-download-force →
             </h4>
             <p className="text-slate-400 text-sm">
@@ -437,7 +441,7 @@ export default function I18nDownloadPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-yellow-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">📤</span>
+              <DocIcon type="upload" className="mr-2" />
               i18n-upload →
             </h4>
             <p className="text-slate-400 text-sm">

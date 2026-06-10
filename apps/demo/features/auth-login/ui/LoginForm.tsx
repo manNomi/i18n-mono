@@ -106,7 +106,7 @@ export default function LoginForm() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="mb-6 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
             {error}
           </div>
         )}

@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function I18nWrapperPage() {
   const { t } = useTranslation("docs-i18nexus-tools-wrapper");
 
@@ -167,7 +169,7 @@ export default function I18nWrapperPage() {
           {/* Before */}
           <div>
             <div className="flex items-center mb-3">
-              <span className="text-red-400 text-2xl mr-2">📝</span>
+              <DocIcon type="file" className="mr-2" />
               <h3 className="text-xl font-semibold text-red-400">
                 {t("이전")}
               </h3>
@@ -184,7 +186,7 @@ export default function I18nWrapperPage() {
           {/* After */}
           <div>
             <div className="flex items-center mb-3">
-              <span className="text-green-400 text-2xl mr-2">✨</span>
+              <DocIcon type="check" className="mr-2" />
               <h3 className="text-xl font-semibold text-green-400">
                 {t("이후")}
               </h3>
@@ -368,7 +370,7 @@ export default function I18nWrapperPage() {
         <div className="space-y-4">
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("먼저 dry-run으로 확인하기")}
             </h4>
             <p className="text-slate-300 mb-2">
@@ -383,7 +385,7 @@ export default function I18nWrapperPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("버전 관리 시스템 사용")}
             </h4>
             <p className="text-slate-300">
@@ -395,7 +397,7 @@ export default function I18nWrapperPage() {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
-              <span className="mr-2">✅</span>
+              <DocIcon type="check" className="mr-2" />
               {t("작은 범위부터 시작")}
             </h4>
             <p className="text-slate-300">
@@ -407,7 +409,7 @@ export default function I18nWrapperPage() {
 
           <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-yellow-400 mb-2 flex items-center">
-              <span className="mr-2">⚠️</span>
+              <DocIcon type="warning" className="mr-2" />
               {t("수동 검토 필요")}
             </h4>
             <p className="text-slate-300">
@@ -428,7 +430,7 @@ export default function I18nWrapperPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-green-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">🔍</span>
+              <DocIcon type="search" className="mr-2" />
               i18n-extractor →
             </h4>
             <p className="text-slate-400 text-sm">
@@ -440,7 +442,7 @@ export default function I18nWrapperPage() {
             className="bg-slate-900 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors"
           >
             <h4 className="text-lg font-semibold text-white mb-2 flex items-center">
-              <span className="mr-2">⚡</span>
+              <DocIcon type="bolt" className="mr-2" />
               {t("전체 워크플로우")} →
             </h4>
             <p className="text-slate-400 text-sm">
