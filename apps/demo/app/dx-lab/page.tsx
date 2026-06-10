@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DxLabPage from "@/page/dx-lab";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "DX Lab - i18nexus",
@@ -9,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DxLabPage />;
+  return (
+    <TranslationGate namespace="dx-lab" skeleton="dashboard">
+      <DxLabPage />
+    </TranslationGate>
+  );
 }

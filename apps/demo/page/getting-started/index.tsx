@@ -46,11 +46,12 @@ export async function loadNamespace(namespace: string, lang: string) {
 const clientExample = `"use client";
 
 import { useTranslation } from "i18nexus";
+import { PageSkeleton } from "@/shared/ui";
 
 export default function Page() {
   const { t, isReady } = useTranslation("getting-started");
 
-  if (!isReady) return null;
+  if (!isReady) return <PageSkeleton variant="docs" />;
 
   return <div>{t("안녕하세요")}</div>;
 }`;

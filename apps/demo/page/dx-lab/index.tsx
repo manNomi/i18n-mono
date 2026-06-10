@@ -7,11 +7,12 @@ import { Callout, CodeBlock, PageShell, Section } from "@/shared/ui";
 const demoCode = `"use client";
 
 import { useTranslation } from "i18nexus";
+import { PageSkeleton } from "@/shared/ui";
 
 export function BillingHero() {
   const { t, isReady } = useTranslation("billing");
 
-  if (!isReady) return <p>{t("Loading...")}</p>;
+  if (!isReady) return <PageSkeleton variant="cards" />;
 
   return <h1>{t("결제 현지화가 준비되었습니다")}</h1>;
 }`;

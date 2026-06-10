@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsUploadPage from "@/page/docs-i18nexus-tools-upload";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "i18n-upload - i18nexus Tools Documentation",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsUploadPage />;
+  return (
+    <TranslationGate namespace="docs-i18nexus-tools-upload" skeleton="docs">
+      <DocsUploadPage />
+    </TranslationGate>
+  );
 }

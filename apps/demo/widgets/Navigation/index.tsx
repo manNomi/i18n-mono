@@ -69,8 +69,66 @@ function isActive(pathname: string | null, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function NavSkeletonLine({ className = "" }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`block animate-pulse rounded-full bg-[color:var(--bg-3)] ${className}`}
+    />
+  );
+}
+
+function NavigationSkeleton() {
+  return (
+    <>
+      <aside className="demo-sidebar fixed inset-y-0 left-0 z-20 hidden lg:top-[var(--nav-h)] lg:block lg:shadow-none">
+        <nav className="space-y-6 px-3 py-6" aria-hidden="true">
+          <div className="space-y-2">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <NavSkeletonLine key={index} className="h-9 w-full rounded-lg" />
+            ))}
+          </div>
+          <div className="border-t border-[color:var(--border-soft)] pt-4">
+            <NavSkeletonLine className="mb-3 h-3 w-16" />
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <NavSkeletonLine
+                  key={index}
+                  className="h-9 w-full rounded-lg"
+                />
+              ))}
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <nav className="demo-top-nav" aria-busy="true">
+        <div className="flex h-full items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <NavSkeletonLine className="h-10 w-10 rounded-lg lg:hidden" />
+            <Image
+              src="/i18nexus-logo.png"
+              alt="i18nexus"
+              width={148}
+              height={41}
+              className="h-8 w-auto shrink-0 object-contain sm:h-9"
+              priority
+            />
+            <div className="ml-5 hidden items-center gap-2 md:flex">
+              <NavSkeletonLine className="h-8 w-16 rounded-lg" />
+              <NavSkeletonLine className="h-8 w-12 rounded-lg" />
+              <NavSkeletonLine className="h-8 w-12 rounded-lg" />
+            </div>
+          </div>
+          <NavSkeletonLine className="h-9 w-28 rounded-lg" />
+        </div>
+      </nav>
+    </>
+  );
+}
+
 export default function Navigation() {
-  const { t } = useTranslation<"common">("common");
+  const { t, isReady } = useTranslation<"common">("common");
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -81,6 +139,10 @@ export default function Navigation() {
       document.body.style.overflow = "";
     };
   }, [sidebarOpen]);
+
+  if (!isReady) {
+    return <NavigationSkeleton />;
+  }
 
   const primaryItems: NavItem[] = [
     { href: "/", label: t("홈") },

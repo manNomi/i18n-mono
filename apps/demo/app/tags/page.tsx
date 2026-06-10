@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import TagsPage from "@/page/tags";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "Tags - i18nexus",
@@ -24,5 +25,9 @@ export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
   const tag = Array.isArray(params?.tag) ? params.tag[0] : params?.tag;
 
-  return <TagsPage selectedTag={tag} />;
+  return (
+    <TranslationGate namespace="tags" skeleton="cards">
+      <TagsPage selectedTag={tag} />
+    </TranslationGate>
+  );
 }

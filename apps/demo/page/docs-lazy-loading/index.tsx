@@ -23,11 +23,12 @@ const providerExample = `<I18nProvider
 const usageExample = `"use client";
 
 import { useTranslation } from "i18nexus";
+import { PageSkeleton } from "@/shared/ui";
 
 export function ProductPage() {
   const { t, isReady } = useTranslation("product");
 
-  if (!isReady) return null;
+  if (!isReady) return <PageSkeleton variant="docs" />;
 
   return <h1>{t("Product list")}</h1>;
 }`;

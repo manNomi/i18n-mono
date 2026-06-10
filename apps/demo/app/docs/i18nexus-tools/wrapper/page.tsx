@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import DocsWrapperPage from "@/page/docs-i18nexus-tools-wrapper";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "i18n-wrapper - i18nexus Tools Documentation",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <DocsWrapperPage />;
+  return (
+    <TranslationGate namespace="docs-i18nexus-tools-wrapper" skeleton="docs">
+      <DocsWrapperPage />
+    </TranslationGate>
+  );
 }

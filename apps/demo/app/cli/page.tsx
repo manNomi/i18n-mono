@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import CliPage from "@/page/cli";
+import { TranslationGate } from "@/shared/ui/TranslationGate";
 
 export const metadata: Metadata = {
   title: "CLI Tools - i18nexus",
@@ -15,5 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <CliPage />;
+  return (
+    <TranslationGate namespace="cli" skeleton="cards">
+      <CliPage />
+    </TranslationGate>
+  );
 }

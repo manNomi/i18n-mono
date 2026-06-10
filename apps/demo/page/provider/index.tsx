@@ -61,11 +61,12 @@ export function ClientProvider({
 const hookExample = `"use client";
 
 import { useTranslation } from "i18nexus";
+import { PageSkeleton } from "@/shared/ui";
 
 export default function HomePage() {
   const { t, currentLanguage, isReady } = useTranslation("provider");
 
-  if (!isReady) return null;
+  if (!isReady) return <PageSkeleton variant="docs" />;
 
   return <h1>{t("환영합니다")} ({currentLanguage})</h1>;
 }`;
