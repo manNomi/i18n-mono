@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-08-05
+
 ### ✨ Features
+
+- **Key-first JSX conversion**:
+  - Added opt-in `keyFirst.enabled` configuration and `--key-first` CLI support for converting JSX translation keys such as `about.title1` into `t("about.title1")`.
+  - Added optional `--key-first-pattern` support for projects that use a narrower key convention.
+  - Preserves literal keys through extraction and generated types, with Babel, adaptive, and SWC worker parity.
+  - Excludes technical attributes such as `href`, `className`, `id`, and `data-*` to avoid changing runtime values.
 
 - Added `sourceLanguage` support for extractor and wrapper workflows, including English-source project initialization.
 - Generated locale entrypoints now export typed `AppTranslationFunction` helpers for passing `t` through props.
