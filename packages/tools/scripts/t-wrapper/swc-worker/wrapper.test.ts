@@ -115,10 +115,42 @@ describe("SWC worker wrapper", () => {
       },
     });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "❌ Error processing errored.tsx: parse failed",
+      "❌ Error processing errored.tsx: parse failed"
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "❌ Task failed for rejected.tsx: Error: worker crashed",
+      "❌ Task failed for rejected.tsx: Error: worker crashed"
+    );
+  });
+
+  it("passes key-first and runtime config through to worker tasks", async () => {
+    globMock.mockResolvedValue(["about.tsx"]);
+    readFileSyncMock.mockReturnValue("function About() { return <div />; }");
+    mockPool.runTask.mockResolvedValue({
+      type: "success",
+      filePath: "about.tsx",
+      modified: true,
+    });
+
+    await wrapTranslations({
+      sourcePattern: "src/**/*.tsx",
+      sourceLanguage: "en",
+      mode: "server",
+      framework: "nextjs",
+      serverTranslationFunction: "getServerT",
+      keyFirst: { enabled: true, pattern: "about\\.[a-z]+" },
+    });
+
+    expect(mockPool.runTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filePath: "about.tsx",
+        config: expect.objectContaining({
+          sourceLanguage: "en",
+          mode: "server",
+          framework: "nextjs",
+          serverTranslationFunction: "getServerT",
+          keyFirst: { enabled: true, pattern: "about\\.[a-z]+" },
+        }),
+      })
     );
   });
 });

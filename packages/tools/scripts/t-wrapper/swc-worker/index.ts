@@ -8,69 +8,53 @@
  * - 멀티코어 CPU 활용
  */
 
-import { ScriptConfig } from "../../common/default-config";
+import { loadConfig } from "../../config-loader";
 import { wrapTranslations } from "./wrapper";
-import { CLI_OPTIONS, CLI_HELP } from "../common/utils/constants";
+import {
+  applyWrapperCliOptions,
+  createWrapperConfig,
+  WRAPPER_CLI_OPTIONS_HELP,
+} from "../common/cli-options";
 
-// CLI 실행 부분
-if (require.main === module) {
-  const args = process.argv.slice(2);
-  const config: Partial<ScriptConfig> = {};
+export async function runCli(args = process.argv.slice(2)): Promise<void> {
+  const config = createWrapperConfig(loadConfig(), "swc");
 
-  for (let i = 0; i < args.length; i++) {
-    switch (args[i]) {
-      case CLI_OPTIONS.PATTERN:
-      case CLI_OPTIONS.PATTERN_SHORT:
-        config.sourcePattern = args[++i];
-        break;
-      case CLI_OPTIONS.HELP:
-      case CLI_OPTIONS.HELP_SHORT:
-        console.log(`
+  if (applyWrapperCliOptions(args, config).showHelp) {
+    console.log(`
 i18n-wrapper-swc-worker - High-Performance Translation Wrapper
 
-${CLI_HELP.USAGE}
+Usage: i18n-wrapper-swc-worker [options]
 
-${CLI_HELP.OPTIONS}
-
-Performance:
-  - Uses SWC parser for fast parsing
-  - Uses Worker Threads for parallel processing
-  - Expected 10-12x performance improvement over standard version
-
-${CLI_HELP.EXAMPLES}
-
-Note: This version uses Worker Threads and may consume more memory.
-      Use standard i18n-wrapper for memory-constrained environments.
-        `);
-        process.exit(0);
-        break;
-    }
+${WRAPPER_CLI_OPTIONS_HELP}
+      `);
+    return;
   }
 
   console.log("🚀 Starting i18n-wrapper-swc-worker...\n");
 
-  wrapTranslations(config)
-    .then((result) => {
-      const timeInSeconds = (result.totalTime / 1000).toFixed(2);
-      console.log("\n✅ Processing complete!");
-      console.log("═══════════════════════════════════════");
-      console.log(`⏱️  Total time: ${timeInSeconds}s`);
-      console.log(`📊 Total files: ${result.stats.totalFiles}`);
-      console.log(`✏️  Modified: ${result.stats.modifiedFiles}`);
-      console.log(`⏭️  Skipped: ${result.stats.skippedFiles}`);
-      console.log(`❌ Errors: ${result.stats.errorFiles}`);
-      console.log(
-        `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`,
-      );
-      console.log("═══════════════════════════════════════");
-      console.log(
-        `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`,
-      );
-    })
-    .catch((error) => {
-      console.error("❌ Fatal error:", error);
-      process.exit(1);
-    });
+  const result = await wrapTranslations(config);
+  const timeInSeconds = (result.totalTime / 1000).toFixed(2);
+  console.log("\n✅ Processing complete!");
+  console.log("═══════════════════════════════════════");
+  console.log(`⏱️  Total time: ${timeInSeconds}s`);
+  console.log(`📊 Total files: ${result.stats.totalFiles}`);
+  console.log(`✏️  Modified: ${result.stats.modifiedFiles}`);
+  console.log(`⏭️  Skipped: ${result.stats.skippedFiles}`);
+  console.log(`❌ Errors: ${result.stats.errorFiles}`);
+  console.log(
+    `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`
+  );
+  console.log("═══════════════════════════════════════");
+  console.log(
+    `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`
+  );
+}
+
+if (require.main === module) {
+  runCli().catch((error) => {
+    console.error("❌ Fatal error:", error);
+    process.exit(1);
+  });
 }
 
 export { wrapTranslations };

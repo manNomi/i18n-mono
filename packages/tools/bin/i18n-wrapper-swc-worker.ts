@@ -6,5 +6,9 @@
  * High-performance translation wrapper using SWC + Worker Threads
  */
 
-// Re-export from the main implementation
-import "../scripts/t-wrapper-swc-worker/index";
+import { runCli } from "../scripts/t-wrapper/swc-worker/index";
+
+runCli().catch((error) => {
+  console.error("❌ Translation wrapper failed:", error);
+  process.exit(1);
+});

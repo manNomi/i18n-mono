@@ -29,7 +29,7 @@ describe("t-wrapper (Babel)", () => {
         testFile,
         `function Component() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       const result = await wrapTranslations({
@@ -52,7 +52,7 @@ describe("t-wrapper (Babel)", () => {
       <span className="flex items-center">Products</span>
     </div>
   );
-}`,
+}`
       );
 
       const result = await wrapTranslations({
@@ -68,6 +68,43 @@ describe("t-wrapper (Babel)", () => {
       expect(modifiedContent).toContain('className="flex items-center"');
     });
 
+    it("key-first JSX를 변환하고 두 번째 실행에서 다시 변환하지 않아야 함", async () => {
+      const testFile = path.join(tempDir, "about.tsx");
+      writeFile(
+        testFile,
+        `function About() {
+  return <div>about.title1</div>;
+}`
+      );
+
+      const config = {
+        sourcePattern: path.join(tempDir, "**/*.tsx"),
+        keyFirst: { enabled: true },
+      };
+      const first = await wrapTranslations(config);
+      const afterFirst = readFile(testFile);
+      const second = await wrapTranslations(config);
+
+      expect(first.processedFiles).toContain(testFile);
+      expect(afterFirst).toContain('t("about.title1")');
+      expect(second.processedFiles).toEqual([]);
+      expect(readFile(testFile)).toBe(afterFirst);
+    });
+
+    it("rejects invalid key-first patterns before changing files", async () => {
+      const testFile = path.join(tempDir, "invalid-pattern.tsx");
+      const original = `function About() { return <div>about.title1</div>; }`;
+      writeFile(testFile, original);
+
+      await expect(
+        wrapTranslations({
+          sourcePattern: path.join(tempDir, "**/*.tsx"),
+          keyFirst: { enabled: true, pattern: "[invalid" },
+        })
+      ).rejects.toThrow('Invalid keyFirst.pattern "[invalid"');
+      expect(readFile(testFile)).toBe(original);
+    });
+
     it("여러 파일을 병렬로 처리해야 함", async () => {
       // 5개의 테스트 파일 생성
       for (let i = 0; i < 5; i++) {
@@ -76,7 +113,7 @@ describe("t-wrapper (Babel)", () => {
           testFile,
           `function Component${i}() {
   return <div>안녕하세요 ${i}</div>;
-}`,
+}`
         );
       }
 
@@ -93,7 +130,7 @@ describe("t-wrapper (Babel)", () => {
         testFile,
         `function Component() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       const result = await wrapTranslations({

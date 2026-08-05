@@ -10,11 +10,12 @@ import { glob } from "glob";
 import { ScriptConfig, SCRIPT_CONFIG_DEFAULTS } from "../common/default-config";
 import { wrapTranslations as wrapWithBabel } from "./babel/wrapper";
 import { wrapTranslations as wrapWithWorkers } from "./swc-worker/wrapper";
+import { validateKeyFirstConfig } from "./common/key-first";
 
 const FILE_COUNT_THRESHOLD = 3000;
 
 export async function wrapTranslations(
-  config: Partial<ScriptConfig> = {},
+  config: Partial<ScriptConfig> = {}
 ): Promise<{
   processedFiles: string[];
   totalTime: number;
@@ -26,17 +27,20 @@ export async function wrapTranslations(
     ...config,
   } as Required<ScriptConfig>;
 
+  validateKeyFirstConfig(fullConfig.keyFirst);
+
   // 1. 파일 개수 확인
   const filePaths = await glob(fullConfig.sourcePattern);
   const fileCount = filePaths.length;
 
   // 2. 전략 선택
-  const useWorkers = fileCount >= FILE_COUNT_THRESHOLD;
+  const useWorkers =
+    fullConfig.parserType === "swc" || fileCount >= FILE_COUNT_THRESHOLD;
   const strategy = useWorkers ? "swc-worker" : "babel";
 
   console.log(`📁 Found ${fileCount} files`);
   console.log(
-    `🎯 Strategy: ${strategy} ${useWorkers ? "(parallel processing)" : "(single-threaded)"}`,
+    `🎯 Strategy: ${strategy} ${useWorkers ? "(parallel processing)" : "(single-threaded)"}`
   );
 
   // 3. 선택된 전략으로 실행

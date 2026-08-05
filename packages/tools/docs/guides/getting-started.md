@@ -301,12 +301,11 @@ npx i18n-clean-legacy
 
 ### Common Options
 
-| Option            | Description                      | Example                              |
-| ----------------- | -------------------------------- | ------------------------------------ |
-| `--dry-run`       | Preview changes without applying | `npx i18n-wrapper --dry-run`         |
-| `--force`         | Force overwrite mode             | `npx i18n-extractor --force`         |
-| `-p, --pattern`   | Custom file pattern              | `npx i18n-wrapper -p "app/**/*.tsx"` |
-| `-l, --languages` | Custom languages                 | `npx i18n-extractor -l "en,ko,ja"`   |
+| Option            | Description                 | Example                              |
+| ----------------- | --------------------------- | ------------------------------------ |
+| `--force`         | Force overwrite mode        | `npx i18n-extractor --force`         |
+| `-p, --pattern`   | Custom wrapper file pattern | `npx i18n-wrapper -p "app/**/*.tsx"` |
+| `-l, --languages` | Custom extractor languages  | `npx i18n-extractor -l "en,ko,ja"`   |
 
 ## 🆘 Troubleshooting
 
@@ -329,8 +328,9 @@ npx i18n-sheets status -s <spreadsheet-id>
 **No files processed:**
 
 ```bash
-# Solution: Check source pattern in config
-npx i18n-wrapper --dry-run
+# Solution: run a narrow pattern, then inspect the source diff
+npx i18n-wrapper -p "app/**/*.tsx"
+git diff -- app
 ```
 
 ### Getting Help

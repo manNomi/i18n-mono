@@ -27,6 +27,9 @@ i18nexus.config.ts > i18nexus.config.js > i18nexus.config.json
   "languages": ["en", "ko"],
   "defaultLanguage": "ko",
   "sourceLanguage": "ko",
+  "keyFirst": {
+    "enabled": false
+  },
   "localesDir": "./locales",
   "sourcePattern": "src/**/*.{js,jsx,ts,tsx}",
   "translationImportSource": "i18nexus",
@@ -97,6 +100,36 @@ export type AppLanguages = (typeof config.languages)[number];
 - **Description**: Language file that receives extracted source strings when `i18n-extractor` adds new keys
 - **Example**: `"en"` for English-source apps
 - **Note**: Target languages start with empty values unless they already have translations. For example, with `sourceLanguage: "en"`, new keys fill `en.json` and leave `ko.json` empty.
+
+#### `keyFirst`
+
+- **Type**: `{ enabled: boolean; pattern?: string }`
+- **Default**: `{ "enabled": false }`
+- **Description**: Opt-in conversion for JSX text that is already a translation key.
+- **Default pattern**: `[a-z][A-Za-z0-9_-]*(?:\\.[a-z][A-Za-z0-9_-]*)+`
+
+When enabled, `<div>about.title1</div>` becomes
+`<div>{t("about.title1")}</div>` regardless of `sourceLanguage`. Matching is
+anchored to the whole string, so partial matches are never converted. The key is
+kept verbatim: `about.title1` is a locale key, not a namespace instruction.
+
+The wrapper only considers JSX text, JSX string expressions, and user-facing
+attributes (`alt`, `aria-*` labels, `label`, `placeholder`, `title`). It skips
+technical attributes, code/pre/script/style content, arbitrary JavaScript
+constants, dynamic templates, ignored nodes, and existing `t()` calls.
+
+The default dotted-key pattern can also match visible domain-like text such as
+`example.com`. Use `i18n-ignore` for intentional display text or configure a
+narrower `pattern` for the project.
+
+```json
+{
+  "keyFirst": {
+    "enabled": true,
+    "pattern": "[a-z][A-Za-z0-9_-]*(?:\\.[a-z][A-Za-z0-9_-]*)+"
+  }
+}
+```
 
 #### `localesDir`
 
@@ -307,8 +340,9 @@ npx i18n-sheets init \
 # Validate configuration
 npx i18n-sheets status
 
-# Test with specific config
-npx i18n-wrapper --dry-run
+# Run a narrow pattern and inspect the resulting Git diff
+npx i18n-wrapper -p "app/about/page.tsx"
+git diff -- app/about/page.tsx
 ```
 
 ### Common Validation Errors

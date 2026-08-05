@@ -12,7 +12,7 @@ export function tryTransformComponent(
   path: NodePath<t.Function>,
   code: string,
   modifiedComponentPaths: NodePath<t.Function>[],
-  config: Pick<ScriptConfig, "sourceLanguage"> = {},
+  config: Pick<ScriptConfig, "sourceLanguage" | "keyFirst"> = {}
 ): boolean {
   let functionName: string | null | undefined;
 
@@ -35,6 +35,7 @@ export function tryTransformComponent(
   ) {
     const transformResult = transformFunctionBody(path, code, {
       sourceLanguage: config.sourceLanguage,
+      keyFirst: config.keyFirst,
     });
     if (transformResult.wasModified) {
       modifiedComponentPaths.push(path);

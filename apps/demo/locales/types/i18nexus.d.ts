@@ -824,6 +824,18 @@ declare type DocsI18nexusToolsWrapperKeys =
   | "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n      <button>시작하기</button>\n    </div>\n  );\n}"
   | "i18nexus-tools"
   | 'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <p>{t("i18nexus 사용법")}</p>\n      <button>{t("시작하기")}</button>\n    </div>\n  );\n}'
+  | "keyFirst.after"
+  | "keyFirst.before"
+  | "keyFirst.config"
+  | "keyFirst.description"
+  | "keyFirst.locale"
+  | "keyFirst.option"
+  | "keyFirst.review"
+  | "keyFirst.step.extract"
+  | "keyFirst.step.translate"
+  | "keyFirst.step.wrap"
+  | "keyFirst.step.write"
+  | "keyFirst.title"
   | "useTranslation import 자동 추가"
   | "개요"
   | "기본 사용법"
@@ -833,13 +845,11 @@ declare type DocsI18nexusToolsWrapperKeys =
   | "도움말 메시지를 표시합니다."
   | "또는 npx로 직접 실행"
   | "래핑된 텍스트에서 번역 키를 추출하세요"
-  | "먼저 dry-run으로 확인하기"
   | "명령어 옵션"
   | "모범 사례"
   | "문자열"
   | "문자열 리터럴"
   | "문자열 리터럴 및 템플릿 리터럴 지원"
-  | "미리보기 모드"
   | "버전 관리 시스템 사용"
   | "변환 예제"
   | "복잡한 예제"
@@ -847,8 +857,6 @@ declare type DocsI18nexusToolsWrapperKeys =
   | "수동 검토 필요"
   | "숫자나 특수문자만 포함된 텍스트"
   | "스마트 감지 기능"
-  | "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요."
-  | "실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다."
   | "영어만 포함된 텍스트"
   | "이미 t()로 래핑된 텍스트"
   | "이미 래핑된 텍스트 자동 건너뛰기"
@@ -868,7 +876,6 @@ declare type DocsI18nexusToolsWrapperKeys =
   | "코드 포매팅 보존"
   | "템플릿 리터럴"
   | "특정 파일만 처리"
-  | "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다."
   | "플래그"
   | "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다"
   | "홈";
@@ -2868,6 +2875,18 @@ export type I18nexusGeneratedTranslations = {
       readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n      <button>시작하기</button>\n    </div>\n  );\n}": string;
       readonly "i18nexus-tools": string;
       readonly 'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <p>{t("i18nexus 사용법")}</p>\n      <button>{t("시작하기")}</button>\n    </div>\n  );\n}': string;
+      readonly "keyFirst.after": string;
+      readonly "keyFirst.before": string;
+      readonly "keyFirst.config": string;
+      readonly "keyFirst.description": string;
+      readonly "keyFirst.locale": string;
+      readonly "keyFirst.option": string;
+      readonly "keyFirst.review": string;
+      readonly "keyFirst.step.extract": string;
+      readonly "keyFirst.step.translate": string;
+      readonly "keyFirst.step.wrap": string;
+      readonly "keyFirst.step.write": string;
+      readonly "keyFirst.title": string;
       readonly "useTranslation import 자동 추가": string;
       readonly 개요: string;
       readonly "기본 사용법": string;
@@ -2877,13 +2896,11 @@ export type I18nexusGeneratedTranslations = {
       readonly "도움말 메시지를 표시합니다.": string;
       readonly "또는 npx로 직접 실행": string;
       readonly "래핑된 텍스트에서 번역 키를 추출하세요": string;
-      readonly "먼저 dry-run으로 확인하기": string;
       readonly "명령어 옵션": string;
       readonly "모범 사례": string;
       readonly 문자열: string;
       readonly "문자열 리터럴": string;
       readonly "문자열 리터럴 및 템플릿 리터럴 지원": string;
-      readonly "미리보기 모드": string;
       readonly "버전 관리 시스템 사용": string;
       readonly "변환 예제": string;
       readonly "복잡한 예제": string;
@@ -2891,8 +2908,6 @@ export type I18nexusGeneratedTranslations = {
       readonly "수동 검토 필요": string;
       readonly "숫자나 특수문자만 포함된 텍스트": string;
       readonly "스마트 감지 기능": string;
-      readonly "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요.": string;
-      readonly "실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다.": string;
       readonly "영어만 포함된 텍스트": string;
       readonly "이미 t()로 래핑된 텍스트": string;
       readonly "이미 래핑된 텍스트 자동 건너뛰기": string;
@@ -2912,7 +2927,6 @@ export type I18nexusGeneratedTranslations = {
       readonly "코드 포매팅 보존": string;
       readonly "템플릿 리터럴": string;
       readonly "특정 파일만 처리": string;
-      readonly "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다.": string;
       readonly 플래그: string;
       readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
       readonly 홈: string;
@@ -2932,6 +2946,18 @@ export type I18nexusGeneratedTranslations = {
       readonly "export default function Welcome() {\n  return (\n    <div>\n      <h1>환영합니다</h1>\n      <p>i18nexus 사용법</p>\n      <button>시작하기</button>\n    </div>\n  );\n}": string;
       readonly "i18nexus-tools": string;
       readonly 'import { useTranslation } from "i18nexus";\n\nexport default function Welcome() {\n  const { t } = useTranslation();\n  return (\n    <div>\n      <h1>{t("환영합니다")}</h1>\n      <p>{t("i18nexus 사용법")}</p>\n      <button>{t("시작하기")}</button>\n    </div>\n  );\n}': string;
+      readonly "keyFirst.after": string;
+      readonly "keyFirst.before": string;
+      readonly "keyFirst.config": string;
+      readonly "keyFirst.description": string;
+      readonly "keyFirst.locale": string;
+      readonly "keyFirst.option": string;
+      readonly "keyFirst.review": string;
+      readonly "keyFirst.step.extract": string;
+      readonly "keyFirst.step.translate": string;
+      readonly "keyFirst.step.wrap": string;
+      readonly "keyFirst.step.write": string;
+      readonly "keyFirst.title": string;
       readonly "useTranslation import 자동 추가": string;
       readonly 개요: string;
       readonly "기본 사용법": string;
@@ -2941,13 +2967,11 @@ export type I18nexusGeneratedTranslations = {
       readonly "도움말 메시지를 표시합니다.": string;
       readonly "또는 npx로 직접 실행": string;
       readonly "래핑된 텍스트에서 번역 키를 추출하세요": string;
-      readonly "먼저 dry-run으로 확인하기": string;
       readonly "명령어 옵션": string;
       readonly "모범 사례": string;
       readonly 문자열: string;
       readonly "문자열 리터럴": string;
       readonly "문자열 리터럴 및 템플릿 리터럴 지원": string;
-      readonly "미리보기 모드": string;
       readonly "버전 관리 시스템 사용": string;
       readonly "변환 예제": string;
       readonly "복잡한 예제": string;
@@ -2955,8 +2979,6 @@ export type I18nexusGeneratedTranslations = {
       readonly "수동 검토 필요": string;
       readonly "숫자나 특수문자만 포함된 텍스트": string;
       readonly "스마트 감지 기능": string;
-      readonly "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요.": string;
-      readonly "실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다.": string;
       readonly "영어만 포함된 텍스트": string;
       readonly "이미 t()로 래핑된 텍스트": string;
       readonly "이미 래핑된 텍스트 자동 건너뛰기": string;
@@ -2976,7 +2998,6 @@ export type I18nexusGeneratedTranslations = {
       readonly "코드 포매팅 보존": string;
       readonly "템플릿 리터럴": string;
       readonly "특정 파일만 처리": string;
-      readonly "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다.": string;
       readonly 플래그: string;
       readonly "한국어 텍스트를 자동으로 t()로 감싸고 import를 추가합니다": string;
       readonly 홈: string;

@@ -47,7 +47,7 @@ describe("adaptive t-wrapper", () => {
       totalTime: 12,
     });
     expect(consoleLogSpy).toHaveBeenCalledWith(
-      "🎯 Strategy: babel (single-threaded)",
+      "🎯 Strategy: babel (single-threaded)"
     );
   });
 
@@ -69,7 +69,29 @@ describe("adaptive t-wrapper", () => {
       stats: { totalFiles: 3000 },
     });
     expect(consoleLogSpy).toHaveBeenCalledWith(
-      "🎯 Strategy: swc-worker (parallel processing)",
+      "🎯 Strategy: swc-worker (parallel processing)"
+    );
+  });
+
+  it("forces the SWC worker strategy when parserType is swc", async () => {
+    globMock.mockResolvedValue(["one.tsx"]);
+    (wrapWithWorkers as jest.Mock).mockResolvedValue({
+      processedFiles: ["one.tsx"],
+      totalTime: 8,
+      stats: { totalFiles: 1 },
+    });
+
+    const config = {
+      sourcePattern: "src/**/*.tsx",
+      parserType: "swc" as const,
+    };
+    const result = await wrapTranslations(config);
+
+    expect(wrapWithWorkers).toHaveBeenCalledWith(config);
+    expect(wrapWithBabel).not.toHaveBeenCalled();
+    expect(result.strategy).toBe("swc-worker");
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      "🎯 Strategy: swc-worker (parallel processing)"
     );
   });
 });
