@@ -249,9 +249,12 @@ Automatically wrap hardcoded text with translation functions.
 i18n-wrapper [options]
 
 Options:
-  -p, --pattern <pattern>  Source file pattern (default: "src/**/*.{js,jsx,ts,tsx}")
-  --source-language <lang> Source language for wrapping: ko|en|auto
-  -h, --help              Display help
+  -p, --pattern <pattern>              Source file pattern
+  --source-language <lang>             Source language for wrapping: ko|en|auto
+  --key-first                          Wrap matching JSX translation keys
+  --key-first-pattern <regex>          Enable key-first with a custom regex
+  --no-key-first                       Disable key-first for this run
+  -h, --help                           Display help
 ```
 
 **Features:**
@@ -274,7 +277,49 @@ npx i18n-wrapper -p "app/**/*.tsx"
 
 # English-source app
 npx i18n-wrapper --source-language en
+
+# Key-first JSX text
+npx i18n-wrapper --key-first -p "app/**/*.tsx"
 ```
+
+#### Key-first JSX
+
+Key-first mode is opt-in. It converts JSX text that is already a dotted key,
+without depending on `sourceLanguage`:
+
+```tsx
+// Before
+<h1>about.title1</h1>
+
+// After
+<h1>{t("about.title1")}</h1>
+```
+
+Enable it in `i18nexus.config.json` for repeatable runs:
+
+```json
+{
+  "keyFirst": {
+    "enabled": true
+  }
+}
+```
+
+The default pattern only accepts dot-delimited keys such as `about.title1` and
+`checkout.emptyState.title`. It only applies to JSX text, string expressions,
+and user-facing attributes such as `placeholder`, `title`, `alt`, and
+`aria-label`; it skips code blocks, technical attributes, dynamic values, and
+existing `t()` calls. Use `keyFirst.pattern` or `--key-first-pattern` to make
+the exact-match pattern more specific.
+
+The default dotted-key pattern can also match visible domain-like text such as
+`example.com`. Add `i18n-ignore` to intentional display text or configure a
+narrower `keyFirst.pattern` for your project.
+
+`about.title1` remains the exact locale key. The wrapper does not split it into
+a namespace and a key, and `i18n-extractor` initializes the source locale with
+the key itself while leaving target locale values blank. Fill those locale values
+as part of your translation workflow.
 
 **Before:**
 

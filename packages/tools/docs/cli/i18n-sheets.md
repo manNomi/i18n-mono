@@ -128,11 +128,12 @@ npx i18n-wrapper [options]
 
 ### Options
 
-| Option                    | Description     | Default     |
-| ------------------------- | --------------- | ----------- |
-| `-p, --pattern <pattern>` | File pattern    | From config |
-| `--dry-run`               | Preview changes | `false`     |
-| `--verbose`               | Verbose output  | `false`     |
+| Option                    | Description                                 | Default     |
+| ------------------------- | ------------------------------------------- | ----------- |
+| `-p, --pattern <pattern>` | File pattern                                | From config |
+| `--source-language <lng>` | Source-language matching                    | From config |
+| `--key-first`             | Wrap matching dotted translation keys       | `false`     |
+| `--no-key-first`          | Disable configured key-first mode for a run | N/A         |
 
 ### Examples
 
@@ -143,11 +144,11 @@ npx i18n-wrapper
 # Custom pattern
 npx i18n-wrapper -p "app/**/*.tsx"
 
-# Preview changes
-npx i18n-wrapper --dry-run
+# Enable key-first wrapping for this run
+npx i18n-wrapper --key-first
 
-# Verbose output
-npx i18n-wrapper --verbose
+# Review the generated source change
+git diff -- app
 ```
 
 ### What Gets Wrapped
@@ -157,13 +158,13 @@ npx i18n-wrapper --verbose
 - Korean strings in JSX
 - English strings in JSX
 - Template literals
-- Static constants
 
 **❌ Not Wrapped:**
 
-- API data
-- Props data
-- useState data
+- Arbitrary JavaScript constants, objects, and arrays
+- Variables, props, API data, and other runtime values
+- Dynamic template literals
+- `code`, `pre`, `script`, and `style` content
 - Ignored comments
 
 ## 📤 i18n-extractor
@@ -274,12 +275,9 @@ npx i18n-extractor -l "en"
 
 ### Dry Run Mode
 
-All commands support `--dry-run` to preview changes:
+The extractor, upload, download, and cleanup commands support `--dry-run` to preview changes. The wrapper writes source files directly; run it with a narrow pattern and inspect `git diff` instead.
 
 ```bash
-# Preview wrapper changes
-npx i18n-wrapper --dry-run
-
 # Preview extraction
 npx i18n-extractor --dry-run
 
@@ -362,11 +360,12 @@ npx i18n-sheets init
 sudo chown -R $(whoami) ~/.npm
 ```
 
-### Debug Mode
+### Inspecting Wrapper Changes
 
 ```bash
-# Verbose output
-npx i18n-wrapper --verbose
+# Restrict the wrapper to a directory, then review changes
+npx i18n-wrapper -p "app/**/*.tsx"
+git diff -- app
 
 # Check configuration
 npx i18n-sheets status

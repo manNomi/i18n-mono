@@ -15,9 +15,10 @@ import {
 import { updateExistingUseTranslation } from "../common/ast/namespace-updater";
 import { inferNamespaceFromFile } from "../../extractor/namespace-inference";
 import { loadConfig } from "../../config-loader";
+import { validateKeyFirstConfig } from "../common/key-first";
 
 export async function wrapTranslations(
-  config: Partial<ScriptConfig> = {},
+  config: Partial<ScriptConfig> = {}
 ): Promise<{
   processedFiles: string[];
   totalTime: number;
@@ -26,6 +27,8 @@ export async function wrapTranslations(
     ...SCRIPT_CONFIG_DEFAULTS,
     ...config,
   } as Required<ScriptConfig>;
+
+  validateKeyFirstConfig(fullConfig.keyFirst);
 
   const startTime = Date.now();
   const filePaths = await glob(fullConfig.sourcePattern);
@@ -54,13 +57,13 @@ export async function wrapTranslations(
         const correctNamespace = inferNamespaceFromFile(
           filePath,
           code,
-          i18nexusConfig.namespacing,
+          i18nexusConfig.namespacing
         );
         if (correctNamespace) {
           namespaceUpdated = updateExistingUseTranslation(
             ast,
             correctNamespace,
-            code,
+            code
           );
         }
       }
@@ -74,7 +77,7 @@ export async function wrapTranslations(
               path,
               code,
               modifiedComponentPaths,
-              fullConfig,
+              fullConfig
             )
           ) {
             isFileModified = true;
@@ -90,7 +93,7 @@ export async function wrapTranslations(
                 path,
                 code,
                 modifiedComponentPaths,
-                fullConfig,
+                fullConfig
               )
             ) {
               isFileModified = true;
@@ -107,7 +110,7 @@ export async function wrapTranslations(
             modifiedComponentPaths,
             fullConfig,
             filePath,
-            code,
+            code
           );
         }
         writeASTToFile(ast, filePath, fullConfig);

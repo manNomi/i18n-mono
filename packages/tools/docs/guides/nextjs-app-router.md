@@ -403,8 +403,11 @@ Mixed projects should run the wrapper with narrower patterns instead of forcing 
 
 ```bash
 npx i18n-wrapper -p "app/**/page.tsx"
-npx i18n-wrapper -p "app/components/**/*.tsx" --mode client
+npx i18n-wrapper -p "app/components/**/*.tsx"
 ```
+
+Set `mode: "server"` or `mode: "client"` in `i18nexus.config.json` before
+running each corresponding pattern; `mode` is not a wrapper CLI option.
 
 ## Common Issues
 

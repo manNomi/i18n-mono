@@ -48,6 +48,17 @@ export const WRAPPER_DEFAULTS = {
 } as const;
 
 /**
+ * Opt-in configuration for JSX text that is already a translation key.
+ */
+export interface KeyFirstConfig {
+  enabled: boolean;
+  pattern?: string;
+}
+
+export const DEFAULT_KEY_FIRST_PATTERN =
+  "[a-z][A-Za-z0-9_-]*(?:\\.[a-z][A-Za-z0-9_-]*)+";
+
+/**
  * ScriptConfig 타입 정의 (wrapper에 사용)
  */
 export interface ScriptConfig {
@@ -60,6 +71,11 @@ export interface ScriptConfig {
    * - "auto": 한국어 + 보수적인 영어 UI 텍스트 감지
    */
   sourceLanguage?: string;
+  /**
+   * Treat matching JSX text and user-facing JSX attributes as translation keys.
+   * Disabled by default to preserve text-as-key behavior.
+   */
+  keyFirst?: KeyFirstConfig;
   /**
    * 서버 변환 시 사용할 함수명 (라이브러리별 상이)
    * 기본값: "getTranslation"
@@ -107,6 +123,7 @@ export const SCRIPT_CONFIG_DEFAULTS: Required<ScriptConfig> = {
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
   sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
+  keyFirst: { enabled: false },
   serverTranslationFunction: "getTranslation",
   mode: undefined as unknown as "client" | "server",
   framework: undefined as unknown as "nextjs" | "react" | "other",

@@ -16,10 +16,9 @@ import {
   applyTranslationsToAST,
   writeASTToFile,
 } from "../common/applier/translation-applier";
-
-if (!parentPort) {
-  throw new Error("This file must be run as a Worker Thread");
-}
+import { updateExistingUseTranslation } from "../common/ast/namespace-updater";
+import { inferNamespaceFromFile } from "../../extractor/namespace-inference";
+import { loadConfig } from "../../config-loader";
 
 /**
  * SWC로 파싱 후 Babel AST로 변환
@@ -60,13 +59,36 @@ function parseWithSwc(code: string): t.File {
 /**
  * 파일 처리 메인 함수
  */
-function processFile(task: WorkerTask): WorkerResult {
+export function processWorkerTask(task: WorkerTask): WorkerResult {
   const startTime = Date.now();
   const { filePath, code, config } = task;
 
   try {
     // 1. 파싱 (SWC/Babel 하이브리드)
     const ast = parseWithSwc(code);
+
+    // Keep the worker path aligned with Babel when a file only needs its
+    // existing useTranslation() call updated to the inferred namespace.
+    const i18nexusConfig = loadConfig("i18nexus.config.json", {
+      silent: true,
+    });
+    const namespacingEnabled = i18nexusConfig.namespacing?.enabled ?? false;
+    let namespaceUpdated = false;
+
+    if (namespacingEnabled && i18nexusConfig.namespacing) {
+      const correctNamespace = inferNamespaceFromFile(
+        filePath,
+        code,
+        i18nexusConfig.namespacing
+      );
+      if (correctNamespace) {
+        namespaceUpdated = updateExistingUseTranslation(
+          ast,
+          correctNamespace,
+          code
+        );
+      }
+    }
 
     // 2. AST 순회 및 변환
     let isFileModified = false;
@@ -93,8 +115,16 @@ function processFile(task: WorkerTask): WorkerResult {
     });
 
     // 3. 변경사항 적용
-    if (isFileModified) {
-      applyTranslationsToAST(ast, modifiedComponentPaths, config);
+    if (isFileModified || namespaceUpdated) {
+      if (isFileModified) {
+        applyTranslationsToAST(
+          ast,
+          modifiedComponentPaths,
+          config,
+          filePath,
+          code
+        );
+      }
       writeASTToFile(ast, filePath, config);
 
       const processingTime = Date.now() - startTime;
@@ -125,9 +155,11 @@ function processFile(task: WorkerTask): WorkerResult {
 /**
  * Worker 메시지 리스너
  */
-parentPort.on("message", (task: WorkerTask) => {
-  if (task.type === "process-file") {
-    const result = processFile(task);
-    parentPort!.postMessage(result);
-  }
-});
+if (parentPort) {
+  parentPort.on("message", (task: WorkerTask) => {
+    if (task.type === "process-file") {
+      const result = processWorkerTask(task);
+      parentPort.postMessage(result);
+    }
+  });
+}

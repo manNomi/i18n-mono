@@ -6,6 +6,7 @@ import {
   COMMON_DEFAULTS,
   GOOGLE_SHEETS_DEFAULTS,
 } from "./common/default-config";
+import type { KeyFirstConfig } from "./common/default-config";
 import type { StaticKeyExtractionMode } from "./extractor/key-extractor";
 
 export interface I18nexusConfig {
@@ -17,6 +18,10 @@ export interface I18nexusConfig {
    * en.json instead of the legacy Korean-source behavior.
    */
   sourceLanguage?: string;
+  /**
+   * Opt-in support for JSX text that is already a translation key.
+   */
+  keyFirst?: KeyFirstConfig;
   localesDir: string;
   sourcePattern: string;
   translationImportSource: string;
@@ -143,6 +148,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
   languages: [...COMMON_DEFAULTS.languages],
   defaultLanguage: COMMON_DEFAULTS.defaultLanguage,
   sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
+  keyFirst: { enabled: false },
   localesDir: COMMON_DEFAULTS.localesDir,
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
@@ -161,7 +167,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
 
 function isHelpOrVersionCommand(): boolean {
   return process.argv.some((arg) =>
-    ["--help", "-h", "--version", "-v", "-V"].includes(arg),
+    ["--help", "-h", "--version", "-v", "-V"].includes(arg)
   );
 }
 
@@ -171,7 +177,7 @@ function isHelpOrVersionCommand(): boolean {
  */
 export function loadConfig(
   configPath: string = "i18nexus.config.json",
-  options?: { silent?: boolean },
+  options?: { silent?: boolean }
 ): I18nexusConfig {
   const absolutePath = pathLib.resolve(process.cwd(), configPath);
   const shouldLog = !options?.silent && !isHelpOrVersionCommand();
@@ -179,7 +185,7 @@ export function loadConfig(
   if (!fs.existsSync(absolutePath)) {
     if (shouldLog) {
       console.log(
-        "⚠️  i18nexus.config.json not found, using default configuration",
+        "⚠️  i18nexus.config.json not found, using default configuration"
       );
       console.log("💡 Run 'i18n-sheets init' to create a config file");
     }
@@ -215,6 +221,10 @@ export function loadConfig(
         ...DEFAULT_CONFIG.googleSheets,
         ...(finalConfig.googleSheets || {}),
       },
+      keyFirst: {
+        ...DEFAULT_CONFIG.keyFirst,
+        ...(finalConfig.keyFirst || {}),
+      },
     };
 
     // 기본값과 병합
@@ -223,7 +233,7 @@ export function loadConfig(
     if (shouldLog) {
       console.warn(
         `⚠️  Failed to load ${configPath}, using default configuration:`,
-        error,
+        error
       );
     }
     return DEFAULT_CONFIG;
@@ -235,7 +245,7 @@ export function loadConfig(
  * 서버 환경에서 사용하기 적합합니다.
  */
 export function loadConfigSilently(
-  configPath: string = "i18nexus.config.json",
+  configPath: string = "i18nexus.config.json"
 ): I18nexusConfig {
   return loadConfig(configPath, { silent: true });
 }

@@ -82,6 +82,33 @@ describe("config-loader", () => {
     });
   });
 
+  describe("keyFirst", () => {
+    it("uses a disabled default when keyFirst is omitted", () => {
+      const config = loadConfig(testConfigPath, { silent: true });
+
+      expect(config.keyFirst).toEqual({ enabled: false });
+    });
+
+    it("loads an enabled custom key-first pattern", () => {
+      fs.writeFileSync(
+        testConfigPath,
+        JSON.stringify({
+          keyFirst: {
+            enabled: true,
+            pattern: "feature\\.[a-z]+",
+          },
+        })
+      );
+
+      const config = loadConfig(testConfigPath, { silent: true });
+
+      expect(config.keyFirst).toEqual({
+        enabled: true,
+        pattern: "feature\\.[a-z]+",
+      });
+    });
+  });
+
   describe("strictTypeGeneration", () => {
     it("strictTypeGeneration 설정을 로드해야 함", () => {
       const testConfig = {
@@ -183,7 +210,7 @@ describe("config-loader", () => {
       loadConfig(testConfigPath);
 
       expect(logSpy).toHaveBeenCalledWith(
-        "⚠️  i18nexus.config.json not found, using default configuration",
+        "⚠️  i18nexus.config.json not found, using default configuration"
       );
     });
 

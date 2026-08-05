@@ -251,10 +251,9 @@ npx i18n-download
 
 ### Dry-Run Mode
 
-Available in all commands:
+The extractor, cleanup, upload, and download commands support `--dry-run`:
 
 ```bash
-npx i18n-wrapper --dry-run
 npx i18n-extractor --dry-run
 npx i18n-clean-legacy --dry-run
 npx i18n-upload --dry-run
@@ -343,11 +342,14 @@ npx i18n-download --help
 
 ## Best Practices
 
-### 1. Always Start with Dry-Run
+### 1. Scope and Review Wrapper Changes
 
 ```bash
-# Preview first
-npx i18n-wrapper --dry-run
+# Run the wrapper against a narrow scope, then review the source diff
+npx i18n-wrapper -p "app/**/*.tsx"
+git diff -- app
+
+# Preview extraction before it writes locale files
 npx i18n-extractor --dry-run
 ```
 

@@ -129,17 +129,19 @@ export default function I18nWrapperPage() {
             </p>
           </div>
 
-          {/* Dry Run */}
+          {/* Narrow scope */}
           <div>
             <h3 className="text-xl font-semibold text-blue-400 mb-3">
-              {t("미리보기 모드")}
+              {t("작은 범위부터 시작")}
             </h3>
             <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800">
-              <code className="text-green-400">npx i18n-wrapper --dry-run</code>
+              <code className="text-green-400">
+                npx i18n-wrapper --pattern "app/about/page.tsx"
+              </code>
             </pre>
             <p className="text-slate-400 text-sm mt-2">
               {t(
-                "파일을 수정하지 않고 어떤 변경사항이 있을지 미리 확인합니다."
+                "처음에는 단일 파일이나 작은 디렉토리부터 시작하여 결과를 확인하세요."
               )}
             </p>
           </div>
@@ -159,6 +161,65 @@ export default function I18nWrapperPage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Key-first JSX */}
+      <section className="mb-12">
+        <h2 className="text-3xl font-bold text-white mb-3">
+          {t("keyFirst.title")}
+        </h2>
+        <p className="text-slate-400 mb-6">{t("keyFirst.description")}</p>
+
+        <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto mb-6">
+          <code className="text-slate-300">{t("keyFirst.config")}</code>
+        </pre>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-5">
+            <p className="text-sm text-slate-400 mb-2">01</p>
+            <h3 className="font-semibold text-white mb-2">
+              {t("keyFirst.step.write")}
+            </h3>
+            <code className="text-sm text-purple-300">
+              &lt;h1&gt;about.title1&lt;/h1&gt;
+            </code>
+          </div>
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-5">
+            <p className="text-sm text-slate-400 mb-2">02</p>
+            <h3 className="font-semibold text-white mb-2">
+              {t("keyFirst.step.wrap")}
+            </h3>
+            <code className="text-sm text-purple-300">
+              npx i18n-wrapper --key-first
+            </code>
+          </div>
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-5">
+            <p className="text-sm text-slate-400 mb-2">03</p>
+            <h3 className="font-semibold text-white mb-2">
+              {t("keyFirst.step.extract")}
+            </h3>
+            <code className="text-sm text-purple-300">npx i18n-extractor</code>
+          </div>
+          <div className="bg-slate-900 rounded-xl border border-slate-700 p-5">
+            <p className="text-sm text-slate-400 mb-2">04</p>
+            <h3 className="font-semibold text-white mb-2">
+              {t("keyFirst.step.translate")}
+            </h3>
+            <code className="text-sm text-purple-300">
+              locales/about/ko.json
+            </code>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
+            <code className="text-slate-300">{t("keyFirst.before")}</code>
+          </pre>
+          <pre className="bg-slate-950 rounded-lg p-4 text-sm border border-slate-800 overflow-x-auto">
+            <code className="text-slate-300">{t("keyFirst.after")}</code>
+          </pre>
+        </div>
+        <p className="text-slate-400 text-sm mt-4">{t("keyFirst.locale")}</p>
       </section>
 
       {/* Before/After Examples */}
@@ -258,12 +319,10 @@ export default function I18nWrapperPage() {
 
           <div className="bg-slate-900 rounded-xl border border-slate-700 p-6">
             <div className="flex items-start justify-between mb-2">
-              <code className="text-purple-400 text-lg">--dry-run</code>
+              <code className="text-purple-400 text-lg">--key-first</code>
               <span className="text-sm text-slate-500">{t("플래그")}</span>
             </div>
-            <p className="text-slate-300">
-              {t("실제로 파일을 수정하지 않고 변경사항만 미리 확인합니다.")}
-            </p>
+            <p className="text-slate-300">{t("keyFirst.option")}</p>
           </div>
 
           <div className="bg-slate-900 rounded-xl border border-slate-700 p-6">
@@ -371,15 +430,13 @@ export default function I18nWrapperPage() {
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center">
               <DocIcon type="check" className="mr-2" />
-              {t("먼저 dry-run으로 확인하기")}
+              {t("작은 범위부터 시작")}
             </h4>
-            <p className="text-slate-300 mb-2">
-              {t(
-                "실제 파일을 수정하기 전에 --dry-run 옵션으로 변경사항을 미리 확인하세요."
-              )}
-            </p>
+            <p className="text-slate-300 mb-2">{t("keyFirst.review")}</p>
             <pre className="bg-slate-950 rounded-lg p-3 text-sm">
-              <code className="text-green-400">npx i18n-wrapper --dry-run</code>
+              <code className="text-green-400">
+                npx i18n-wrapper -p "app/about/page.tsx" && git diff
+              </code>
             </pre>
           </div>
 

@@ -7,6 +7,8 @@ import { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
 import { hasIgnoreComment, shouldSkipPath } from "./ast-helpers";
 import { STRING_CONSTANTS, REGEX_PATTERNS } from "../utils/constants";
+import { createKeyFirstMatcher, type KeyFirstMatcher } from "../key-first";
+import type { KeyFirstConfig } from "../../../common/default-config";
 
 export interface TransformResult {
   wasModified: boolean;
@@ -14,6 +16,7 @@ export interface TransformResult {
 
 export interface TransformOptions {
   sourceLanguage?: string;
+  keyFirst?: KeyFirstConfig;
 }
 
 const TRANSLATABLE_JSX_ATTRIBUTES = new Set([
@@ -25,6 +28,8 @@ const TRANSLATABLE_JSX_ATTRIBUTES = new Set([
   "placeholder",
   "title",
 ]);
+
+const KEY_FIRST_EXCLUDED_ELEMENTS = new Set(["code", "pre", "script", "style"]);
 
 function getSourceLanguage(options?: TransformOptions): string {
   return options?.sourceLanguage || "ko";
@@ -69,11 +74,52 @@ function isTranslatableJsxAttribute(path: NodePath<t.StringLiteral>): boolean {
 
 function isUiStringLiteralPath(path: NodePath<t.StringLiteral>): boolean {
   return (
-    isTranslatableJsxAttribute(path) || t.isJSXExpressionContainer(path.parent)
+    isTranslatableJsxAttribute(path) || isUiJsxExpressionStringLiteral(path)
   );
 }
 
-function shouldWrapText(value: string, options?: TransformOptions): boolean {
+function isKeyFirstStringLiteralPath(path: NodePath<t.StringLiteral>): boolean {
+  return (
+    isTranslatableJsxAttribute(path) || isUiJsxExpressionStringLiteral(path)
+  );
+}
+
+function isUiJsxExpressionStringLiteral(
+  path: NodePath<t.StringLiteral>
+): boolean {
+  const expressionContainerPath = path.parentPath;
+  if (!expressionContainerPath?.isJSXExpressionContainer()) {
+    return false;
+  }
+
+  const expressionParent = expressionContainerPath.parent;
+  if (!t.isJSXAttribute(expressionParent)) {
+    return true;
+  }
+
+  const attributeName = getJsxAttributeName(expressionParent);
+  return attributeName ? TRANSLATABLE_JSX_ATTRIBUTES.has(attributeName) : false;
+}
+
+function isInsideKeyFirstExcludedElement(path: NodePath): boolean {
+  return Boolean(
+    path.findParent((ancestor) => {
+      if (!ancestor.isJSXElement()) {
+        return false;
+      }
+
+      const name = ancestor.node.openingElement.name;
+      return (
+        t.isJSXIdentifier(name) && KEY_FIRST_EXCLUDED_ELEMENTS.has(name.name)
+      );
+    })
+  );
+}
+
+function shouldWrapSourceText(
+  value: string,
+  options?: TransformOptions
+): boolean {
   const sourceLanguage = getSourceLanguage(options);
   return (
     (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(value)) ||
@@ -84,24 +130,38 @@ function shouldWrapText(value: string, options?: TransformOptions): boolean {
 function shouldWrapStringLiteral(
   path: NodePath<t.StringLiteral>,
   options?: TransformOptions,
+  keyFirstMatcher: KeyFirstMatcher = () => false
 ): boolean {
   const value = path.node.value;
+  const isKeyFirstValue = keyFirstMatcher(value);
+
+  // A key-first match owns the decision. This prevents source-language
+  // detection from converting key-shaped text in excluded JSX descendants.
+  if (isKeyFirstValue) {
+    return (
+      isKeyFirstStringLiteralPath(path) &&
+      !isInsideKeyFirstExcludedElement(path)
+    );
+  }
+
   const sourceLanguage = getSourceLanguage(options);
 
-  if (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(value)) {
+  const sourceLanguageMatch =
+    (isKoreanSourceLanguage(sourceLanguage) && hasKoreanText(value)) ||
+    (isEnglishSourceLanguage(sourceLanguage) &&
+      hasEnglishText(value) &&
+      isUiStringLiteralPath(path));
+
+  if (sourceLanguageMatch) {
     return true;
   }
 
-  return (
-    isEnglishSourceLanguage(sourceLanguage) &&
-    hasEnglishText(value) &&
-    isUiStringLiteralPath(path)
-  );
+  return false;
 }
 
 function shouldWrapTemplateLiteral(
   path: NodePath<t.TemplateLiteral>,
-  options?: TransformOptions,
+  options?: TransformOptions
 ): boolean {
   const sourceLanguage = getSourceLanguage(options);
   const rawText = path.node.quasis.map((quasi) => quasi.value.raw).join("");
@@ -123,9 +183,10 @@ function shouldWrapTemplateLiteral(
 export function transformFunctionBody(
   path: NodePath<t.Function>,
   sourceCode: string,
-  options: TransformOptions = {},
+  options: TransformOptions = {}
 ): TransformResult {
   let wasModified = false;
+  const keyFirstMatcher = createKeyFirstMatcher(options.keyFirst);
 
   path.traverse({
     StringLiteral: (subPath) => {
@@ -142,11 +203,11 @@ export function transformFunctionBody(
         return;
       }
 
-      if (shouldWrapStringLiteral(subPath, options)) {
+      if (shouldWrapStringLiteral(subPath, options, keyFirstMatcher)) {
         wasModified = true;
         const replacement = t.callExpression(
           t.identifier(STRING_CONSTANTS.TRANSLATION_FUNCTION),
-          [t.stringLiteral(subPath.node.value)],
+          [t.stringLiteral(subPath.node.value)]
         );
 
         if (t.isJSXAttribute(subPath.parent)) {
@@ -191,7 +252,7 @@ export function transformFunctionBody(
       if (expressions.length === 0) {
         const replacement = t.callExpression(
           t.identifier(STRING_CONSTANTS.TRANSLATION_FUNCTION),
-          [t.stringLiteral(quasis[0].value.raw)],
+          [t.stringLiteral(quasis[0].value.raw)]
         );
         subPath.replaceWith(replacement);
         return;
@@ -236,7 +297,7 @@ export function transformFunctionBody(
 
           // interpolation 객체에 추가
           interpolationVars.push(
-            t.objectProperty(t.identifier(varName), expr as t.Expression),
+            t.objectProperty(t.identifier(varName), expr as t.Expression)
           );
         }
       });
@@ -253,7 +314,7 @@ export function transformFunctionBody(
 
       const replacement = t.callExpression(
         t.identifier(STRING_CONSTANTS.TRANSLATION_FUNCTION),
-        args,
+        args
       );
       subPath.replaceWith(replacement);
     },
@@ -270,15 +331,21 @@ export function transformFunctionBody(
         return;
       }
 
-      if (shouldWrapText(text, options)) {
+      const isKeyFirstValue = keyFirstMatcher(text);
+      const sourceLanguageMatch = shouldWrapSourceText(text, options);
+      const shouldWrap = isKeyFirstValue
+        ? !isInsideKeyFirstExcludedElement(subPath)
+        : sourceLanguageMatch;
+
+      if (shouldWrap) {
         wasModified = true;
 
         // t() 함수 호출로 감싸기
         const replacement = t.jsxExpressionContainer(
           t.callExpression(
             t.identifier(STRING_CONSTANTS.TRANSLATION_FUNCTION),
-            [t.stringLiteral(text)],
-          ),
+            [t.stringLiteral(text)]
+          )
         );
 
         subPath.replaceWith(replacement);

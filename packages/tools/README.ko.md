@@ -133,24 +133,61 @@ npx i18n-doctor
 # 기본 사용법 - src/** 에서 한국어 텍스트 처리
 npx i18n-wrapper
 
-# 커스텀 패턴과 네임스페이스
-npx i18n-wrapper -p "app/**/*.tsx" -n "components"
+# 커스텀 패턴
+npx i18n-wrapper -p "app/**/*.tsx"
 
-# 변경사항 미리보기
-npx i18n-wrapper --dry-run
+# key-first JSX 텍스트 변환
+npx i18n-wrapper --key-first -p "app/**/*.tsx"
 ```
 
 **특징:**
 
 - 한국어/영어 문자열 자동 감지
 - **템플릿 리터럴 지원**: `` `한국어 ${변수}` `` 패턴 자동 래핑
-- `useTranslation()` 훅 자동 추가 (i18nexus)
-- **서버 컴포넌트 자동 감지**: `getTranslation` 사용 시 `useTranslation` 훅 추가 안 함
-- 번역 키 파일 자동 생성 (띄어쓰기 포함)
+- 설정한 `mode`에 맞는 `useTranslation()` 또는 `getTranslation()` 바인딩 추가
 - 기존 t() 호출 및 import 보존
+- **key-first (opt-in)**: `about.title1` 같은 JSX 키를 `{t("about.title1")}`로 변환
 - **`{/* i18n-ignore */}` 주석으로 특정 코드 래핑 제외**
-- **상수 기반 지능형 래핑**: 상수 데이터만 자동 래핑, API/동적 데이터는 제외
-- **컨텍스트 기반 데이터 소스 추적**: props, 파라미터, API 데이터 자동 감지
+
+자세한 대상 범위와 Next.js server/client 설정은
+[i18n-wrapper CLI 문서](./docs/cli/i18n-wrapper.md)를 참고하세요.
+
+#### Key-first JSX
+
+key-first는 기본적으로 비활성화되어 있습니다. 이미 번역 키로 작성한 JSX 텍스트를
+`sourceLanguage`와 관계없이 감쌉니다.
+
+```tsx
+// Before
+<h1>about.title1</h1>
+
+// After
+<h1>{t("about.title1")}</h1>
+```
+
+프로젝트 설정으로 활성화합니다.
+
+```json
+{
+  "keyFirst": {
+    "enabled": true
+  }
+}
+```
+
+기본 패턴은 `about.title1`, `checkout.emptyState.title` 같은 점으로 구분된 키만
+정확히 일치시킵니다. JSX 텍스트, JSX 표현식의 문자열, `placeholder`, `title`,
+`alt`, `aria-label` 같은 사용자 노출 속성만 대상으로 하며, 코드 블록, 기술 속성,
+동적 값, 기존 `t()` 호출은 건너뜁니다. `keyFirst.pattern` 또는
+`--key-first-pattern`으로 패턴을 더 좁힐 수 있습니다.
+
+기본 점 표기 패턴은 화면에 보이는 `example.com` 같은 domain 형태의 텍스트에도
+일치할 수 있습니다. 그런 텍스트는 `i18n-ignore`로 제외하거나 프로젝트에 맞는 더
+좁은 `keyFirst.pattern`을 설정하세요.
+
+`about.title1`은 namespace로 분해되지 않고 locale 파일의 정확한 키로 유지됩니다.
+`i18n-extractor`는 source locale에 키 자체를 넣고 다른 locale에는 빈 값을 만듭니다.
+번역 문구는 사용자가 locale 파일에서 작성합니다.
 
 **래핑 제외 (Ignore) 기능:**
 
@@ -180,78 +217,6 @@ const CONFIG = {
   message: "환영합니다",
 };
 ```
-
-**상수 기반 지능형 래핑:**
-
-t-wrapper는 데이터의 소스를 분석하여 **정적 상수에서 온 데이터만** 자동으로 `t()` 함수로 래핑합니다.
-
-```tsx
-// ✅ 처리됨 - 정적 상수
-const NAV_ITEMS = [
-  { path: "/home", label: "홈" },
-  { path: "/about", label: "소개" },
-];
-
-export default function Navigation() {
-  return (
-    <nav>
-      {/* item.label이 자동으로 t(item.label)로 래핑됨 */}
-      {NAV_ITEMS.map((item) => (
-        <a href={item.path}>{item.label}</a>
-      ))}
-    </nav>
-  );
-}
-
-// ❌ 제외됨 - API 데이터 (useState)
-export default function UserList() {
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    fetch("/api/users").then((data) => setUsers(data));
-  }, []);
-
-  return (
-    <div>
-      {/* user.name은 자동 래핑되지 않음 (API 데이터) */}
-      {users.map((user) => (
-        <div>{user.name}</div>
-      ))}
-    </div>
-  );
-}
-
-// ❌ 제외됨 - Props 데이터
-interface Props {
-  items: Array<{ label: string }>;
-}
-
-export default function List({ items }: Props) {
-  return (
-    <div>
-      {/* item.label은 자동 래핑되지 않음 (props) */}
-      {items.map((item) => (
-        <div>{item.label}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-**자동 제외되는 데이터 소스:**
-
-- `useState`, `useEffect`, `useQuery` 등의 React 훅에서 온 데이터
-- `fetch`, `axios` 등 API 호출 결과
-- 함수의 props나 파라미터로 전달된 데이터
-- `let`, `var`로 선언된 동적 변수
-- 배열 구조 분해 할당 (예: `const [data, setData] = useState()`)
-
-**자동 처리되는 데이터 소스:**
-
-- `const`로 선언된 정적 상수 (ALL_CAPS, PascalCase)
-- 외부 파일에서 import된 상수
-- 한국어 문자열을 포함한 객체/배열 리터럴
-- `label`, `title`, `text`, `name`, `placeholder` 등 렌더링 가능한 속성
 
 **템플릿 리터럴 → i18next Interpolation 자동 변환:**
 
@@ -661,13 +626,14 @@ npx i18n-extractor -p "src/**/*.tsx" -d "./locales"
 
 ### i18n-wrapper 옵션
 
-| 옵션               | 설명                    | 기본값                       |
-| ------------------ | ----------------------- | ---------------------------- |
-| `-p, --pattern`    | 소스 파일 패턴          | `"src/**/*.{js,jsx,ts,tsx}"` |
-| `-n, --namespace`  | 번역 네임스페이스       | `"common"`                   |
-| `-o, --output-dir` | 번역 파일 출력 디렉토리 | `"./locales"`                |
-| `-d, --dry-run`    | 실제 수정 없이 미리보기 | -                            |
-| `-h, --help`       | 도움말 표시             | -                            |
+| 옵션                          | 설명                                            | 기본값                    |
+| ----------------------------- | ----------------------------------------------- | ------------------------- |
+| `-p, --pattern`               | 소스 파일 패턴                                  | config의 `sourcePattern`  |
+| `--source-language <lang>`    | 원문 언어 감지: `ko`, `en`, `auto`              | config의 `sourceLanguage` |
+| `--key-first`                 | config/default pattern으로 key-first 활성화     | 비활성화                  |
+| `--key-first-pattern <regex>` | custom exact-match pattern으로 key-first 활성화 | -                         |
+| `--no-key-first`              | 이번 실행에서 key-first 비활성화                | -                         |
+| `-h, --help`                  | 도움말 표시                                     | -                         |
 
 ### i18n-extractor 옵션
 

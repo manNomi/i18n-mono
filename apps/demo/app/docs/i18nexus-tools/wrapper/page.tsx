@@ -5,7 +5,7 @@ import DocsWrapperPage from "@/page/docs-i18nexus-tools-wrapper";
 export const metadata: Metadata = {
   title: "i18n-wrapper - i18nexus Tools Documentation",
   description:
-    "Automatically wrap hardcoded text with t() function. Smart detection and code formatting preservation.",
+    "Automatically wrap hardcoded text and opt-in key-first JSX with t().",
   keywords: [
     "i18n-wrapper",
     "auto wrap",
