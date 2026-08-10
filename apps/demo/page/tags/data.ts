@@ -1,3 +1,5 @@
+import type { TagsKeys } from "i18nexus";
+
 export type TagId =
   | "core-runtime"
   | "nextjs"
@@ -8,16 +10,16 @@ export type TagId =
 
 export type TagMeta = {
   id: TagId;
-  labelKey: string;
-  descriptionKey: string;
+  labelKey: TagsKeys;
+  descriptionKey: TagsKeys;
 };
 
 export type TaggedPost = {
   href: string;
-  titleKey: string;
-  descriptionKey: string;
-  categoryKey: string;
-  readingTimeKey: string;
+  titleKey: TagsKeys;
+  descriptionKey: TagsKeys;
+  categoryKey: TagsKeys;
+  readingTimeKey: TagsKeys;
   tags: TagId[];
 };
 

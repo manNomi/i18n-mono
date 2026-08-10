@@ -14,6 +14,7 @@
     "prebuild": "npm run assert:no-dev-server && npm run prepare:local-packages && npm run check:local-packages",
     "build": "next build",
     "build:safe": "npm run build",
+    "typecheck": "tsc --noEmit",
     "validate": "npm run prepare:local-packages && npm run check:local-packages && npm run lint && npm run build",
     "start": "next start",
     "lint": "eslint",

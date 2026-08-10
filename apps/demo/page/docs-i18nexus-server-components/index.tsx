@@ -3,6 +3,8 @@
 import { useTranslation } from "i18nexus";
 import Link from "next/link";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function ServerComponentsPage() {
   const { t } = useTranslation("docs-i18nexus-server-components");
 
