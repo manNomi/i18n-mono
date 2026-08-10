@@ -1,5 +1,4 @@
 import { I18nProvider } from "i18nexus";
-import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import tagsEn from "@/locales/tags/en.json";
@@ -8,20 +7,18 @@ import TagsPage from "@/page/tags";
 
 function renderTagsPage(language: "en" | "ko", selectedTag?: string) {
   return renderToStaticMarkup(
-    React.createElement(
-      I18nProvider,
-      {
-        initialLanguage: language,
-        translations: {
-          tags: {
-            en: tagsEn,
-            ko: tagsKo,
-          },
+    <I18nProvider
+      initialLanguage={language}
+      translations={{
+        tags: {
+          en: tagsEn,
+          ko: tagsKo,
         },
-        fallbackNamespace: "tags",
-      },
-      React.createElement(TagsPage, { selectedTag })
-    )
+      }}
+      fallbackNamespace="tags"
+    >
+      <TagsPage selectedTag={selectedTag} />
+    </I18nProvider>
   );
 }
 

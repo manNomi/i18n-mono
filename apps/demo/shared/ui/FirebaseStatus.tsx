@@ -18,13 +18,16 @@ export default function FirebaseStatus() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const firebaseAuth = auth;
+    const firestore = db;
+
     // Do not expose Firebase diagnostics to public visitors.
-    if (!auth || !db) {
+    if (!firebaseAuth || !firestore) {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (!user) {
         setStatus({
           auth: false,
@@ -42,7 +45,7 @@ export default function FirebaseStatus() {
       });
 
       try {
-        const q = query(collection(db, "submissions"), limit(1));
+        const q = query(collection(firestore, "submissions"), limit(1));
         await getDocs(q);
         setStatus((prev) => ({ ...prev, firestore: true }));
       } catch (error) {

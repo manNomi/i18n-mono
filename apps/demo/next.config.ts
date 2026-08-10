@@ -11,13 +11,6 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // TODO: Fix type errors and re-enable type checking
-    ignoreBuildErrors: true,
-  },
   webpack: (config, { isServer }) => {
     // 동적 import 경고 억제 (server.ts의 런타임 경로 결정)
     config.ignoreWarnings = [
