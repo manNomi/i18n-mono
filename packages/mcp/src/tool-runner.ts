@@ -12,6 +12,7 @@ import type {
 const MAX_OUTPUT_BYTES = 64 * 1024;
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MINIMUM_TOOLS_VERSION = [3, 2, 1] as const;
+const ENHANCED_TOOLS_VERSION = [3, 3, 0] as const;
 const TOOL_ENV_KEYS = [
   "PATH",
   "HOME",
@@ -46,6 +47,10 @@ const runToolOptionsSchema = z
       "clean-legacy",
       "upload",
       "download",
+      "sheets-status",
+      "sheets-sync-new-keys",
+      "json-to-csv",
+      "csv-to-json",
     ]),
     applyChanges: z.boolean().optional(),
     pattern: z.string().min(1).max(4_096).optional(),
@@ -74,6 +79,8 @@ const runToolOptionsSchema = z
     spreadsheetId: z.string().min(1).optional(),
     credentialsPath: z.string().min(1).optional(),
     autoTranslate: z.boolean().optional(),
+    wrapperEngine: z.enum(["adaptive", "swc-worker"]).optional(),
+    csvFile: z.string().min(1).optional(),
     timeoutMs: z.number().int().min(1_000).max(300_000).optional(),
   })
   .strict();
@@ -86,6 +93,10 @@ const BIN_NAMES: Record<I18nexusToolAction, string> = {
   "clean-legacy": "i18n-clean-legacy",
   upload: "i18n-upload",
   download: "i18n-download",
+  "sheets-status": "i18n-sheets-status",
+  "sheets-sync-new-keys": "i18n-sheets-sync-new-keys",
+  "json-to-csv": "i18n-json-to-csv",
+  "csv-to-json": "i18n-csv-to-json",
 };
 
 const COMMON_OPTIONS = new Set([
@@ -104,6 +115,7 @@ const TOOL_OPTIONS: Record<
     "sourceLanguage",
     "keyFirst",
     "keyFirstPattern",
+    "wrapperEngine",
   ]),
   extractor: new Set([
     "pattern",
@@ -136,6 +148,25 @@ const TOOL_OPTIONS: Record<
     "languages",
     "force",
   ]),
+  "sheets-status": new Set([
+    "spreadsheetId",
+    "credentialsPath",
+    "localesDir",
+    "languages",
+  ]),
+  "sheets-sync-new-keys": new Set([
+    "spreadsheetId",
+    "credentialsPath",
+    "localesDir",
+    "languages",
+  ]),
+  "json-to-csv": new Set(["localesDir", "languages", "csvFile"]),
+  "csv-to-json": new Set([
+    "localesDir",
+    "languages",
+    "csvFile",
+    "force",
+  ]),
 };
 
 interface InstalledBin {
@@ -157,7 +188,10 @@ function readJsonObject(filePath: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function assertCompatibleToolsVersion(version: unknown): string {
+function assertCompatibleToolsVersion(
+  version: unknown,
+  minimumVersion: readonly number[] = MINIMUM_TOOLS_VERSION
+): string {
   if (typeof version !== "string") {
     throw new Error("Installed i18nexus-tools does not declare a version.");
   }
@@ -168,15 +202,29 @@ function assertCompatibleToolsVersion(version: unknown): string {
     );
   }
   const installed = match.slice(1).map(Number);
-  for (let index = 0; index < MINIMUM_TOOLS_VERSION.length; index += 1) {
-    if (installed[index] > MINIMUM_TOOLS_VERSION[index]) return version;
-    if (installed[index] < MINIMUM_TOOLS_VERSION[index]) {
+  for (let index = 0; index < minimumVersion.length; index += 1) {
+    if (installed[index] > minimumVersion[index]) return version;
+    if (installed[index] < minimumVersion[index]) {
       throw new Error(
-        `i18nexus-tools ${version} is not supported. Install i18nexus-tools >= ${MINIMUM_TOOLS_VERSION.join(".")}.`
+        `i18nexus-tools ${version} is not supported for this action. Install i18nexus-tools >= ${minimumVersion.join(".")}.`
       );
     }
   }
   return version;
+}
+
+function assertCredentialsFile(projectPath: string, configuredPath: string): void {
+  if (configuredPath.includes("\0")) {
+    throw new Error("credentialsPath contains a null byte.");
+  }
+  const credentialPath = path.resolve(projectPath, configuredPath);
+  if (!fs.existsSync(credentialPath)) {
+    throw new Error(`credentialsPath does not exist: ${configuredPath}`);
+  }
+  const realPath = fs.realpathSync(credentialPath);
+  if (!fs.statSync(realPath).isFile()) {
+    throw new Error("credentialsPath must resolve to a regular file.");
+  }
 }
 
 function isWithin(basePath: string, targetPath: string): boolean {
@@ -379,6 +427,10 @@ function validateEffectivePaths(
       "clean-legacy",
       "upload",
       "download",
+      "sheets-status",
+      "sheets-sync-new-keys",
+      "json-to-csv",
+      "csv-to-json",
     ].includes(options.tool) &&
     localesDir
   ) {
@@ -391,8 +443,14 @@ function validateEffectivePaths(
     assertProjectPath(projectPath, typesOutputPath, "typesOutputPath");
   }
   if (options.outputFile) assertFileName(options.outputFile, "outputFile");
-  if (["upload", "download"].includes(options.tool) && credentialsPath) {
-    assertProjectPath(projectPath, credentialsPath, "credentialsPath");
+  if (options.csvFile) assertProjectPath(projectPath, options.csvFile, "csvFile");
+  if (
+    ["upload", "download", "sheets-status", "sheets-sync-new-keys"].includes(
+      options.tool
+    ) &&
+    credentialsPath
+  ) {
+    assertCredentialsFile(projectPath, credentialsPath);
   }
   if (["extractor", "type"].includes(options.tool)) {
     assertTranslationImportSource(translationImportSource);
@@ -418,8 +476,7 @@ function assertSupportedOptions(options: RunI18nexusToolOptions): void {
 
 function resolveInstalledBin(
   projectPath: string,
-  tool: I18nexusToolAction,
-  force: boolean
+  options: RunI18nexusToolOptions
 ): InstalledBin {
   const packageLink = path.join(projectPath, "node_modules", "i18nexus-tools");
   const packageJsonPath = path.join(packageLink, "package.json");
@@ -431,10 +488,25 @@ function resolveInstalledBin(
 
   const packageRoot = fs.realpathSync(packageLink);
   const packageJson = readJsonObject(path.join(packageRoot, "package.json"));
-  const packageVersion = assertCompatibleToolsVersion(packageJson.version);
+  const minimumVersion = [
+    "sheets-status",
+    "sheets-sync-new-keys",
+    "json-to-csv",
+    "csv-to-json",
+  ].includes(options.tool)
+    ? ENHANCED_TOOLS_VERSION
+    : MINIMUM_TOOLS_VERSION;
+  const packageVersion = assertCompatibleToolsVersion(
+    packageJson.version,
+    minimumVersion
+  );
   const bin = packageJson.bin;
   const name =
-    tool === "download" && force ? "i18n-download-force" : BIN_NAMES[tool];
+    options.tool === "download" && options.force
+      ? "i18n-download-force"
+      : options.tool === "wrapper" && options.wrapperEngine === "swc-worker"
+        ? "i18n-wrapper-swc-worker"
+        : BIN_NAMES[options.tool];
   if (!bin || Array.isArray(bin) || typeof bin !== "object") {
     throw new Error(
       "Installed i18nexus-tools does not declare executable bins."
@@ -535,6 +607,29 @@ function buildArgs(
     if (options.tool === "upload" && options.autoTranslate)
       args.push("--auto-translate");
     if (options.tool === "upload" && options.force) args.push("--force");
+    if (preview) args.push("--dry-run");
+  }
+
+  if (
+    options.tool === "sheets-status" ||
+    options.tool === "sheets-sync-new-keys"
+  ) {
+    if (options.spreadsheetId)
+      pushValue(args, "--spreadsheet-id", options.spreadsheetId);
+    if (options.credentialsPath)
+      pushValue(args, "--credentials", options.credentialsPath);
+    if (options.localesDir)
+      pushValue(args, "--locales-dir", options.localesDir);
+    if (options.tool === "sheets-sync-new-keys" && preview) {
+      args.push("--dry-run");
+    }
+  }
+
+  if (options.tool === "json-to-csv" || options.tool === "csv-to-json") {
+    if (options.localesDir)
+      pushValue(args, "--locales-dir", options.localesDir);
+    if (options.csvFile) pushValue(args, "--csv-file", options.csvFile);
+    if (options.tool === "csv-to-json" && options.force) args.push("--force");
     if (preview) args.push("--dry-run");
   }
 
@@ -659,6 +754,30 @@ function executionPolicy(tool: I18nexusToolAction): {
       note: "Runs the target project's installed doctor code without writing project files.",
     };
   }
+  if (tool === "sheets-status") {
+    return {
+      mutatesLocalFiles: false,
+      usesNetwork: true,
+      nativeDryRun: false,
+      note: "Reads local namespaces and Google Sheets without writing either side.",
+    };
+  }
+  if (tool === "sheets-sync-new-keys") {
+    return {
+      mutatesLocalFiles: true,
+      usesNetwork: true,
+      nativeDryRun: true,
+      note: "Preview reads both sides and reports missing and conflicting keys without creating sheets or writing files.",
+    };
+  }
+  if (tool === "json-to-csv" || tool === "csv-to-json") {
+    return {
+      mutatesLocalFiles: true,
+      usesNetwork: false,
+      nativeDryRun: true,
+      note: "Preview parses all input and reports affected namespaces and files without writing files.",
+    };
+  }
   if (tool === "extractor" || tool === "clean-legacy") {
     return {
       mutatesLocalFiles: true,
@@ -705,17 +824,20 @@ export async function runI18nexusTool(
   const applyChanges = options.applyChanges ?? false;
   const preview = !applyChanges;
   const policy = executionPolicy(options.tool);
-  const bin = resolveInstalledBin(
-    projectPath,
-    options.tool,
-    options.force ?? false
-  );
+  const bin = resolveInstalledBin(projectPath, options);
   const args = buildArgs(options, preview);
   const mode =
-    options.tool === "doctor" ? "inspect" : preview ? "preview" : "apply";
+    options.tool === "doctor" || options.tool === "sheets-status"
+      ? "inspect"
+      : preview
+        ? "preview"
+        : "apply";
 
   const shouldExecute =
-    options.tool === "doctor" || applyChanges || policy.nativeDryRun;
+    options.tool === "doctor" ||
+    options.tool === "sheets-status" ||
+    applyChanges ||
+    policy.nativeDryRun;
   const execution = shouldExecute
     ? await executeBin(
         bin.path,

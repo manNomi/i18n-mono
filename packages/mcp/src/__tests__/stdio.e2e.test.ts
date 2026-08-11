@@ -94,6 +94,8 @@ describe("i18nexus MCP stdio server", () => {
             projectPath,
             dryRun: false,
             installDependencies: false,
+            staticKeyExtraction: "aggressive",
+            keyFirst: { enabled: true, pattern: "^[a-z]+\\.[a-z]+$" },
           },
         })
       ) as { dryRun: boolean };
@@ -101,6 +103,34 @@ describe("i18nexus MCP stdio server", () => {
       expect(
         fs.existsSync(path.join(projectPath, "i18nexus.config.json"))
       ).toBe(true);
+      expect(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(projectPath, "i18nexus.config.json"),
+            "utf8"
+          )
+        )
+      ).toMatchObject({
+        staticKeyExtraction: "aggressive",
+        keyFirst: { enabled: true },
+      });
+
+      const csvPreview = textResult(
+        await client.callTool({
+          name: "run_i18nexus_tool",
+          arguments: {
+            projectPath,
+            tool: "json-to-csv",
+            csvFile: "./translations.csv",
+            languages: ["ko", "en"],
+          },
+        })
+      ) as { mode: string; command: { name: string; args: string[] } };
+      expect(csvPreview).toMatchObject({
+        mode: "preview",
+        command: { name: "i18n-json-to-csv" },
+      });
+      expect(csvPreview.command.args).toContain("--dry-run");
 
       const validation = textResult(
         await client.callTool({

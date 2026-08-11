@@ -34,6 +34,32 @@ export interface I18nexusConfig {
   namespaceStrategy: "full" | "page-based" | "single";
   generateTypes: boolean;
   strictTypeGeneration: boolean;
+  typesOutputPath?: string;
+  staticKeyExtraction?: "off" | "safe" | "aggressive";
+  staticKeyContainerPatterns?: string[];
+  keyFirst?: { enabled: boolean; pattern?: string };
+  mode?: "client" | "server";
+  serverTranslationFunction?: string;
+  googleSheets?: {
+    spreadsheetId: string;
+    credentialsPath: string;
+    sheetName: string;
+  };
+  namespacing?: {
+    enabled: boolean;
+    basePath: string;
+    defaultNamespace: string;
+    framework?:
+      | "nextjs-app"
+      | "nextjs-pages"
+      | "tanstack-file"
+      | "tanstack-folder"
+      | "react-router"
+      | "remix"
+      | "other";
+    ignorePatterns?: string[];
+    strategy?: "first-folder" | "full-path" | "last-folder";
+  };
   lazy: boolean;
   [key: string]: unknown;
 }
@@ -72,6 +98,29 @@ export interface SetupOptions {
   languages?: string[];
   defaultLanguage?: string;
   sourceLanguage?: string;
+  sourcePattern?: string;
+  localesDir?: string;
+  translationImportSource?: string;
+  framework?: "nextjs" | "react" | "other";
+  mode?: "client" | "server";
+  serverTranslationFunction?: string;
+  fallbackNamespace?: string;
+  namespaceLocation?: string;
+  useNamespaceStructure?: boolean;
+  namespaceStrategy?: "full" | "page-based" | "single";
+  generateTypes?: boolean;
+  strictTypeGeneration?: boolean;
+  typesOutputPath?: string;
+  staticKeyExtraction?: "off" | "safe" | "aggressive";
+  staticKeyContainerPatterns?: string[];
+  keyFirst?: { enabled: boolean; pattern?: string };
+  googleSheets?: {
+    spreadsheetId: string;
+    credentialsPath: string;
+    sheetName: string;
+  };
+  namespacing?: I18nexusConfig["namespacing"];
+  lazy?: boolean;
   packageManager?: PackageManager;
   dryRun?: boolean;
   overwriteExistingConfig?: boolean;
@@ -125,7 +174,11 @@ export type I18nexusToolAction =
   | "type"
   | "clean-legacy"
   | "upload"
-  | "download";
+  | "download"
+  | "sheets-status"
+  | "sheets-sync-new-keys"
+  | "json-to-csv"
+  | "csv-to-json";
 
 export interface RunI18nexusToolOptions {
   projectPath: string;
@@ -151,6 +204,8 @@ export interface RunI18nexusToolOptions {
   spreadsheetId?: string;
   credentialsPath?: string;
   autoTranslate?: boolean;
+  wrapperEngine?: "adaptive" | "swc-worker";
+  csvFile?: string;
   timeoutMs?: number;
 }
 

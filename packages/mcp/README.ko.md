@@ -51,6 +51,8 @@ node packages/mcp/dist/bin/i18nexus-mcp.js
 
 이 도구는 `i18nexus.config.json`을 만들거나 보완합니다. 필요한 경우 `package.json`에 i18n 명령을 추가하고 첫 locale 파일도 만듭니다.
 
+typed setup 입력으로 소스 및 locale 경로와 client 또는 server mode와 namespace 동작과 type 생성과 정적 key 추출과 key-first 변환과 Google Sheets 설정을 지정할 수 있습니다. MCP host가 임의 JSON 수정 없이 전체 config를 만들 수 있습니다.
+
 `dryRun`의 기본값은 `true`입니다. 반환된 파일 변경 계획을 확인한 뒤 실제 반영이 필요할 때만 `dryRun: false`를 전달합니다. 기존 config의 값과 기존 package script는 그대로 보존합니다. 감지한 추천값으로 기존 설정을 바꾸려면 `overwriteExistingConfig`를 명시해야 합니다.
 
 의존성 설치는 기본적으로 실행하지 않습니다. `installDependencies: true`를 전달하면 감지한 패키지 관리자로 `i18nexus`를 일반 의존성에 설치하고 `i18nexus-tools`를 개발 의존성에 설치합니다. lockfile이 두 개 이상이면 `packageManager`도 함께 전달해야 합니다.
@@ -76,9 +78,15 @@ node packages/mcp/dist/bin/i18nexus-mcp.js
 
 이 도구는 대상 프로젝트의 `node_modules`에 실제로 설치된 `i18nexus-tools`만 사용합니다. 임의 명령이나 임의 CLI 인자를 실행하지 않고 기능별로 정의된 입력만 실제 명령으로 변환합니다.
 
-실행에는 `i18nexus-tools` 3.2.1 이상이 필요합니다. 이 버전부터 extractor의 dry run이 출력 디렉터리도 만들지 않는 동작을 보장합니다.
+기존 core 기능에는 `i18nexus-tools` 3.2.1 이상이 필요합니다. 추가된 Sheets 및 CSV 기능에는 3.3.0 이상이 필요합니다.
 
-지원하는 기능은 `doctor`와 `wrapper`와 `extractor`와 `type`과 `clean-legacy`와 Google Sheets의 `upload` 및 `download`입니다. Sheets 기능을 사용하려면 service account 자격 증명과 접근 권한이 있는 spreadsheet가 필요합니다.
+지원하는 기능은 `doctor`와 `wrapper`와 `extractor`와 `type`과 `clean-legacy`입니다. Google Sheets의 `upload`와 `download`와 `sheets-status`와 `sheets-sync-new-keys`도 지원합니다. 로컬 변환 기능은 `json-to-csv`와 `csv-to-json`입니다. Sheets 기능을 사용하려면 service account 자격 증명과 접근 권한이 있는 spreadsheet가 필요합니다.
+
+`wrapperEngine`은 `adaptive` 또는 `swc-worker`를 받습니다. adaptive는 작업량에 따라 실제 구현을 선택할 수 있는 기본 wrapper입니다. worker 값은 SWC worker 실행 파일을 명시적으로 선택합니다.
+
+`sheets-status`는 v4 구조의 모든 namespace를 양쪽에서 읽습니다. `sheets-sync-new-keys`는 한쪽에만 있는 key를 반대쪽에 추가합니다. 같은 key의 값이 다르면 충돌로 보고하고 어느 쪽도 덮어쓰지 않습니다. 미리보기는 로컬 파일과 Sheets를 읽지만 worksheet를 만들지 않고 어느 쪽에도 쓰지 않습니다.
+
+기본 CSV header는 `Namespace,Key,<language...>`입니다. 언어 column은 동적으로 정해지므로 `en`과 `ko`와 `ja`를 같은 변환에서 보존할 수 있습니다. 따옴표로 감싼 쉼표와 따옴표와 여러 줄 값도 왕복 보존합니다. 변환 미리보기는 전체 입력을 검사하고 대상 파일을 알려주지만 파일을 쓰지 않습니다.
 
 `doctor`는 검사 명령이므로 바로 실행됩니다. 대상 프로젝트에 설치된 JavaScript를 실행한다는 사실은 결과의 `safety.executesProjectCode`에서도 확인할 수 있습니다.
 
@@ -96,7 +104,7 @@ node packages/mcp/dist/bin/i18nexus-mcp.js
 }
 ```
 
-실행 파일과 source pattern과 locale 및 type 출력 경로는 대상 package와 프로젝트 폴더 밖으로 나갈 수 없습니다. Google Sheets 자격 증명 파일도 프로젝트 안에 있어야 합니다. 각 실행에는 시간 제한과 출력 크기 제한이 적용됩니다. 대상 package는 별도 sandbox가 아닌 로컬 Node.js 프로세스로 실행됩니다. MCP 서버의 임의 secret과 `NODE_OPTIONS`는 전달하지 않지만 대상 프로젝트에 신뢰할 수 있는 package가 설치됐는지 확인해야 합니다.
+실행 파일은 설치된 package 밖으로 나갈 수 없습니다. source pattern과 locale 및 type과 CSV 출력 경로는 프로젝트 폴더 안에 있어야 합니다. 자격 증명 경로는 명시적으로 설정하면 프로젝트 밖에 둘 수 있지만 일반 파일로 확인되어야 합니다. 각 실행에는 시간 제한과 출력 크기 제한이 적용됩니다. 대상 package는 별도 sandbox가 아닌 로컬 Node.js 프로세스로 실행됩니다. MCP 서버의 임의 secret과 `NODE_OPTIONS`는 전달하지 않지만 대상 프로젝트에 신뢰할 수 있는 package가 설치됐는지 확인해야 합니다.
 
 ## setup이 만드는 파일
 

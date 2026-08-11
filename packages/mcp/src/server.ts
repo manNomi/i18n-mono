@@ -33,7 +33,7 @@ function failure(error: unknown) {
 export function createI18nexusMcpServer(): McpServer {
   const server = new McpServer({
     name: "i18nexus-mcp",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   server.registerTool(
@@ -87,6 +87,60 @@ export function createI18nexusMcpServer(): McpServer {
           ),
         defaultLanguage: z.string().optional(),
         sourceLanguage: z.string().optional(),
+        sourcePattern: z.string().min(1).max(4_096).optional(),
+        localesDir: z.string().min(1).optional(),
+        translationImportSource: z.string().min(1).optional(),
+        framework: z.enum(["nextjs", "react", "other"]).optional(),
+        mode: z.enum(["client", "server"]).optional(),
+        serverTranslationFunction: z.string().min(1).optional(),
+        fallbackNamespace: z.string().min(1).optional(),
+        namespaceLocation: z.string().min(1).optional(),
+        useNamespaceStructure: z.boolean().optional(),
+        namespaceStrategy: z.enum(["full", "page-based", "single"]).optional(),
+        generateTypes: z.boolean().optional(),
+        strictTypeGeneration: z.boolean().optional(),
+        typesOutputPath: z.string().min(1).optional(),
+        staticKeyExtraction: z.enum(["off", "safe", "aggressive"]).optional(),
+        staticKeyContainerPatterns: z.array(z.string().min(1)).optional(),
+        keyFirst: z
+          .object({
+            enabled: z.boolean(),
+            pattern: z.string().min(1).max(4_096).optional(),
+          })
+          .strict()
+          .optional(),
+        googleSheets: z
+          .object({
+            spreadsheetId: z.string().min(1),
+            credentialsPath: z.string().min(1),
+            sheetName: z.string().min(1),
+          })
+          .strict()
+          .optional(),
+        namespacing: z
+          .object({
+            enabled: z.boolean(),
+            basePath: z.string().min(1),
+            defaultNamespace: z.string().min(1),
+            framework: z
+              .enum([
+                "nextjs-app",
+                "nextjs-pages",
+                "tanstack-file",
+                "tanstack-folder",
+                "react-router",
+                "remix",
+                "other",
+              ])
+              .optional(),
+            ignorePatterns: z.array(z.string().min(1)).optional(),
+            strategy: z
+              .enum(["first-folder", "full-path", "last-folder"])
+              .optional(),
+          })
+          .strict()
+          .optional(),
+        lazy: z.boolean().optional(),
         packageManager: z.enum(["npm", "pnpm", "yarn"]).optional(),
         dryRun: z
           .boolean()
@@ -143,7 +197,7 @@ export function createI18nexusMcpServer(): McpServer {
     {
       title: "Plan or run an installed i18nexus tool",
       description:
-        "Plan or run a typed i18nexus-tools action from the target project's local node_modules. Arbitrary commands are not accepted. doctor runs immediately. extractor, clean-legacy, upload, and download use native dry-run in preview mode. wrapper and type return a plan until applyChanges is explicitly true. Google Sheets actions require configured service-account credentials and spreadsheet access.",
+        "Plan or run a typed i18nexus-tools action from the target project's local node_modules. Arbitrary commands are not accepted. doctor and sheets-status run immediately. Mutating tools use native dry-run when available. wrapper and type return a plan until applyChanges is explicitly true. Sheets sync only copies missing keys and reports same-key conflicts without overwriting them.",
       inputSchema: z.object({
         projectPath: z
           .string()
@@ -159,6 +213,10 @@ export function createI18nexusMcpServer(): McpServer {
           "clean-legacy",
           "upload",
           "download",
+          "sheets-status",
+          "sheets-sync-new-keys",
+          "json-to-csv",
+          "csv-to-json",
         ]),
         applyChanges: z
           .boolean()
@@ -192,6 +250,19 @@ export function createI18nexusMcpServer(): McpServer {
         spreadsheetId: z.string().min(1).optional(),
         credentialsPath: z.string().min(1).optional(),
         autoTranslate: z.boolean().optional(),
+        wrapperEngine: z
+          .enum(["adaptive", "swc-worker"])
+          .optional()
+          .describe(
+            "adaptive uses the normal wrapper selection policy. swc-worker explicitly uses the worker bin."
+          ),
+        csvFile: z
+          .string()
+          .min(1)
+          .optional()
+          .describe(
+            "CSV input or output path inside the target project. The canonical format is Namespace,Key,<language...>."
+          ),
         timeoutMs: z.number().int().min(1_000).max(300_000).optional(),
       }),
       annotations: {

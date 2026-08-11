@@ -93,6 +93,74 @@ describe("setupProject", () => {
     expect(result.config.sourceLanguage).toBe("en");
   });
 
+  it("round-trips advanced setup capabilities into config", async () => {
+    const projectPath = createNextFixture();
+    const result = await setupProject({
+      projectPath,
+      dryRun: false,
+      languages: ["en", "ko", "ja"],
+      defaultLanguage: "en",
+      sourceLanguage: "en",
+      sourcePattern: "src/**/*.{ts,tsx}",
+      localesDir: "./translations",
+      translationImportSource: "@/i18n/client",
+      framework: "nextjs",
+      mode: "server",
+      serverTranslationFunction: "getServerT",
+      fallbackNamespace: "shared",
+      namespaceLocation: "app",
+      useNamespaceStructure: true,
+      namespaceStrategy: "page-based",
+      generateTypes: true,
+      strictTypeGeneration: true,
+      typesOutputPath: "./translations/types/messages.d.ts",
+      staticKeyExtraction: "aggressive",
+      staticKeyContainerPatterns: ["^I18N_", "Keys$"],
+      keyFirst: { enabled: true, pattern: "^[a-z]+(?:\\.[a-z]+)+$" },
+      googleSheets: {
+        spreadsheetId: "sheet-id",
+        credentialsPath: "/secure/service-account.json",
+        sheetName: "Translations 2026",
+      },
+      namespacing: {
+        enabled: true,
+        basePath: "app",
+        defaultNamespace: "shared",
+        framework: "nextjs-app",
+        ignorePatterns: ["^_"],
+        strategy: "full-path",
+      },
+      lazy: true,
+    });
+    const persisted = JSON.parse(
+      fs.readFileSync(path.join(projectPath, "i18nexus.config.json"), "utf8")
+    );
+
+    expect(persisted).toEqual(result.config);
+    expect(persisted).toMatchObject({
+      mode: "server",
+      strictTypeGeneration: true,
+      staticKeyExtraction: "aggressive",
+      keyFirst: { enabled: true },
+      googleSheets: { spreadsheetId: "sheet-id" },
+      namespacing: { strategy: "full-path" },
+    });
+    expect(
+      fs.existsSync(path.join(projectPath, "translations", "shared", "ja.json"))
+    ).toBe(true);
+  });
+
+  it("rejects locale paths that resolve outside through symlinks", async () => {
+    const projectPath = createNextFixture();
+    const outsidePath = createFixture("setup-outside");
+    fixtures.push(outsidePath);
+    fs.symlinkSync(outsidePath, path.join(projectPath, "translations"), "dir");
+
+    await expect(
+      setupProject({ projectPath, localesDir: "./translations" })
+    ).rejects.toThrow("resolves outside the project directory");
+  });
+
   it("preserves custom config values when filling missing defaults", async () => {
     const projectPath = createNextFixture();
     writeJson(path.join(projectPath, "i18nexus.config.json"), {

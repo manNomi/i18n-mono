@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-08-11
+
+### ✨ Features
+
+- Added namespace-aware JSON to CSV and CSV to JSON commands with dynamic language columns and read-only previews.
+- Added all-namespace Google Sheets status and missing-key sync commands.
+- Missing-key sync reports conflicting existing values without overwriting either side.
+
+### 🐛 Fixes
+
+- CSV parsing now preserves quoted commas and quotes and multiline values.
+- Google Sheets ranges now quote worksheet names safely.
+- Sheets sync preview does not create worksheets or write locale files.
+
 ## [3.2.1] - 2026-08-11
 
 ### 🐛 Fixes

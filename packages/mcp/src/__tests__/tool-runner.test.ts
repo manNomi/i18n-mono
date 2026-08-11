@@ -186,19 +186,22 @@ describe("runI18nexusTool", () => {
     ).rejects.toThrow("localesDir escapes the project directory");
   });
 
-  it("rejects Google Sheets credentials outside the project", async () => {
+  it("allows an explicitly configured external regular credentials file", async () => {
     const projectPath = createProject();
+    const externalDirectory = createFixture("external-credentials");
+    fixtures.push(externalDirectory);
+    const credentialsPath = path.join(externalDirectory, "credentials.json");
+    writeJson(credentialsPath, { type: "service_account" });
     writeJson(path.join(projectPath, "i18nexus.config.json"), {
-      googleSheets: { credentialsPath: "../credentials.json" },
+      googleSheets: { credentialsPath },
     });
 
-    await expect(
-      runI18nexusTool({
-        projectPath,
-        tool: "upload",
-        spreadsheetId: "sheet-id",
-      })
-    ).rejects.toThrow("credentialsPath escapes the project directory");
+    const result = await runI18nexusTool({
+      projectPath,
+      tool: "upload",
+      spreadsheetId: "sheet-id",
+    });
+    expect(result.execution.ok).toBe(true);
   });
 
   it("rejects unsafe languages loaded from project config", async () => {
@@ -296,6 +299,68 @@ describe("runI18nexusTool", () => {
     await expect(
       runI18nexusTool({ projectPath, tool: "doctor" })
     ).rejects.toThrow("Install i18nexus-tools >= 3.2.1");
+  });
+
+  it("maps enhanced wrapper, Sheets, and CSV actions to typed bins", async () => {
+    const projectPath = createProject();
+    const credentialsPath = path.join(projectPath, "credentials.json");
+    writeJson(credentialsPath, { type: "service_account" });
+
+    const wrapper = await runI18nexusTool({
+      projectPath,
+      tool: "wrapper",
+      wrapperEngine: "swc-worker",
+    });
+    const status = await runI18nexusTool({
+      projectPath,
+      tool: "sheets-status",
+      spreadsheetId: "sheet-id",
+      credentialsPath: "./credentials.json",
+      languages: ["en", "ko", "ja"],
+    });
+    const sync = await runI18nexusTool({
+      projectPath,
+      tool: "sheets-sync-new-keys",
+      spreadsheetId: "sheet-id",
+      credentialsPath: "./credentials.json",
+    });
+    const csv = await runI18nexusTool({
+      projectPath,
+      tool: "json-to-csv",
+      localesDir: "./locales",
+      csvFile: "./artifacts/translations.csv",
+      languages: ["en", "ko", "ja"],
+    });
+
+    expect(wrapper.command.name).toBe("i18n-wrapper-swc-worker");
+    expect(status.mode).toBe("inspect");
+    expect(status.command.args).toContain("en,ko,ja");
+    expect(sync.command.args).toContain("--dry-run");
+    expect(csv.command.args).toEqual([
+      "--languages",
+      "en,ko,ja",
+      "--locales-dir",
+      "./locales",
+      "--csv-file",
+      "./artifacts/translations.csv",
+      "--dry-run",
+    ]);
+  });
+
+  it("requires tools 3.3.0 for enhanced actions", async () => {
+    const projectPath = createProject();
+    const packageJsonPath = path.join(
+      projectPath,
+      "node_modules",
+      "i18nexus-tools",
+      "package.json"
+    );
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    writeJson(packageJsonPath, { ...packageJson, version: "3.2.1" });
+
+    await expect(
+      runI18nexusTool({ projectPath, tool: "json-to-csv" })
+    ).rejects.toThrow("Install i18nexus-tools >= 3.3.0");
   });
 
   it("does not pass arbitrary MCP server secrets or NODE_OPTIONS to target code", async () => {

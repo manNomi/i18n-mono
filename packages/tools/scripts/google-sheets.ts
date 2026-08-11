@@ -17,6 +17,15 @@ export interface TranslationRow {
   [language: string]: string;
 }
 
+export interface NamespaceSyncStatus {
+  namespace: string;
+  localKeys: number;
+  remoteKeys: number;
+  localOnlyKeys: number;
+  remoteOnlyKeys: number;
+  conflictingKeys: number;
+}
+
 function pathEntryExists(targetPath: string): boolean {
   try {
     fs.lstatSync(targetPath);
@@ -122,6 +131,11 @@ export class GoogleSheetsManager {
     };
   }
 
+  private getSheetRange(cells: string): string {
+    const quotedSheetName = this.config.sheetName.replace(/'/g, "''");
+    return `'${quotedSheetName}'!${cells}`;
+  }
+
   /**
    * 네임스페이스 경로 반환 (도메인 우선 구조: locales/[namespace]/[lang].json)
    */
@@ -194,7 +208,7 @@ export class GoogleSheetsManager {
   /**
    * 워크시트가 존재하는지 확인하고, 없으면 생성
    */
-  async ensureWorksheet(): Promise<void> {
+  async ensureWorksheet(languages: string[] = ["en", "ko"]): Promise<void> {
     if (!this.sheets) {
       throw new Error(
         "Google Sheets client not initialized. Call authenticate() first."
@@ -229,7 +243,7 @@ export class GoogleSheetsManager {
         });
 
         // 헤더 행 추가
-        await this.addHeaders();
+        await this.addHeaders(languages);
       }
     } catch (error) {
       console.error("❌ Failed to ensure worksheet:", error);
@@ -240,11 +254,19 @@ export class GoogleSheetsManager {
   /**
    * 헤더 행 추가
    */
-  private async addHeaders(): Promise<void> {
+  private async addHeaders(languages: string[]): Promise<void> {
     if (!this.sheets) return;
 
-    const headers = ["Key", "English", "Korean"];
-    const range = `${this.config.sheetName}!A${this.config.headerRow}:C${this.config.headerRow}`;
+    const headers = [
+      "Key",
+      ...languages.map((language) =>
+        language === "en" ? "English" : language === "ko" ? "Korean" : language
+      ),
+    ];
+    const endColumn = this.columnName(headers.length);
+    const range = this.getSheetRange(
+      `A${this.config.headerRow}:${endColumn}${this.config.headerRow}`
+    );
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.config.spreadsheetId,
@@ -300,7 +322,6 @@ export class GoogleSheetsManager {
 
       let translationsToUpload: TranslationRow[];
       const existingRows = await this.fetchTranslationRows();
-      const existingData = this.parseTranslationRows(existingRows);
       const existingRowCount = Math.max(
         existingRows.length - this.config.headerRow,
         0
@@ -319,9 +340,16 @@ export class GoogleSheetsManager {
 
         // 기존 데이터 모두 삭제 (헤더 제외)
         if (existingRowCount > 0) {
-          const deleteRange = `${this.config.sheetName}!A${this.config.headerRow + 1}:C${
-            existingRowCount + this.config.headerRow
-          }`;
+          const existingColumnCount = Math.max(
+            3,
+            ...existingRows.map((row) => row.length)
+          );
+          const existingEndColumn = this.columnName(existingColumnCount);
+          const deleteRange = this.getSheetRange(
+            `A${this.config.headerRow + 1}:${existingEndColumn}${
+              existingRowCount + this.config.headerRow
+            }`
+          );
           await this.sheets.spreadsheets.values.clear({
             spreadsheetId: this.config.spreadsheetId,
             range: deleteRange,
@@ -375,7 +403,7 @@ export class GoogleSheetsManager {
       });
 
       const endRow = startRow + values.length - 1;
-      const range = `${this.config.sheetName}!A${startRow}:C${endRow}`;
+      const range = this.getSheetRange(`A${startRow}:C${endRow}`);
 
       // 데이터 업로드
       await this.sheets.spreadsheets.values.update({
@@ -412,7 +440,7 @@ export class GoogleSheetsManager {
       );
     }
 
-    const range = `${this.config.sheetName}!A:C`;
+    const range = this.getSheetRange("A:ZZ");
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.config.spreadsheetId,
       range,
@@ -424,6 +452,24 @@ export class GoogleSheetsManager {
   private parseTranslationRows(rows: any[][]): TranslationRow[] {
     if (rows.length <= this.config.headerRow) return [];
 
+    const headers = rows[this.config.headerRow - 1] ?? [];
+    const languageColumns = headers
+      .slice(1)
+      .map((header: unknown, index: number) => ({
+        language:
+          typeof header === "string"
+            ? getLanguageCodeFromCsvHeader(header)
+            : null,
+        valueIndex: index + 1,
+      }))
+      .filter(
+        (column: {
+          language: string | null;
+          valueIndex: number;
+        }): column is { language: string; valueIndex: number } =>
+          Boolean(column.language)
+      );
+
     const removeEscapePrefix = (value: string): string => {
       if (!value) return value;
       return value.startsWith("'") ? value.substring(1) : value;
@@ -432,11 +478,15 @@ export class GoogleSheetsManager {
     return rows
       .slice(this.config.headerRow)
       .filter((row) => row[0])
-      .map((row) => ({
-        key: removeEscapePrefix(row[0] || ""),
-        en: removeEscapePrefix(row[1] || ""),
-        ko: removeEscapePrefix(row[2] || ""),
-      }));
+      .map((row) => {
+        const translation: TranslationRow = {
+          key: removeEscapePrefix(row[0] || ""),
+        };
+        for (const { language, valueIndex } of languageColumns) {
+          translation[language] = removeEscapePrefix(row[valueIndex] || "");
+        }
+        return translation;
+      });
   }
 
   async downloadTranslations(): Promise<TranslationRow[]> {
@@ -702,7 +752,10 @@ export class GoogleSheetsManager {
   /**
    * 양방향 동기화 - 로컬과 Google Sheets 간의 차이점 해결
    */
-  async syncTranslations(localesDir: string): Promise<void> {
+  async syncTranslations(
+    localesDir: string,
+    options: { languages?: string[]; dryRun?: boolean } = {}
+  ): Promise<void> {
     try {
       console.log("🔄 Starting bidirectional sync...");
 
@@ -723,7 +776,7 @@ export class GoogleSheetsManager {
         console.log(
           `📤 Uploading ${newLocalKeys.length} new local keys to Google Sheets`
         );
-        await this.uploadNewTranslations(newLocalKeys);
+        if (!options.dryRun) await this.uploadNewTranslations(newLocalKeys);
       }
 
       // 새로운 원격 키들을 로컬에 다운로드
@@ -734,7 +787,12 @@ export class GoogleSheetsManager {
         console.log(
           `📥 Downloading ${newRemoteKeys.length} new remote keys to local files`
         );
-        await this.addTranslationsToLocal(localesDir, newRemoteKeys);
+        await this.addTranslationsToLocal(
+          localesDir,
+          newRemoteKeys,
+          options.languages,
+          options.dryRun
+        );
       }
 
       console.log("✅ Sync completed successfully");
@@ -807,21 +865,34 @@ export class GoogleSheetsManager {
    * 새로운 번역들을 Google Sheets에 추가
    */
   private async uploadNewTranslations(
-    translations: TranslationRow[]
+    translations: TranslationRow[],
+    requestedLanguages: string[] = ["en", "ko"]
   ): Promise<void> {
     if (!this.sheets || translations.length === 0) return;
 
-    const values = translations.map((t) => [
-      this.escapeFormula(t.key),
-      this.escapeFormula(t.en || ""),
-      this.escapeFormula(t.ko || ""),
+    const existingRows = await this.fetchTranslationRows();
+    const headers = existingRows[this.config.headerRow - 1] ?? [];
+    const sheetLanguages = headers
+      .slice(1)
+      .map((header: unknown) =>
+        typeof header === "string" ? getLanguageCodeFromCsvHeader(header) : null
+      )
+      .filter((language: string | null): language is string =>
+        Boolean(language)
+      );
+    const languages =
+      sheetLanguages.length > 0 ? sheetLanguages : requestedLanguages;
+    const values = translations.map((translation) => [
+      this.escapeFormula(translation.key),
+      ...languages.map((language) =>
+        this.escapeFormula(translation[language] || "")
+      ),
     ]);
 
-    // 기존 데이터의 마지막 행 찾기
-    const existingData = await this.downloadTranslations();
-    const startRow = existingData.length + this.config.headerRow + 1;
+    const startRow = Math.max(existingRows.length, this.config.headerRow) + 1;
     const endRow = startRow + values.length - 1;
-    const range = `${this.config.sheetName}!A${startRow}:C${endRow}`;
+    const endColumn = this.columnName(languages.length + 1);
+    const range = this.getSheetRange(`A${startRow}:${endColumn}${endRow}`);
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.config.spreadsheetId,
@@ -838,17 +909,22 @@ export class GoogleSheetsManager {
    */
   private async addTranslationsToLocal(
     localesDir: string,
-    translations: TranslationRow[]
+    translations: TranslationRow[],
+    languages: string[] = ["en", "ko"],
+    dryRun: boolean = false
   ): Promise<void> {
-    const languages = ["en", "ko"];
     const namespacePath = this.getNamespacePath(localesDir);
 
-    if (!fs.existsSync(namespacePath)) {
+    if (!dryRun && !fs.existsSync(namespacePath)) {
       fs.mkdirSync(namespacePath, { recursive: true });
     }
 
     for (const lang of languages) {
-      const filePath = path.join(namespacePath, `${lang}.json`);
+      const filePath = resolveSafeChildPath(
+        namespacePath,
+        `${lang}.json`,
+        "translation file"
+      );
 
       // 기존 번역 읽기
       let existingTranslations: Record<string, string> = {};
@@ -858,18 +934,155 @@ export class GoogleSheetsManager {
 
       // 새로운 번역 추가
       translations.forEach((t) => {
-        if (t[lang]) {
-          existingTranslations[t.key] = t[lang];
-        }
+        existingTranslations[t.key] = t[lang] ?? "";
       });
 
       // 파일 저장
-      fs.writeFileSync(
-        filePath,
-        JSON.stringify(existingTranslations, null, 2),
-        "utf-8"
+      if (!dryRun) {
+        fs.writeFileSync(
+          filePath,
+          JSON.stringify(existingTranslations, null, 2),
+          "utf-8"
+        );
+      }
+    }
+  }
+
+  private getLocalNamespaceNames(localesDir: string): string[] {
+    if (!fs.existsSync(localesDir)) return [];
+    return fs.readdirSync(localesDir).filter((entry) => {
+      if (entry === "types" || entry.startsWith(".")) return false;
+      const entryPath = resolveSafeChildPath(localesDir, entry, "namespace");
+      return (
+        fs.statSync(entryPath).isDirectory() &&
+        fs.readdirSync(entryPath).some((file) => file.endsWith(".json"))
+      );
+    });
+  }
+
+  private columnName(columnNumber: number): string {
+    let result = "";
+    let remaining = columnNumber;
+    while (remaining > 0) {
+      remaining--;
+      result = String.fromCharCode(65 + (remaining % 26)) + result;
+      remaining = Math.floor(remaining / 26);
+    }
+    return result;
+  }
+
+  private compareTranslationRows(
+    namespace: string,
+    localRows: TranslationRow[],
+    remoteRows: TranslationRow[],
+    languages: string[]
+  ): NamespaceSyncStatus {
+    const localByKey = new Map(localRows.map((row) => [row.key, row]));
+    const remoteByKey = new Map(remoteRows.map((row) => [row.key, row]));
+    const sharedKeys = [...localByKey.keys()].filter((key) =>
+      remoteByKey.has(key)
+    );
+    return {
+      namespace,
+      localKeys: localRows.length,
+      remoteKeys: remoteRows.length,
+      localOnlyKeys: localRows.filter((row) => !remoteByKey.has(row.key))
+        .length,
+      remoteOnlyKeys: remoteRows.filter((row) => !localByKey.has(row.key))
+        .length,
+      conflictingKeys: sharedKeys.filter((key) =>
+        languages.some(
+          (language) =>
+            (localByKey.get(key)?.[language] ?? "") !==
+            (remoteByKey.get(key)?.[language] ?? "")
+        )
+      ).length,
+    };
+  }
+
+  async getAllNamespacesStatus(
+    localesDir: string,
+    languages: string[] = ["en", "ko"]
+  ): Promise<NamespaceSyncStatus[]> {
+    const remoteNamespaces = await this.getAllSheetNames();
+    const localNamespaces = this.getLocalNamespaceNames(localesDir);
+    const namespaces = [
+      ...new Set([...localNamespaces, ...remoteNamespaces]),
+    ].sort();
+    const result: NamespaceSyncStatus[] = [];
+    for (const namespace of namespaces) {
+      resolveSafeChildPath(localesDir, namespace, "namespace");
+      const manager = new GoogleSheetsManager({
+        ...this.config,
+        sheetName: namespace,
+        namespace,
+      });
+      manager.sheets = this.sheets;
+      const [localRows, remoteRows] = await Promise.all([
+        manager.readLocalTranslations(localesDir),
+        remoteNamespaces.includes(namespace)
+          ? manager.downloadTranslations()
+          : Promise.resolve([]),
+      ]);
+      result.push(
+        this.compareTranslationRows(namespace, localRows, remoteRows, languages)
       );
     }
+    return result;
+  }
+
+  async syncAllNamespacesNewKeys(
+    localesDir: string,
+    languages: string[] = ["en", "ko"],
+    dryRun: boolean = false
+  ): Promise<NamespaceSyncStatus[]> {
+    const remoteNamespaces = await this.getAllSheetNames();
+    const localNamespaces = this.getLocalNamespaceNames(localesDir);
+    const namespaces = [
+      ...new Set([...localNamespaces, ...remoteNamespaces]),
+    ].sort();
+    const result: NamespaceSyncStatus[] = [];
+
+    for (const namespace of namespaces) {
+      resolveSafeChildPath(localesDir, namespace, "namespace");
+      const manager = new GoogleSheetsManager({
+        ...this.config,
+        sheetName: namespace,
+        namespace,
+      });
+      manager.sheets = this.sheets;
+      const localRows = await manager.readLocalTranslations(localesDir);
+      const remoteRows = remoteNamespaces.includes(namespace)
+        ? await manager.downloadTranslations()
+        : [];
+      const status = this.compareTranslationRows(
+        namespace,
+        localRows,
+        remoteRows,
+        languages
+      );
+      result.push(status);
+
+      const localKeys = new Set(localRows.map((row) => row.key));
+      const remoteKeys = new Set(remoteRows.map((row) => row.key));
+      const newLocalRows = localRows.filter((row) => !remoteKeys.has(row.key));
+      const newRemoteRows = remoteRows.filter((row) => !localKeys.has(row.key));
+      if (!dryRun && newLocalRows.length > 0) {
+        if (!remoteNamespaces.includes(namespace)) {
+          await manager.ensureWorksheet(languages);
+        }
+        await manager.uploadNewTranslations(newLocalRows, languages);
+      }
+      if (newRemoteRows.length > 0) {
+        await manager.addTranslationsToLocal(
+          localesDir,
+          newRemoteRows,
+          languages,
+          dryRun
+        );
+      }
+    }
+    return result;
   }
 
   /**
@@ -1048,7 +1261,7 @@ export class GoogleSheetsManager {
         }),
         this.sheets.spreadsheets.values.get({
           spreadsheetId: this.config.spreadsheetId,
-          range: `${this.config.sheetName}!A:A`,
+          range: this.getSheetRange("A:A"),
         }),
       ]);
 

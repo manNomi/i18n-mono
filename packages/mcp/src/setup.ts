@@ -59,7 +59,45 @@ function safeProjectPath(projectPath: string, configuredPath: string): string {
       `Configured path escapes the project directory: ${configuredPath}`
     );
   }
+  let existingAncestor = absolutePath;
+  while (!fs.existsSync(existingAncestor)) {
+    const parent = path.dirname(existingAncestor);
+    if (parent === existingAncestor) break;
+    existingAncestor = parent;
+  }
+  const realProjectPath = fs.realpathSync(projectPath);
+  const realPath = path.resolve(
+    fs.realpathSync(existingAncestor),
+    path.relative(existingAncestor, absolutePath)
+  );
+  const realRelativePath = path.relative(realProjectPath, realPath);
+  if (
+    realRelativePath.startsWith("..") ||
+    path.isAbsolute(realRelativePath)
+  ) {
+    throw new Error(
+      `Configured path resolves outside the project directory: ${configuredPath}`
+    );
+  }
   return absolutePath;
+}
+
+function validateRegex(pattern: string, label: string): void {
+  try {
+    new RegExp(pattern);
+  } catch {
+    throw new Error(`${label} must be a valid regular expression: ${pattern}`);
+  }
+}
+
+function validateSourcePattern(pattern: string): void {
+  if (
+    path.isAbsolute(pattern) ||
+    pattern.split(/[\\/]/).includes("..") ||
+    pattern.includes("\0")
+  ) {
+    throw new Error("sourcePattern must stay inside the project directory.");
+  }
 }
 
 function validateLanguages(
@@ -104,7 +142,7 @@ function buildConfig(
     ? (analysis.existingConfig.value ?? {})
     : {};
   const suggested = analysis.suggestedConfig;
-  const merged = options.overwriteExistingConfig
+  const merged: Record<string, unknown> = options.overwriteExistingConfig
     ? { ...existing, ...suggested }
     : { ...suggested, ...existing };
 
@@ -127,6 +165,40 @@ function buildConfig(
   }
   if (options.defaultLanguage) merged.defaultLanguage = options.defaultLanguage;
   if (options.sourceLanguage) merged.sourceLanguage = options.sourceLanguage;
+  const scalarOptions: Array<keyof SetupOptions> = [
+    "sourcePattern",
+    "localesDir",
+    "translationImportSource",
+    "framework",
+    "mode",
+    "serverTranslationFunction",
+    "fallbackNamespace",
+    "namespaceLocation",
+    "useNamespaceStructure",
+    "namespaceStrategy",
+    "generateTypes",
+    "strictTypeGeneration",
+    "typesOutputPath",
+    "staticKeyExtraction",
+    "staticKeyContainerPatterns",
+    "namespacing",
+    "lazy",
+  ];
+  for (const key of scalarOptions) {
+    if (options[key] !== undefined) merged[key] = options[key];
+  }
+  if (options.keyFirst) {
+    merged.keyFirst = {
+      ...((merged.keyFirst as Record<string, unknown> | undefined) ?? {}),
+      ...options.keyFirst,
+    };
+  }
+  if (options.googleSheets) {
+    merged.googleSheets = {
+      ...((merged.googleSheets as Record<string, unknown> | undefined) ?? {}),
+      ...options.googleSheets,
+    };
+  }
 
   const languages = merged.languages;
   const defaultLanguage = merged.defaultLanguage;
@@ -161,7 +233,66 @@ function buildConfig(
     );
   }
 
+  validateSourcePattern(merged.sourcePattern);
+  if (
+    typeof merged.translationImportSource !== "string" ||
+    !/^[A-Za-z0-9@_./-]+$/.test(merged.translationImportSource)
+  ) {
+    throw new Error("translationImportSource contains unsafe characters.");
+  }
+  if (
+    typeof merged.serverTranslationFunction === "string" &&
+    !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(merged.serverTranslationFunction)
+  ) {
+    throw new Error("serverTranslationFunction must be a JavaScript identifier.");
+  }
+  if (merged.keyFirst && typeof merged.keyFirst === "object") {
+    const keyFirst = merged.keyFirst as { enabled?: unknown; pattern?: unknown };
+    if (typeof keyFirst.enabled !== "boolean") {
+      throw new Error("keyFirst.enabled must be a boolean.");
+    }
+    if (typeof keyFirst.pattern === "string") {
+      validateRegex(keyFirst.pattern, "keyFirst.pattern");
+    }
+  }
+  if (Array.isArray(merged.staticKeyContainerPatterns)) {
+    merged.staticKeyContainerPatterns.forEach((pattern, index) => {
+      if (typeof pattern !== "string") {
+        throw new Error("staticKeyContainerPatterns must contain strings.");
+      }
+      validateRegex(pattern, `staticKeyContainerPatterns[${index}]`);
+    });
+  }
+  if (merged.namespacing && typeof merged.namespacing === "object") {
+    const namespacing = merged.namespacing as Record<string, unknown>;
+    if (typeof namespacing.basePath === "string") {
+      safeProjectPath(analysis.projectPath, namespacing.basePath);
+    }
+    if (Array.isArray(namespacing.ignorePatterns)) {
+      namespacing.ignorePatterns.forEach((pattern, index) => {
+        if (typeof pattern !== "string") {
+          throw new Error("namespacing.ignorePatterns must contain strings.");
+        }
+        validateRegex(pattern, `namespacing.ignorePatterns[${index}]`);
+      });
+    }
+  }
+  if (merged.googleSheets && typeof merged.googleSheets === "object") {
+    const sheets = merged.googleSheets as Record<string, unknown>;
+    for (const key of ["spreadsheetId", "credentialsPath", "sheetName"]) {
+      if (typeof sheets[key] !== "string" || sheets[key].length === 0) {
+        throw new Error(`googleSheets.${key} must be a non-empty string.`);
+      }
+    }
+  }
+
   safeProjectPath(analysis.projectPath, merged.localesDir);
+  if (typeof merged.typesOutputPath === "string") {
+    safeProjectPath(analysis.projectPath, merged.typesOutputPath);
+  }
+  if (typeof merged.namespaceLocation === "string") {
+    safeProjectPath(analysis.projectPath, merged.namespaceLocation);
+  }
   return merged as I18nexusConfig;
 }
 

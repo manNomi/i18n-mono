@@ -51,6 +51,8 @@ Dependency declarations and actual `node_modules` installation are reported sepa
 
 This tool creates or updates `i18nexus.config.json`. It can also add i18n commands to `package.json` and create initial locale files.
 
+Typed setup inputs cover source and locale paths, client or server mode, namespace behavior, generated types, static key extraction, key-first conversion, and Google Sheets configuration. This lets an MCP host produce the complete config without falling back to arbitrary JSON edits.
+
 `dryRun` defaults to `true`. Pass `dryRun: false` only after reviewing the returned file plan. Existing config keys and existing package scripts are preserved unless a caller explicitly asks for detected config values to replace known values.
 
 Dependency installation is disabled by default. Set `installDependencies: true` to run the detected package manager and install `i18nexus` as a runtime dependency and `i18nexus-tools` as a development dependency. If more than one lockfile exists, pass `packageManager` explicitly.
@@ -76,9 +78,15 @@ This read-only tool checks the config shape, language rules, source pattern, ini
 
 This tool only uses `i18nexus-tools` that is actually installed in the target project's `node_modules`. It does not accept arbitrary commands or arbitrary CLI arguments. Typed inputs are converted into the supported command arguments.
 
-Execution requires `i18nexus-tools` 3.2.1 or newer. Starting with this version, extractor dry-run is guaranteed not to create output directories.
+Core actions require `i18nexus-tools` 3.2.1 or newer. The enhanced Sheets and CSV actions require 3.3.0 or newer.
 
-The supported actions are `doctor`, `wrapper`, `extractor`, `type`, `clean-legacy`, and Google Sheets `upload` and `download`. Sheets actions require service-account credentials and access to the target spreadsheet.
+The supported actions are `doctor`, `wrapper`, `extractor`, `type`, `clean-legacy`, Google Sheets `upload`, `download`, `sheets-status`, `sheets-sync-new-keys`, and the local `json-to-csv` and `csv-to-json` conversions. Sheets actions require service-account credentials and access to the target spreadsheet.
+
+`wrapperEngine` accepts `adaptive` or `swc-worker`. Adaptive is the normal wrapper and may select its implementation from the workload. The worker option explicitly selects the SWC worker executable.
+
+`sheets-status` reads every v4 namespace on both sides. `sheets-sync-new-keys` copies only keys that are missing from one side. If an existing key has different values, the action reports a conflict and leaves both values unchanged. Preview reads local files and Sheets but creates no worksheet and writes neither side.
+
+The canonical CSV header is `Namespace,Key,<language...>`. Language columns are dynamic, so files such as `en`, `ko`, and `ja` survive the same conversion. Quoted commas, quotes, and multiline values round-trip. Conversion preview parses the complete input and reports affected files without writing them.
 
 `doctor` executes immediately because it is an inspection command. The result still reports `safety.executesProjectCode` because the target project's installed JavaScript is executed.
 
@@ -96,7 +104,7 @@ Default download preserves local translations and adds keys found remotely. `for
 }
 ```
 
-The resolved executable must stay inside the installed package. Source patterns, locale or type output paths, and Google Sheets credential files must stay inside the target project. Every execution also has timeout and output-size limits. The target package runs as a local Node.js process rather than in a separate sandbox. Arbitrary MCP server secrets and `NODE_OPTIONS` are not forwarded, but callers must still trust the package installed in the target project.
+The resolved executable must stay inside the installed package. Source patterns and locale, type, or CSV output paths must stay inside the target project. A credential path may be outside the project when it is explicitly configured, but it must resolve to a regular file. Every execution also has timeout and output-size limits. The target package runs as a local Node.js process rather than in a separate sandbox. Arbitrary MCP server secrets and `NODE_OPTIONS` are not forwarded, but callers must still trust the package installed in the target project.
 
 ## Files created by setup
 

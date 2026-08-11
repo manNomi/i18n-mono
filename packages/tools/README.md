@@ -464,6 +464,28 @@ Options:
 npx i18n-download-force -s "your-spreadsheet-id"
 ```
 
+### Namespace status and missing-key sync
+
+Use the v4 namespace-aware commands to compare every local namespace folder with the worksheet of the same name.
+
+```bash
+npx i18n-sheets-status --spreadsheet-id "your-spreadsheet-id"
+npx i18n-sheets-sync-new-keys --spreadsheet-id "your-spreadsheet-id" --dry-run
+npx i18n-sheets-sync-new-keys --spreadsheet-id "your-spreadsheet-id"
+```
+
+Sync copies only keys that are missing from one side. It reports existing keys with different values and does not overwrite either value. Dry run does not create worksheets or write locale files.
+
+### Namespace-aware CSV conversion
+
+```bash
+npx i18n-json-to-csv --csv-file ./translations.csv --languages en,ko,ja
+npx i18n-csv-to-json --csv-file ./translations.csv --dry-run
+npx i18n-csv-to-json --csv-file ./translations.csv --force
+```
+
+The canonical header is `Namespace,Key,<language...>`. The converter preserves dynamic language columns and quoted multiline values. Import preserves existing local keys by default. `--force` replaces the selected namespace and language outputs with the CSV values.
+
 ### `i18n-sheets`
 
 Manage Google Sheets integration.

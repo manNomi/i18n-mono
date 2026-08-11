@@ -20,16 +20,21 @@ export function installFakeI18nexusTools(
   const bins = {
     "i18n-doctor": binEntry,
     "i18n-wrapper": binEntry,
+    "i18n-wrapper-swc-worker": binEntry,
     "i18n-extractor": binEntry,
     "i18n-type": binEntry,
     "i18n-clean-legacy": binEntry,
     "i18n-upload": binEntry,
     "i18n-download": binEntry,
     "i18n-download-force": binEntry,
+    "i18n-sheets-status": binEntry,
+    "i18n-sheets-sync-new-keys": binEntry,
+    "i18n-json-to-csv": binEntry,
+    "i18n-csv-to-json": binEntry,
   };
   writeJson(path.join(packagePath, "package.json"), {
     name: "i18nexus-tools",
-    version: "3.2.1",
+    version: "3.3.0",
     bin: bins,
   });
   if (binEntry === "bin/fake.js") {

@@ -1,6 +1,6 @@
 {
   "name": "i18nexus-tools",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "Core v4 companion CLI for i18nexus - wrap, extract, type, diagnose, and sync translations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,10 @@
     "i18n-download": "dist/bin/i18n-download.js",
     "i18n-download-force": "dist/bin/i18n-download-force.js",
     "i18n-sheets": "dist/bin/i18n-sheets.js",
+    "i18n-sheets-status": "dist/bin/i18n-sheets-status.js",
+    "i18n-sheets-sync-new-keys": "dist/bin/i18n-sheets-sync-new-keys.js",
+    "i18n-json-to-csv": "dist/bin/i18n-json-to-csv.js",
+    "i18n-csv-to-json": "dist/bin/i18n-csv-to-json.js",
     "i18n-clean-legacy": "dist/bin/i18n-clean-legacy.js",
     "i18n-doctor": "dist/bin/i18n-doctor.js"
   },

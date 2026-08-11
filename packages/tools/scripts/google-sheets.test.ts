@@ -260,6 +260,137 @@ describe("GoogleSheetsManager", () => {
     });
   });
 
+  describe("namespace status and missing-key sync", () => {
+    beforeEach(async () => {
+      await manager.authenticate();
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: {
+          sheets: [
+            { properties: { title: "common" } },
+            { properties: { title: "remote" } },
+          ],
+        },
+      });
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["shared", "Remote", "원격"],
+            ["remote.only", "Remote only", "원격 전용"],
+          ],
+        },
+      });
+      fs.mkdirSync(path.join(tempDir, "locales", "common"), {
+        recursive: true,
+      });
+      fs.writeFileSync(
+        path.join(tempDir, "locales", "common", "en.json"),
+        JSON.stringify({ shared: "Local", "local.only": "Local only" })
+      );
+      fs.writeFileSync(
+        path.join(tempDir, "locales", "common", "ko.json"),
+        JSON.stringify({ shared: "로컬", "local.only": "로컬 전용" })
+      );
+    });
+
+    it("reports every v4 namespace and same-key conflicts", async () => {
+      const status = await manager.getAllNamespacesStatus(
+        path.join(tempDir, "locales"),
+        ["en", "ko"]
+      );
+      expect(status.map((entry) => entry.namespace)).toEqual([
+        "common",
+        "remote",
+      ]);
+      expect(status[0]).toMatchObject({
+        localOnlyKeys: 1,
+        remoteOnlyKeys: 1,
+        conflictingKeys: 1,
+      });
+    });
+
+    it("performs no local or remote writes in dry-run", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      const commonBefore = fs.readFileSync(
+        path.join(localesDir, "common", "en.json"),
+        "utf8"
+      );
+      await manager.syncAllNamespacesNewKeys(localesDir, ["en", "ko"], true);
+
+      expect(mockSheets.spreadsheets.batchUpdate).not.toHaveBeenCalled();
+      expect(mockSheets.spreadsheets.values.update).not.toHaveBeenCalled();
+      expect(mockSheets.spreadsheets.values.clear).not.toHaveBeenCalled();
+      expect(fs.existsSync(path.join(localesDir, "remote"))).toBe(false);
+      expect(
+        fs.readFileSync(path.join(localesDir, "common", "en.json"), "utf8")
+      ).toBe(commonBefore);
+    });
+
+    it("uses the worksheet language headers when appending new keys", async () => {
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      });
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "en", "ko", "ja"],
+            ["remote.one", "Remote one", "원격 하나", "リモート一"],
+            ["", "", "note outside the key column", ""],
+            ["remote.two", "Remote two", "원격 둘", "リモート二"],
+          ],
+        },
+      });
+      fs.writeFileSync(
+        path.join(tempDir, "locales", "common", "ja.json"),
+        JSON.stringify({ shared: "ローカル", "local.only": "ローカルのみ" })
+      );
+
+      await manager.syncAllNamespacesNewKeys(
+        path.join(tempDir, "locales"),
+        ["en", "ko", "ja"],
+        false
+      );
+
+      expect(mockSheets.spreadsheets.values.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          range: "'common'!A5:D6",
+          requestBody: {
+            values: [
+              ["shared", "Local", "로컬", "ローカル"],
+              ["local.only", "Local only", "로컬 전용", "ローカルのみ"],
+            ],
+          },
+        })
+      );
+      expect(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(tempDir, "locales", "common", "ja.json"),
+            "utf8"
+          )
+        )["remote.two"]
+      ).toBe("リモート二");
+    });
+  });
+
+  it("quotes sheet names in A1 ranges", async () => {
+    const quotedManager = new GoogleSheetsManager({
+      credentialsPath: path.join(tempDir, "credentials.json"),
+      spreadsheetId: "test-spreadsheet-id",
+      sheetName: "Team's Home",
+    });
+    await quotedManager.authenticate();
+    (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+      data: { values: [["Key", "English", "Korean"]] },
+    });
+
+    await quotedManager.downloadTranslations();
+
+    expect(mockSheets.spreadsheets.values.get).toHaveBeenCalledWith(
+      expect.objectContaining({ range: "'Team''s Home'!A:ZZ" })
+    );
+  });
+
   describe("uploadTranslations", () => {
     beforeEach(async () => {
       await manager.authenticate();
@@ -331,7 +462,7 @@ describe("GoogleSheetsManager", () => {
 
       expect(mockSheets.spreadsheets.values.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          range: "TestSheet!A3:C3",
+          range: "'TestSheet'!A3:C3",
           requestBody: {
             values: [["new.key", "New", "신규"]],
           },
@@ -390,10 +521,10 @@ describe("GoogleSheetsManager", () => {
       (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
         data: {
           values: [
-            ["Key", "English", "Korean"],
-            ["old.key", "Old", "기존"],
-            ["", "stale without key", "키 없는 값"],
-            ["last.key", "Last", "마지막"],
+            ["Key", "English", "Korean", "ja"],
+            ["old.key", "Old", "기존", "古い"],
+            ["", "stale without key", "키 없는 값", "残り"],
+            ["last.key", "Last", "마지막", "最後"],
           ],
         },
       } as any);
@@ -402,7 +533,7 @@ describe("GoogleSheetsManager", () => {
 
       expect(mockSheets.spreadsheets.values.clear).toHaveBeenCalledWith({
         spreadsheetId: "test-spreadsheet-id",
-        range: "TestSheet!A2:C4",
+        range: "'TestSheet'!A2:D4",
       });
     });
 
