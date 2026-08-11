@@ -17,6 +17,68 @@ export interface TranslationRow {
   [language: string]: string;
 }
 
+function pathEntryExists(targetPath: string): boolean {
+  try {
+    fs.lstatSync(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveThroughExistingAncestor(targetPath: string): string {
+  let existingAncestor = targetPath;
+  while (!pathEntryExists(existingAncestor)) {
+    const parentPath = path.dirname(existingAncestor);
+    if (parentPath === existingAncestor) {
+      throw new Error(`Cannot resolve path: ${targetPath}`);
+    }
+    existingAncestor = parentPath;
+  }
+
+  return path.resolve(
+    fs.realpathSync(existingAncestor),
+    path.relative(existingAncestor, targetPath)
+  );
+}
+
+function isWithin(basePath: string, targetPath: string): boolean {
+  const relativePath = path.relative(basePath, targetPath);
+  return (
+    relativePath === "" ||
+    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
+  );
+}
+
+export function resolveSafeChildPath(
+  basePath: string,
+  childName: string,
+  label: string
+): string {
+  if (
+    !childName ||
+    childName === "." ||
+    childName === ".." ||
+    childName.includes("/") ||
+    childName.includes("\\") ||
+    childName.includes("\0")
+  ) {
+    throw new Error(`${label} is not a safe path segment: ${childName}`);
+  }
+
+  const resolvedBasePath = path.resolve(basePath);
+  const resolvedChildPath = path.resolve(resolvedBasePath, childName);
+  const realBasePath = resolveThroughExistingAncestor(resolvedBasePath);
+  const realChildPath = resolveThroughExistingAncestor(resolvedChildPath);
+  if (
+    !isWithin(resolvedBasePath, resolvedChildPath) ||
+    !isWithin(realBasePath, realChildPath)
+  ) {
+    throw new Error(`${label} escapes the locales directory: ${childName}`);
+  }
+  return resolvedChildPath;
+}
+
 const CSV_LANGUAGE_HEADER_TO_CODE: Record<string, string> = {
   english: "en",
   korean: "ko",
@@ -65,7 +127,11 @@ export class GoogleSheetsManager {
    */
   private getNamespacePath(localesDir: string): string {
     if (this.config.namespace) {
-      return path.join(localesDir, this.config.namespace);
+      return resolveSafeChildPath(
+        localesDir,
+        this.config.namespace,
+        "namespace"
+      );
     }
     return localesDir; // 레거시: locales/[lang].json
   }
@@ -78,12 +144,12 @@ export class GoogleSheetsManager {
       // 서비스 계정 키 파일 읽기
       if (!fs.existsSync(this.config.credentialsPath)) {
         throw new Error(
-          `Credentials file not found: ${this.config.credentialsPath}`,
+          `Credentials file not found: ${this.config.credentialsPath}`
         );
       }
 
       const credentials = JSON.parse(
-        fs.readFileSync(this.config.credentialsPath, "utf8"),
+        fs.readFileSync(this.config.credentialsPath, "utf8")
       );
 
       // JWT 클라이언트 생성
@@ -110,7 +176,7 @@ export class GoogleSheetsManager {
   async checkSpreadsheet(): Promise<boolean> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
@@ -131,7 +197,7 @@ export class GoogleSheetsManager {
   async ensureWorksheet(): Promise<void> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
@@ -141,7 +207,7 @@ export class GoogleSheetsManager {
       });
 
       const sheetExists = spreadsheet.data.sheets?.some(
-        (sheet) => sheet.properties?.title === this.config.sheetName,
+        (sheet) => sheet.properties?.title === this.config.sheetName
       );
 
       if (!sheetExists) {
@@ -202,10 +268,11 @@ export class GoogleSheetsManager {
     localesDir: string,
     autoTranslate: boolean = false,
     force: boolean = false,
+    dryRun: boolean = false
   ): Promise<void> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
@@ -213,11 +280,14 @@ export class GoogleSheetsManager {
       console.log("📤 Uploading translations to Google Sheets...");
       if (autoTranslate) {
         console.log(
-          "🤖 Auto-translate mode: English will use GOOGLETRANSLATE formula",
+          "🤖 Auto-translate mode: English will use GOOGLETRANSLATE formula"
         );
       }
       if (force) {
         console.log("💪 Force mode: Overwriting all existing data");
+      }
+      if (dryRun) {
+        console.log("🔍 Dry run mode: Google Sheets will not be modified");
       }
 
       // 로컬 번역 파일들 읽기
@@ -229,22 +299,34 @@ export class GoogleSheetsManager {
       }
 
       let translationsToUpload: TranslationRow[];
+      const existingRows = await this.fetchTranslationRows();
+      const existingData = this.parseTranslationRows(existingRows);
+      const existingRowCount = Math.max(
+        existingRows.length - this.config.headerRow,
+        0
+      );
 
       if (force) {
         // Force 모드: 모든 키 업로드
         translationsToUpload = translations;
 
+        if (dryRun) {
+          console.log(
+            `🔍 Would clear ${existingRowCount} existing rows and upload ${translationsToUpload.length} local translations`
+          );
+          return;
+        }
+
         // 기존 데이터 모두 삭제 (헤더 제외)
-        const existingData = await this.downloadTranslations();
-        if (existingData.length > 0) {
+        if (existingRowCount > 0) {
           const deleteRange = `${this.config.sheetName}!A${this.config.headerRow + 1}:C${
-            existingData.length + this.config.headerRow
+            existingRowCount + this.config.headerRow
           }`;
           await this.sheets.spreadsheets.values.clear({
             spreadsheetId: this.config.spreadsheetId,
             range: deleteRange,
           });
-          console.log(`�️  Cleared ${existingData.length} existing rows`);
+          console.log(`�️  Cleared ${existingRowCount} existing rows`);
         }
       } else {
         // 일반 모드: 새로운 키만 업로드
@@ -252,17 +334,25 @@ export class GoogleSheetsManager {
         const existingKeys = new Set(existingData.map((row) => row.key));
 
         translationsToUpload = translations.filter(
-          (t) => !existingKeys.has(t.key),
+          (t) => !existingKeys.has(t.key)
         );
 
         if (translationsToUpload.length === 0) {
           console.log("📝 No new translations to upload");
           return;
         }
+
+        if (dryRun) {
+          console.log(
+            `🔍 Would append ${translationsToUpload.length} new translations after ${existingRowCount} existing rows`
+          );
+          return;
+        }
       }
 
       // 시작 행 계산
-      const startRow = this.config.headerRow + 1;
+      const startRow =
+        this.config.headerRow + (force ? 1 : existingRowCount + 1);
 
       // 데이터 준비
       const values = translationsToUpload.map((translation, index) => {
@@ -298,11 +388,11 @@ export class GoogleSheetsManager {
       });
 
       console.log(
-        `✅ Uploaded ${translationsToUpload.length} translations to Google Sheets`,
+        `✅ Uploaded ${translationsToUpload.length} translations to Google Sheets`
       );
       if (autoTranslate) {
         console.log(
-          "🤖 English translations will be auto-generated by Google Sheets",
+          "🤖 English translations will be auto-generated by Google Sheets"
         );
       }
     } catch (error) {
@@ -315,54 +405,61 @@ export class GoogleSheetsManager {
    * Google Sheets에서 번역 데이터 다운로드
    * valueRenderOption을 FORMATTED_VALUE로 설정하여 수식이 아닌 계산된 결과값을 가져옴
    */
+  private async fetchTranslationRows(): Promise<any[][]> {
+    if (!this.sheets) {
+      throw new Error(
+        "Google Sheets client not initialized. Call authenticate() first."
+      );
+    }
+
+    const range = `${this.config.sheetName}!A:C`;
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.config.spreadsheetId,
+      range,
+      valueRenderOption: "UNFORMATTED_VALUE",
+    });
+    return response.data.values || [];
+  }
+
+  private parseTranslationRows(rows: any[][]): TranslationRow[] {
+    if (rows.length <= this.config.headerRow) return [];
+
+    const removeEscapePrefix = (value: string): string => {
+      if (!value) return value;
+      return value.startsWith("'") ? value.substring(1) : value;
+    };
+
+    return rows
+      .slice(this.config.headerRow)
+      .filter((row) => row[0])
+      .map((row) => ({
+        key: removeEscapePrefix(row[0] || ""),
+        en: removeEscapePrefix(row[1] || ""),
+        ko: removeEscapePrefix(row[2] || ""),
+      }));
+  }
+
   async downloadTranslations(): Promise<TranslationRow[]> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
     try {
       console.log("📥 Downloading translations from Google Sheets...");
 
-      const range = `${this.config.sheetName}!A:C`;
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.config.spreadsheetId,
-        range,
-        valueRenderOption: "UNFORMATTED_VALUE", // 원본 값을 가져옴 (' 포함)
-      });
-
-      const rows = response.data.values || [];
+      const rows = await this.fetchTranslationRows();
 
       if (rows.length <= this.config.headerRow) {
         console.log("📝 No translation data found");
         return [];
       }
 
-      // 헤더 행 제외하고 데이터 파싱
-      const dataRows = rows.slice(this.config.headerRow);
-      const translations: TranslationRow[] = dataRows
-        .filter((row) => row[0]) // 키가 있는 행만
-        .map((row) => {
-          // 다운로드 시 '로 시작하는 값에서 ' 제거 (텍스트로 강제 변환된 값)
-          const removeEscapePrefix = (value: string): string => {
-            if (!value) return value;
-            // '로 시작하는 경우 제거 (Google Sheets에서 텍스트로 강제 변환된 값)
-            if (value.startsWith("'")) {
-              return value.substring(1);
-            }
-            return value;
-          };
-
-          return {
-            key: removeEscapePrefix(row[0] || ""),
-            en: removeEscapePrefix(row[1] || ""),
-            ko: removeEscapePrefix(row[2] || ""),
-          };
-        });
+      const translations = this.parseTranslationRows(rows);
 
       console.log(
-        `✅ Downloaded ${translations.length} translations from Google Sheets`,
+        `✅ Downloaded ${translations.length} translations from Google Sheets`
       );
       return translations;
     } catch (error) {
@@ -377,6 +474,7 @@ export class GoogleSheetsManager {
   async saveTranslationsToLocal(
     localesDir: string,
     languages: string[] = ["en", "ko"],
+    dryRun: boolean = false
   ): Promise<void> {
     try {
       const translations = await this.downloadTranslations();
@@ -387,13 +485,13 @@ export class GoogleSheetsManager {
       }
 
       // locales 디렉토리가 없으면 생성
-      if (!fs.existsSync(localesDir)) {
+      if (!dryRun && !fs.existsSync(localesDir)) {
         fs.mkdirSync(localesDir, { recursive: true });
       }
 
       // 도메인 우선 구조: locales/[namespace]/[lang].json
       const namespacePath = this.getNamespacePath(localesDir);
-      if (!fs.existsSync(namespacePath)) {
+      if (!dryRun && !fs.existsSync(namespacePath)) {
         fs.mkdirSync(namespacePath, { recursive: true });
       }
 
@@ -406,16 +504,26 @@ export class GoogleSheetsManager {
           }
         });
 
-        const filePath = path.join(namespacePath, `${lang}.json`);
-        fs.writeFileSync(
-          filePath,
-          JSON.stringify(translationObj, null, 2),
-          "utf-8",
+        const filePath = resolveSafeChildPath(
+          namespacePath,
+          `${lang}.json`,
+          "translation file"
         );
+        if (dryRun) {
+          console.log(
+            `🔍 Would replace ${filePath} with ${Object.keys(translationObj).length} translations`
+          );
+        } else {
+          fs.writeFileSync(
+            filePath,
+            JSON.stringify(translationObj, null, 2),
+            "utf-8"
+          );
 
-        console.log(
-          `📝 Saved ${Object.keys(translationObj).length} ${lang} translations to ${filePath}`,
-        );
+          console.log(
+            `📝 Saved ${Object.keys(translationObj).length} ${lang} translations to ${filePath}`
+          );
+        }
       }
     } catch (error) {
       console.error("❌ Failed to save translations to local:", error);
@@ -429,6 +537,7 @@ export class GoogleSheetsManager {
   async saveTranslationsToLocalIncremental(
     localesDir: string,
     languages: string[] = ["en", "ko"],
+    dryRun: boolean = false
   ): Promise<void> {
     try {
       const translations = await this.downloadTranslations();
@@ -439,19 +548,23 @@ export class GoogleSheetsManager {
       }
 
       // locales 디렉토리가 없으면 생성
-      if (!fs.existsSync(localesDir)) {
+      if (!dryRun && !fs.existsSync(localesDir)) {
         fs.mkdirSync(localesDir, { recursive: true });
       }
 
       // 도메인 우선 구조: locales/[namespace]/[lang].json
       const namespacePath = this.getNamespacePath(localesDir);
-      if (!fs.existsSync(namespacePath)) {
+      if (!dryRun && !fs.existsSync(namespacePath)) {
         fs.mkdirSync(namespacePath, { recursive: true });
       }
 
       // 언어별로 번역 파일 생성/업데이트
       for (const lang of languages) {
-        const filePath = path.join(namespacePath, `${lang}.json`);
+        const filePath = resolveSafeChildPath(
+          namespacePath,
+          `${lang}.json`,
+          "translation file"
+        );
 
         // 기존 번역 파일 읽기
         let existingTranslations: Record<string, string> = {};
@@ -468,15 +581,21 @@ export class GoogleSheetsManager {
           }
         });
 
-        fs.writeFileSync(
-          filePath,
-          JSON.stringify(existingTranslations, null, 2),
-          "utf-8",
-        );
+        if (dryRun) {
+          console.log(
+            `🔍 Would add ${addedCount} new ${lang} translations to ${filePath}`
+          );
+        } else {
+          fs.writeFileSync(
+            filePath,
+            JSON.stringify(existingTranslations, null, 2),
+            "utf-8"
+          );
 
-        console.log(
-          `📝 Added ${addedCount} new ${lang} translations to ${filePath} (total: ${Object.keys(existingTranslations).length})`,
-        );
+          console.log(
+            `📝 Added ${addedCount} new ${lang} translations to ${filePath} (total: ${Object.keys(existingTranslations).length})`
+          );
+        }
       }
     } catch (error) {
       console.error("❌ Failed to save translations to local:", error);
@@ -512,7 +631,11 @@ export class GoogleSheetsManager {
       // 각 언어 파일 읽기
       for (const file of files) {
         const lang = path.basename(file, ".json"); // ko.json -> ko
-        const filePath = path.join(namespacePath, file);
+        const filePath = resolveSafeChildPath(
+          namespacePath,
+          file,
+          "translation file"
+        );
 
         try {
           const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -545,7 +668,11 @@ export class GoogleSheetsManager {
       // 각 언어 파일 읽기
       for (const file of files) {
         const lang = path.basename(file, ".json"); // en.json -> en
-        const filePath = path.join(namespacePath, file);
+        const filePath = resolveSafeChildPath(
+          namespacePath,
+          file,
+          "translation file"
+        );
 
         try {
           const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -590,22 +717,22 @@ export class GoogleSheetsManager {
 
       // 새로운 로컬 키들을 Google Sheets에 업로드
       const newLocalKeys = localTranslations.filter(
-        (t) => !remoteKeys.has(t.key),
+        (t) => !remoteKeys.has(t.key)
       );
       if (newLocalKeys.length > 0) {
         console.log(
-          `📤 Uploading ${newLocalKeys.length} new local keys to Google Sheets`,
+          `📤 Uploading ${newLocalKeys.length} new local keys to Google Sheets`
         );
         await this.uploadNewTranslations(newLocalKeys);
       }
 
       // 새로운 원격 키들을 로컬에 다운로드
       const newRemoteKeys = remoteTranslations.filter(
-        (t) => !localKeys.has(t.key),
+        (t) => !localKeys.has(t.key)
       );
       if (newRemoteKeys.length > 0) {
         console.log(
-          `📥 Downloading ${newRemoteKeys.length} new remote keys to local files`,
+          `📥 Downloading ${newRemoteKeys.length} new remote keys to local files`
         );
         await this.addTranslationsToLocal(localesDir, newRemoteKeys);
       }
@@ -680,7 +807,7 @@ export class GoogleSheetsManager {
    * 새로운 번역들을 Google Sheets에 추가
    */
   private async uploadNewTranslations(
-    translations: TranslationRow[],
+    translations: TranslationRow[]
   ): Promise<void> {
     if (!this.sheets || translations.length === 0) return;
 
@@ -711,7 +838,7 @@ export class GoogleSheetsManager {
    */
   private async addTranslationsToLocal(
     localesDir: string,
-    translations: TranslationRow[],
+    translations: TranslationRow[]
   ): Promise<void> {
     const languages = ["en", "ko"];
     const namespacePath = this.getNamespacePath(localesDir);
@@ -740,7 +867,7 @@ export class GoogleSheetsManager {
       fs.writeFileSync(
         filePath,
         JSON.stringify(existingTranslations, null, 2),
-        "utf-8",
+        "utf-8"
       );
     }
   }
@@ -751,7 +878,7 @@ export class GoogleSheetsManager {
   async getAllSheetNames(): Promise<string[]> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
@@ -779,6 +906,7 @@ export class GoogleSheetsManager {
   async downloadAllSheets(
     localesDir: string,
     languages: string[] = ["en", "ko"],
+    options: { force?: boolean; dryRun?: boolean } = {}
   ): Promise<void> {
     try {
       console.log("📥 Downloading all sheets from Google Sheets...");
@@ -792,7 +920,7 @@ export class GoogleSheetsManager {
       }
 
       console.log(
-        `📋 Found ${sheetNames.length} sheets: ${sheetNames.join(", ")}`,
+        `📋 Found ${sheetNames.length} sheets: ${sheetNames.join(", ")}`
       );
 
       // 2. 각 시트별로 다운로드
@@ -811,7 +939,19 @@ export class GoogleSheetsManager {
         sheetManager.sheets = this.sheets;
 
         // 해당 시트의 데이터를 locales/[namespace]/ 에 저장
-        await sheetManager.saveTranslationsToLocal(localesDir, languages);
+        if (options.force) {
+          await sheetManager.saveTranslationsToLocal(
+            localesDir,
+            languages,
+            options.dryRun
+          );
+        } else {
+          await sheetManager.saveTranslationsToLocalIncremental(
+            localesDir,
+            languages,
+            options.dryRun
+          );
+        }
       }
 
       console.log("\n✅ All sheets downloaded successfully");
@@ -828,7 +968,7 @@ export class GoogleSheetsManager {
   async uploadAllNamespaces(
     localesDir: string,
     autoTranslate: boolean = false,
-    force: boolean = false,
+    force: boolean = false
   ): Promise<void> {
     try {
       console.log("📤 Uploading all namespaces to Google Sheets...");
@@ -839,7 +979,7 @@ export class GoogleSheetsManager {
 
       // 1. locales 폴더의 하위 디렉토리 목록 조회 (네임스페이스)
       const namespaces = fs.readdirSync(localesDir).filter((item) => {
-        const fullPath = path.join(localesDir, item);
+        const fullPath = resolveSafeChildPath(localesDir, item, "namespace");
         // 디렉토리이고, types 같은 특수 폴더는 제외
         return (
           fs.statSync(fullPath).isDirectory() &&
@@ -854,7 +994,7 @@ export class GoogleSheetsManager {
       }
 
       console.log(
-        `📋 Found ${namespaces.length} namespaces: ${namespaces.join(", ")}`,
+        `📋 Found ${namespaces.length} namespaces: ${namespaces.join(", ")}`
       );
 
       // 2. 각 네임스페이스별로 업로드
@@ -897,7 +1037,7 @@ export class GoogleSheetsManager {
   }> {
     if (!this.sheets) {
       throw new Error(
-        "Google Sheets client not initialized. Call authenticate() first.",
+        "Google Sheets client not initialized. Call authenticate() first."
       );
     }
 
@@ -931,7 +1071,7 @@ export class GoogleSheetsManager {
    * CSV 파일에서 번역 데이터 읽기 (구글 시트 호환 형식)
    */
   async readTranslationsFromCSV(
-    csvFilePath: string,
+    csvFilePath: string
   ): Promise<TranslationRow[]> {
     try {
       console.log(`📥 Reading translations from CSV: ${csvFilePath}`);
@@ -958,16 +1098,16 @@ export class GoogleSheetsManager {
         }))
         .filter(
           (
-            column,
+            column
           ): column is {
             language: string;
             valueIndex: number;
-          } => Boolean(column.language),
+          } => Boolean(column.language)
         );
 
       if (keyHeader !== "key" || languageColumns.length === 0) {
         console.warn(
-          "⚠️ CSV header format might not be correct. Expected: Key plus one or more language columns",
+          "⚠️ CSV header format might not be correct. Expected: Key plus one or more language columns"
         );
       }
 
@@ -1043,7 +1183,7 @@ export class GoogleSheetsManager {
    */
   async saveTranslationsToCSV(
     csvFilePath: string,
-    translations: TranslationRow[],
+    translations: TranslationRow[]
   ): Promise<void> {
     try {
       console.log(`📤 Saving translations to CSV: ${csvFilePath}`);
@@ -1096,7 +1236,7 @@ export class GoogleSheetsManager {
   async convertCSVToLocalTranslations(
     csvFilePath: string,
     localesDir: string,
-    languages: string[] = ["en", "ko"],
+    languages: string[] = ["en", "ko"]
   ): Promise<void> {
     try {
       const translations = await this.readTranslationsFromCSV(csvFilePath);
@@ -1125,11 +1265,11 @@ export class GoogleSheetsManager {
         fs.writeFileSync(
           filePath,
           JSON.stringify(translationObj, null, 2),
-          "utf-8",
+          "utf-8"
         );
 
         console.log(
-          `📝 Converted ${Object.keys(translationObj).length} ${lang} translations to ${filePath}`,
+          `📝 Converted ${Object.keys(translationObj).length} ${lang} translations to ${filePath}`
         );
       }
     } catch (error) {

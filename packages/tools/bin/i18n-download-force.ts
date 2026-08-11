@@ -15,6 +15,7 @@ const config: Partial<DownloadConfig> = {
   sheetName: userConfig.googleSheets?.sheetName,
   languages: userConfig.languages,
 };
+let dryRun = false;
 
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
@@ -37,6 +38,9 @@ for (let i = 0; i < args.length; i++) {
     case "--languages":
       config.languages = args[++i].split(",");
       break;
+    case "--dry-run":
+      dryRun = true;
+      break;
     case "--help":
     case "-h":
       console.log(`
@@ -50,6 +54,7 @@ Options:
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
   -n, --sheet-name <name>      Sheet name (default: "Translations")
   --languages <langs>          Comma-separated list of languages (default: "en,ko")
+  --dry-run                    Preview replacement without writing locale files
   -h, --help                   Show this help message
 
 Examples:
@@ -63,4 +68,6 @@ Examples:
 }
 
 // force 옵션을 true로 설정하여 다운로드
-downloadTranslations(config, { force: true }).catch(console.error);
+downloadTranslations(config, { force: true, dryRun }).catch(() => {
+  process.exitCode = 1;
+});

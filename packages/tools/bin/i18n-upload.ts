@@ -2,7 +2,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { GoogleSheetsManager } from "../scripts/google-sheets";
+import {
+  GoogleSheetsManager,
+  resolveSafeChildPath,
+} from "../scripts/google-sheets";
 import { loadConfig } from "../scripts/config-loader";
 
 export interface UploadConfig {
@@ -12,6 +15,7 @@ export interface UploadConfig {
   sheetName?: string;
   autoTranslate?: boolean;
   force?: boolean;
+  dryRun?: boolean;
 }
 
 const DEFAULT_CONFIG: Required<UploadConfig> = {
@@ -21,21 +25,20 @@ const DEFAULT_CONFIG: Required<UploadConfig> = {
   sheetName: "Translations",
   autoTranslate: false,
   force: false,
+  dryRun: false,
 };
 
 export async function uploadTranslations(
   dir: string,
-  config: Required<UploadConfig>,
+  config: Required<UploadConfig>
 ) {
   console.log("\n📤 Starting Google Sheets upload process...\n");
 
   // Validate configuration
   if (!config.spreadsheetId) {
-    console.error("❌ Error: Spreadsheet ID is required");
-    console.error(
-      "Please provide it via config file or --spreadsheet-id flag\n",
+    throw new Error(
+      "Spreadsheet ID is required. Provide it via config or --spreadsheet-id."
     );
-    process.exit(1);
   }
 
   // 모든 네임스페이스 자동 감지
@@ -55,16 +58,17 @@ export async function uploadTranslations(
       dir,
       config.autoTranslate,
       config.force,
+      config.dryRun
     );
   } else {
     // 각 네임스페이스를 별도 시트로 업로드
     console.log(
-      `📦 Detected ${namespaces.length} namespace(s): ${namespaces.join(", ")}\n`,
+      `📦 Detected ${namespaces.length} namespace(s): ${namespaces.join(", ")}\n`
     );
 
     for (const namespace of namespaces) {
       console.log(
-        `📤 Uploading namespace '${namespace}' to sheet '${namespace}'...`,
+        `📤 Uploading namespace '${namespace}' to sheet '${namespace}'...`
       );
 
       const sheetsManager = new GoogleSheetsManager({
@@ -75,11 +79,14 @@ export async function uploadTranslations(
       });
 
       await sheetsManager.authenticate();
-      await sheetsManager.ensureWorksheet();
+      if (!config.dryRun) {
+        await sheetsManager.ensureWorksheet();
+      }
       await sheetsManager.uploadTranslations(
         dir,
         config.autoTranslate,
         config.force,
+        config.dryRun
       );
 
       console.log(`✅ Completed upload for namespace '${namespace}'\n`);
@@ -101,7 +108,7 @@ function detectNamespaces(localesDir: string): string[] {
   const namespaces: string[] = [];
 
   for (const item of items) {
-    const itemPath = path.join(localesDir, item);
+    const itemPath = resolveSafeChildPath(localesDir, item, "namespace");
     const stat = fs.statSync(itemPath);
 
     // 디렉토리이고, 그 안에 JSON 파일이 있으면 네임스페이스로 간주
@@ -158,6 +165,9 @@ if (require.main === module) {
       case "-f":
         config.force = true;
         break;
+      case "--dry-run":
+        config.dryRun = true;
+        break;
       case "--help":
       case "-h":
         console.log(`
@@ -172,6 +182,7 @@ Options:
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
   -a, --auto-translate         Enable auto-translation mode (English uses GOOGLETRANSLATE formula)
   -f, --force                  Force mode: Clear all existing data and re-upload everything
+  --dry-run                    Preview without changing Google Sheets
   -h, --help                   Show this help message
 
 Examples:
@@ -200,5 +211,8 @@ How it works:
   }
 
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
-  uploadTranslations(finalConfig.localesDir, finalConfig).catch(console.error);
+  uploadTranslations(finalConfig.localesDir, finalConfig).catch((error) => {
+    console.error("❌ Upload failed:", error);
+    process.exitCode = 1;
+  });
 }

@@ -94,7 +94,7 @@ npx i18n-clean-legacy  # remove obsolete translation keys from locale files
 
 This monorepo includes `i18nexus-mcp`, a local stdio MCP server that turns the setup prompt below into callable tools.
 
-It provides a read-only project analysis tool, a dry-run-first setup tool, and a read-only validation tool. The setup tool detects React and Next.js structure, creates or merges `i18nexus.config.json`, adds non-conflicting package scripts, and creates initial locale files. Dependency installation runs only when the caller explicitly enables it.
+It provides a read-only project analysis tool, a dry-run-first setup tool, and a read-only validation tool. It can also plan or run the installed `i18nexus-tools` doctor, wrapper, extractor, type, clean-legacy, and Google Sheets upload or download workflows under explicit safety policies. The setup tool detects React and Next.js structure, creates or merges `i18nexus.config.json`, adds non-conflicting package scripts, and creates initial locale files. Dependency installation runs only when the caller explicitly enables it.
 
 ```bash
 npm run build --workspace=i18nexus-mcp

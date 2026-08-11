@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod/v4";
 import { analyzeProject } from "./project-analysis";
 import { setupProject } from "./setup";
+import { runI18nexusTool } from "./tool-runner";
 import { validateProjectSetup } from "./validation";
 
 function success(value: unknown) {
@@ -127,6 +128,83 @@ export function createI18nexusMcpServer(): McpServer {
       try {
         return success(
           await setupProject({
+            ...input,
+            projectPath: input.projectPath ?? process.cwd(),
+          })
+        );
+      } catch (error) {
+        return failure(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    "run_i18nexus_tool",
+    {
+      title: "Plan or run an installed i18nexus tool",
+      description:
+        "Plan or run a typed i18nexus-tools action from the target project's local node_modules. Arbitrary commands are not accepted. doctor runs immediately. extractor, clean-legacy, upload, and download use native dry-run in preview mode. wrapper and type return a plan until applyChanges is explicitly true. Google Sheets actions require configured service-account credentials and spreadsheet access.",
+      inputSchema: z.object({
+        projectPath: z
+          .string()
+          .optional()
+          .describe(
+            "Project directory. Defaults to the MCP server working directory."
+          ),
+        tool: z.enum([
+          "doctor",
+          "wrapper",
+          "extractor",
+          "type",
+          "clean-legacy",
+          "upload",
+          "download",
+        ]),
+        applyChanges: z
+          .boolean()
+          .optional()
+          .describe(
+            "Apply local file or Google Sheets changes. Defaults to false. Native dry-run tools execute in preview mode. doctor still executes because it is an inspection command."
+          ),
+        pattern: z.string().min(1).max(4_096).optional(),
+        languages: z
+          .array(z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/))
+          .min(1)
+          .optional(),
+        sourceLanguage: z
+          .string()
+          .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/)
+          .optional(),
+        outputDir: z.string().min(1).optional(),
+        outputFormat: z.enum(["json", "csv"]).optional(),
+        outputFile: z.string().min(1).optional(),
+        localesDir: z.string().min(1).optional(),
+        translationImportSource: z.string().min(1).optional(),
+        typesOutputPath: z.string().min(1).optional(),
+        staticKeyExtraction: z.enum(["off", "safe", "aggressive"]).optional(),
+        force: z.boolean().optional(),
+        flat: z.boolean().optional(),
+        generateTypes: z.boolean().optional(),
+        strictTypes: z.boolean().optional(),
+        keyFirst: z.boolean().optional(),
+        keyFirstPattern: z.string().min(1).max(4_096).optional(),
+        backup: z.boolean().optional(),
+        spreadsheetId: z.string().min(1).optional(),
+        credentialsPath: z.string().min(1).optional(),
+        autoTranslate: z.boolean().optional(),
+        timeoutMs: z.number().int().min(1_000).max(300_000).optional(),
+      }),
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    },
+    async (input) => {
+      try {
+        return success(
+          await runI18nexusTool({
             ...input,
             projectPath: input.projectPath ?? process.cwd(),
           })

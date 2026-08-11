@@ -353,6 +353,7 @@ describe("i18n-extractor CLI E2E", () => {
       expect(fileExists(path.join(projectDir, "locales", "ko.json"))).toBe(
         false
       );
+      expect(fileExists(path.join(projectDir, "locales"))).toBe(false);
     });
 
     it("--format csv 옵션으로 CSV 파일을 생성해야 함", async () => {

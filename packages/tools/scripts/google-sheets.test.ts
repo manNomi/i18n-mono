@@ -113,7 +113,7 @@ describe("GoogleSheetsManager", () => {
       });
 
       await expect(invalidManager.authenticate()).rejects.toThrow(
-        "Credentials file not found",
+        "Credentials file not found"
       );
     });
 
@@ -150,7 +150,7 @@ describe("GoogleSheetsManager", () => {
 
     it("should return false when spreadsheet does not exist", async () => {
       (mockSheets.spreadsheets.get as jest.Mock).mockRejectedValue(
-        new Error("Spreadsheet not found"),
+        new Error("Spreadsheet not found")
       );
 
       const result = await manager.checkSpreadsheet();
@@ -160,7 +160,7 @@ describe("GoogleSheetsManager", () => {
     it("should throw error when not authenticated", async () => {
       const unauthenticatedManager = new GoogleSheetsManager();
       await expect(unauthenticatedManager.checkSpreadsheet()).rejects.toThrow(
-        "not initialized",
+        "not initialized"
       );
     });
   });
@@ -178,19 +178,19 @@ describe("GoogleSheetsManager", () => {
       } as any);
 
       (mockSheets.spreadsheets.batchUpdate as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.ensureWorksheet();
 
       expect(
-        mockSheets.spreadsheets.batchUpdate as jest.Mock,
+        mockSheets.spreadsheets.batchUpdate as jest.Mock
       ).toHaveBeenCalled();
       expect(
-        mockSheets.spreadsheets.values.update as jest.Mock,
+        mockSheets.spreadsheets.values.update as jest.Mock
       ).toHaveBeenCalled();
     });
 
@@ -276,8 +276,8 @@ describe("GoogleSheetsManager", () => {
             "button.save": "Save",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -287,8 +287,8 @@ describe("GoogleSheetsManager", () => {
             "button.save": "저장",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       // Mock downloadTranslations (called to check existing keys)
@@ -296,14 +296,47 @@ describe("GoogleSheetsManager", () => {
         data: { values: [["Key", "English", "Korean"]] },
       } as any);
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.uploadTranslations(localesDir, false, false);
 
       expect(
-        mockSheets.spreadsheets.values.update as jest.Mock,
+        mockSheets.spreadsheets.values.update as jest.Mock
       ).toHaveBeenCalled();
+    });
+
+    it("should append new translations after existing rows", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      createDirStructure(localesDir, {
+        "en.json": JSON.stringify({
+          "existing.key": "Existing",
+          "new.key": "New",
+        }),
+        "ko.json": JSON.stringify({
+          "existing.key": "기존",
+          "new.key": "신규",
+        }),
+      });
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["existing.key", "Existing", "기존"],
+          ],
+        },
+      } as any);
+
+      await manager.uploadTranslations(localesDir);
+
+      expect(mockSheets.spreadsheets.values.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          range: "TestSheet!A3:C3",
+          requestBody: {
+            values: [["new.key", "New", "신규"]],
+          },
+        })
+      );
     });
 
     it("should upload with force mode", async () => {
@@ -311,11 +344,11 @@ describe("GoogleSheetsManager", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify({ "new.key": "New Value" }, null, 2),
+        JSON.stringify({ "new.key": "New Value" }, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
-        JSON.stringify({ "new.key": "새 값" }, null, 2),
+        JSON.stringify({ "new.key": "새 값" }, null, 2)
       );
 
       // First call: downloadTranslations in force mode (to get existing data for clearing)
@@ -330,10 +363,10 @@ describe("GoogleSheetsManager", () => {
       } as any);
 
       (mockSheets.spreadsheets.values.clear as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.uploadTranslations(localesDir, false, true);
@@ -341,11 +374,36 @@ describe("GoogleSheetsManager", () => {
       // In force mode, clear should be called if there's existing data (length > 0)
       // Since we mocked existing data with 1 row, clear should be called
       expect(
-        mockSheets.spreadsheets.values.clear as jest.Mock,
+        mockSheets.spreadsheets.values.clear as jest.Mock
       ).toHaveBeenCalled();
       expect(
-        mockSheets.spreadsheets.values.update as jest.Mock,
+        mockSheets.spreadsheets.values.update as jest.Mock
       ).toHaveBeenCalled();
+    });
+
+    it("should clear the full used range in force mode", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      createDirStructure(localesDir, {
+        "en.json": JSON.stringify({ "new.key": "New" }),
+        "ko.json": JSON.stringify({ "new.key": "신규" }),
+      });
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["old.key", "Old", "기존"],
+            ["", "stale without key", "키 없는 값"],
+            ["last.key", "Last", "마지막"],
+          ],
+        },
+      } as any);
+
+      await manager.uploadTranslations(localesDir, false, true);
+
+      expect(mockSheets.spreadsheets.values.clear).toHaveBeenCalledWith({
+        spreadsheetId: "test-spreadsheet-id",
+        range: "TestSheet!A2:C4",
+      });
     });
 
     it("should handle auto-translate mode", async () => {
@@ -353,18 +411,18 @@ describe("GoogleSheetsManager", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify({ key: "" }, null, 2),
+        JSON.stringify({ key: "" }, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
-        JSON.stringify({ key: "한국어" }, null, 2),
+        JSON.stringify({ key: "한국어" }, null, 2)
       );
 
       (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
         data: { values: [["Key", "English", "Korean"]] },
       } as any);
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.uploadTranslations(localesDir, true, false);
@@ -378,10 +436,53 @@ describe("GoogleSheetsManager", () => {
       } else {
         // If update wasn't called, it means no new translations (all empty)
         expect(
-          (mockSheets.spreadsheets.values.update as jest.Mock).mock.calls
-            .length,
+          (mockSheets.spreadsheets.values.update as jest.Mock).mock.calls.length
         ).toBeGreaterThanOrEqual(0);
       }
+    });
+
+    it("should not update or clear Google Sheets in dry-run mode", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      createDirStructure(localesDir, {
+        "en.json": JSON.stringify({ "welcome.title": "Welcome" }),
+        "ko.json": JSON.stringify({ "welcome.title": "환영합니다" }),
+      });
+
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["existing.key", "Existing", "기존"],
+          ],
+        },
+      } as any);
+
+      await manager.uploadTranslations(localesDir, false, true, true);
+
+      expect(mockSheets.spreadsheets.values.get).toHaveBeenCalled();
+      expect(mockSheets.spreadsheets.values.update).not.toHaveBeenCalled();
+      expect(mockSheets.spreadsheets.values.clear).not.toHaveBeenCalled();
+    });
+
+    it("should reject namespace symlinks that escape locales", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      const outsideDir = path.join(tempDir, "outside");
+      fs.mkdirSync(localesDir, { recursive: true });
+      createDirStructure(outsideDir, {
+        "en.json": JSON.stringify({ secret: "do not upload" }),
+      });
+      fs.symlinkSync(outsideDir, path.join(localesDir, "leak"));
+      const namespacedManager = new GoogleSheetsManager({
+        credentialsPath: path.join(tempDir, "credentials.json"),
+        spreadsheetId: "test-spreadsheet-id",
+        sheetName: "leak",
+        namespace: "leak",
+      });
+      await namespacedManager.authenticate();
+
+      await expect(
+        namespacedManager.uploadTranslations(localesDir, false, false, true)
+      ).rejects.toThrow("namespace escapes the locales directory");
     });
   });
 
@@ -475,6 +576,177 @@ describe("GoogleSheetsManager", () => {
       // Should not throw error
       expect(true).toBe(true);
     });
+
+    it("should preserve local values during incremental download", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      createDirStructure(localesDir, {
+        common: {
+          "en.json": JSON.stringify({
+            "common.key": "Local value",
+            "local.only": "Keep me",
+          }),
+        },
+      });
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["common.key", "Remote value", "원격 값"],
+            ["remote.new", "New value", "새 값"],
+          ],
+        },
+      } as any);
+
+      await manager.downloadAllSheets(localesDir, ["en"]);
+
+      expect(readJsonFile(path.join(localesDir, "common", "en.json"))).toEqual({
+        "common.key": "Local value",
+        "local.only": "Keep me",
+        "remote.new": "New value",
+      });
+    });
+
+    it("should replace local values during force download", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      createDirStructure(localesDir, {
+        common: {
+          "en.json": JSON.stringify({
+            "common.key": "Local value",
+            "local.only": "Remove me",
+          }),
+        },
+      });
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["common.key", "Remote value", "원격 값"],
+          ],
+        },
+      } as any);
+
+      await manager.downloadAllSheets(localesDir, ["en"], { force: true });
+
+      expect(readJsonFile(path.join(localesDir, "common", "en.json"))).toEqual({
+        "common.key": "Remote value",
+      });
+    });
+
+    it("should not create locale directories in dry-run mode", async () => {
+      const localesDir = path.join(tempDir, "dry-run-locales");
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["common.key", "Remote value", "원격 값"],
+          ],
+        },
+      } as any);
+
+      await manager.downloadAllSheets(localesDir, ["en", "ko"], {
+        dryRun: true,
+      });
+
+      expect(fs.existsSync(localesDir)).toBe(false);
+    });
+
+    it("should reject sheet names that escape the locales directory", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      const outsideDir = path.join(tempDir, "outside");
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "../outside" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["secret.key", "Secret", "비밀"],
+          ],
+        },
+      } as any);
+
+      await expect(
+        manager.downloadAllSheets(localesDir, ["en", "ko"])
+      ).rejects.toThrow("namespace is not a safe path segment");
+      expect(fs.existsSync(outsideDir)).toBe(false);
+    });
+
+    it("should reject namespace symlinks that escape locales", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      const outsideDir = path.join(tempDir, "outside");
+      fs.mkdirSync(localesDir, { recursive: true });
+      fs.mkdirSync(outsideDir, { recursive: true });
+      fs.symlinkSync(outsideDir, path.join(localesDir, "common"));
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["secret.key", "Secret", "비밀"],
+          ],
+        },
+      } as any);
+
+      await expect(
+        manager.downloadAllSheets(localesDir, ["en", "ko"])
+      ).rejects.toThrow("namespace escapes the locales directory");
+      expect(fs.readdirSync(outsideDir)).toHaveLength(0);
+    });
+
+    it("should reject translation file symlinks that escape locales", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      const namespaceDir = path.join(localesDir, "common");
+      const outsideFile = path.join(tempDir, "outside.json");
+      fs.mkdirSync(namespaceDir, { recursive: true });
+      fs.writeFileSync(outsideFile, JSON.stringify({ keep: "unchanged" }));
+      fs.symlinkSync(outsideFile, path.join(namespaceDir, "en.json"));
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["remote.key", "Remote", "원격"],
+          ],
+        },
+      } as any);
+
+      await expect(
+        manager.downloadAllSheets(localesDir, ["en"], { force: true })
+      ).rejects.toThrow("translation file escapes the locales directory");
+      expect(readJsonFile(outsideFile)).toEqual({ keep: "unchanged" });
+    });
+
+    it("should reject unsafe language path segments", async () => {
+      const localesDir = path.join(tempDir, "locales");
+      (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
+        data: { sheets: [{ properties: { title: "common" } }] },
+      } as any);
+      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
+        data: {
+          values: [
+            ["Key", "English", "Korean"],
+            ["remote.key", "Remote", "원격"],
+          ],
+        },
+      } as any);
+
+      await expect(
+        manager.downloadAllSheets(localesDir, ["../outside"])
+      ).rejects.toThrow("translation file is not a safe path segment");
+    });
   });
 
   describe("uploadAllNamespaces", () => {
@@ -503,10 +775,10 @@ describe("GoogleSheetsManager", () => {
       } as any);
 
       (mockSheets.spreadsheets.batchUpdate as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
       (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
         data: { values: [["Key", "English", "Korean"]] },
@@ -516,10 +788,10 @@ describe("GoogleSheetsManager", () => {
 
       // Should create dashboard sheet and upload both namespaces
       expect(
-        mockSheets.spreadsheets.batchUpdate as jest.Mock,
+        mockSheets.spreadsheets.batchUpdate as jest.Mock
       ).toHaveBeenCalled();
       expect(
-        mockSheets.spreadsheets.values.update as jest.Mock,
+        mockSheets.spreadsheets.values.update as jest.Mock
       ).toHaveBeenCalled();
     });
 
@@ -604,18 +876,18 @@ describe("GoogleSheetsManager", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify({ "=formula": "=formula" }, null, 2),
+        JSON.stringify({ "=formula": "=formula" }, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
-        JSON.stringify({ "=formula": "=수식" }, null, 2),
+        JSON.stringify({ "=formula": "=수식" }, null, 2)
       );
 
       (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
         data: { values: [["Key", "English", "Korean"]] },
       } as any);
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.uploadTranslations(localesDir, false, false);
@@ -633,18 +905,18 @@ describe("GoogleSheetsManager", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify({ date: "12/25/2024" }, null, 2),
+        JSON.stringify({ date: "12/25/2024" }, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
-        JSON.stringify({ date: "2024/12/25" }, null, 2),
+        JSON.stringify({ date: "2024/12/25" }, null, 2)
       );
 
       (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
         data: { values: [["Key", "English", "Korean"]] },
       } as any);
       (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-        {} as any,
+        {} as any
       );
 
       await manager.uploadTranslations(localesDir, false, false);
@@ -671,8 +943,8 @@ describe("GoogleSheetsManager", () => {
             "button.save": "Save",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -682,15 +954,15 @@ describe("GoogleSheetsManager", () => {
             "button.save": "저장",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const translations = await manager.readLocalTranslations(localesDir);
 
       expect(translations.length).toBeGreaterThan(0);
       const welcomeTranslation = translations.find(
-        (t) => t.key === "welcome.title",
+        (t) => t.key === "welcome.title"
       );
       expect(welcomeTranslation).toBeDefined();
       expect(welcomeTranslation?.en).toBe("Welcome");
@@ -699,7 +971,7 @@ describe("GoogleSheetsManager", () => {
 
     it("should return empty array when directory does not exist", async () => {
       const translations = await manager.readLocalTranslations(
-        path.join(tempDir, "nonexistent"),
+        path.join(tempDir, "nonexistent")
       );
       expect(translations).toEqual([]);
     });

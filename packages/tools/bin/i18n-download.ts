@@ -45,7 +45,7 @@ const DEFAULT_CONFIG: Required<DownloadConfig> = {
 
 export async function downloadTranslations(
   config: Partial<DownloadConfig> = {},
-  options: { force?: boolean } = {},
+  options: { force?: boolean; dryRun?: boolean } = {}
 ) {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -54,15 +54,13 @@ export async function downloadTranslations(
 
     // 설정 유효성 검사
     if (!finalConfig.spreadsheetId) {
-      console.error("❌ Spreadsheet ID is required");
-      process.exit(1);
+      throw new Error("Spreadsheet ID is required");
     }
 
     if (!fs.existsSync(finalConfig.credentialsPath)) {
-      console.error(
-        `❌ Credentials file not found: ${finalConfig.credentialsPath}`,
+      throw new Error(
+        `Credentials file not found: ${finalConfig.credentialsPath}`
       );
-      process.exit(1);
     }
 
     // Google Sheets Manager 초기화
@@ -80,6 +78,7 @@ export async function downloadTranslations(
     await sheetsManager.downloadAllSheets(
       finalConfig.localesDir,
       finalConfig.languages,
+      { force: options.force, dryRun: options.dryRun }
     );
 
     // Note: 이전에는 단일 시트만 다운로드했지만, 이제는 모든 시트를 자동으로 다운로드합니다.
@@ -91,7 +90,7 @@ export async function downloadTranslations(
     console.log("✅ Translation download completed successfully");
   } catch (error) {
     console.error("❌ Download failed:", error);
-    process.exit(1);
+    throw error;
   }
 }
 
@@ -109,6 +108,7 @@ if (require.main === module) {
     sheetName: userConfig.googleSheets?.sheetName,
     languages: userConfig.languages,
   };
+  let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
@@ -131,6 +131,9 @@ if (require.main === module) {
       case "--languages":
         config.languages = args[++i].split(",");
         break;
+      case "--dry-run":
+        dryRun = true;
+        break;
       case "--help":
       case "-h":
         console.log(`
@@ -144,6 +147,7 @@ Options:
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
   --languages <langs>          Comma-separated list of languages (default: "en,ko")
+  --dry-run                    Preview without writing locale files
   -h, --help                   Show this help message
 
 Examples:
@@ -163,5 +167,7 @@ How it works:
     }
   }
 
-  downloadTranslations(config).catch(console.error);
+  downloadTranslations(config, { dryRun }).catch(() => {
+    process.exitCode = 1;
+  });
 }

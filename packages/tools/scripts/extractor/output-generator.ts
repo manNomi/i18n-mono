@@ -41,7 +41,7 @@ function getInitialTranslationValue(
   key: string,
   value: string | undefined,
   language: string,
-  config: OutputConfig,
+  config: OutputConfig
 ): string {
   return language === getSourceLanguage(config)
     ? getSourceValue(key, value)
@@ -57,7 +57,7 @@ function getCsvColumnLabel(language: string): string {
  */
 export function generateOutputData(
   keys: ExtractedKey[],
-  config: OutputConfig,
+  config: OutputConfig
 ): any {
   const sortedKeys = config.sortKeys
     ? [...keys].sort((a, b) => a.key.localeCompare(b.key))
@@ -83,7 +83,7 @@ export function generateOutputData(
  */
 export function generateGoogleSheetsCSV(
   keys: ExtractedKey[],
-  config: OutputConfig = {},
+  config: OutputConfig = {}
 ): string {
   const languages = config.languages || [
     STRING_CONSTANTS.DEFAULT_LANG_EN,
@@ -96,7 +96,7 @@ export function generateGoogleSheetsCSV(
 
   keys.forEach(({ key, defaultValue }) => {
     const values = languages.map((language) =>
-      getInitialTranslationValue(key, defaultValue, language, config),
+      getInitialTranslationValue(key, defaultValue, language, config)
     );
     const escapedValues = [key, ...values].map(escapeCsvValue);
     csvLines.push(escapedValues.join(CSV_CONSTANTS.SEPARATOR));
@@ -111,7 +111,7 @@ export function generateGoogleSheetsCSV(
 export function generateIndexFile(
   languages: string[],
   outputDir: string,
-  dryRun: boolean,
+  dryRun: boolean
 ): void {
   const indexPath = pathLib.join(outputDir, STRING_CONSTANTS.INDEX_FILE);
 
@@ -147,7 +147,7 @@ export function generateNamespaceIndexFile(
   dryRun: boolean,
   useI18nexusLibrary: boolean = true,
   useGeneratedTypes: boolean = true,
-  typesOutputPath?: string,
+  typesOutputPath?: string
 ): void {
   // useI18nexusLibrary가 false이면 index.ts를 생성하지 않음
   if (!useI18nexusLibrary) {
@@ -179,7 +179,7 @@ export function generateNamespaceIndexFile(
     .join(", ");
   const generatedTypeImportPath = getGeneratedTypeImportPath(
     outputDir,
-    typesOutputPath,
+    typesOutputPath
   );
   const generatedTypeImport = useGeneratedTypes
     ? `import type {
@@ -276,7 +276,7 @@ export const useTranslation = i18n.useTranslation;
 
 function getGeneratedTypeImportPath(
   outputDir: string,
-  typesOutputPath?: string,
+  typesOutputPath?: string
 ): string {
   const effectiveTypesOutputPath =
     typesOutputPath && typesOutputPath.trim().length > 0
@@ -285,7 +285,7 @@ function getGeneratedTypeImportPath(
   const relativePath = pathLib
     .relative(
       pathLib.resolve(outputDir),
-      pathLib.resolve(effectiveTypesOutputPath),
+      pathLib.resolve(effectiveTypesOutputPath)
     )
     .replace(/\\/g, "/")
     .replace(/(\.d)?\.tsx?$/, "");
@@ -309,10 +309,10 @@ function toPascalCase(str: string): string {
  */
 export function writeOutputFileWithNamespace(
   data: any,
-  config: OutputConfig & { namespace: string },
+  config: OutputConfig & { namespace: string }
 ): void {
   // 디렉토리가 없으면 생성
-  if (!fs.existsSync(config.outputDir!)) {
+  if (!config.dryRun && !fs.existsSync(config.outputDir!)) {
     fs.mkdirSync(config.outputDir!, { recursive: true });
   }
 
@@ -329,7 +329,7 @@ export function writeOutputFileWithNamespace(
     // JSON 파일로 출력 - 도메인 우선 구조: locales/[namespace]/[lang].json
     // 네임스페이스별 디렉토리 생성
     const namespaceDir = pathLib.join(config.outputDir!, config.namespace);
-    if (!fs.existsSync(namespaceDir)) {
+    if (!config.dryRun && !fs.existsSync(namespaceDir)) {
       fs.mkdirSync(namespaceDir, { recursive: true });
     }
 
@@ -358,7 +358,7 @@ export function writeOutputFileWithNamespace(
             key,
             data[key],
             lang,
-            config,
+            config
           );
         });
       } else {
@@ -373,7 +373,7 @@ export function writeOutputFileWithNamespace(
               key,
               data[key],
               lang,
-              config,
+              config
             );
           }
         });
@@ -393,7 +393,7 @@ export function writeOutputFileWithNamespace(
  */
 export function writeOutputFile(data: any, config: OutputConfig): void {
   // 디렉토리가 없으면 생성
-  if (!fs.existsSync(config.outputDir!)) {
+  if (!config.dryRun && !fs.existsSync(config.outputDir!)) {
     fs.mkdirSync(config.outputDir!, { recursive: true });
   }
 
@@ -401,7 +401,7 @@ export function writeOutputFile(data: any, config: OutputConfig): void {
     // CSV 파일로 출력
     const csvFileName = config.outputFile!.replace(
       FILE_EXTENSIONS.JSON,
-      FILE_EXTENSIONS.CSV,
+      FILE_EXTENSIONS.CSV
     );
     const outputPath = pathLib.join(config.outputDir!, csvFileName);
     const content = data; // CSV는 이미 문자열
@@ -436,7 +436,7 @@ export function writeOutputFile(data: any, config: OutputConfig): void {
             key,
             data[key],
             lang,
-            config,
+            config
           );
         });
       } else {
@@ -451,7 +451,7 @@ export function writeOutputFile(data: any, config: OutputConfig): void {
               key,
               data[key],
               lang,
-              config,
+              config
             );
           }
         });

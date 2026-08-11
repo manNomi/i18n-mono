@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-08-11
+
+### 🐛 Fixes
+
+- `i18n-extractor --dry-run` no longer creates output or namespace directories.
+- Google Sheets upload and download dry-run modes no longer change remote sheets or local locale files.
+- The default Google Sheets download preserves local translations while adding remote keys. Force download replaces local locale files.
+- Incremental upload appends after the used range. Force upload clears the complete used range before replacement.
+- Google Sheets namespaces and translation files cannot escape the locale directory through sheet names or symbolic links.
+- Google Sheets CLI failures now return a nonzero exit code so callers can detect authentication and API errors.
+
 ## [3.2.0] - 2026-08-05
 
 ### ✨ Features

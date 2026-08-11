@@ -72,6 +72,32 @@ node packages/mcp/dist/bin/i18nexus-mcp.js
 
 이 도구는 파일을 바꾸지 않습니다. config 형식과 언어 설정과 소스 탐색 경로와 첫 locale 파일을 검사합니다. `package.json`의 의존성 선언과 실제 설치 상태도 따로 검사합니다.
 
+### `run_i18nexus_tool`
+
+이 도구는 대상 프로젝트의 `node_modules`에 실제로 설치된 `i18nexus-tools`만 사용합니다. 임의 명령이나 임의 CLI 인자를 실행하지 않고 기능별로 정의된 입력만 실제 명령으로 변환합니다.
+
+실행에는 `i18nexus-tools` 3.2.1 이상이 필요합니다. 이 버전부터 extractor의 dry run이 출력 디렉터리도 만들지 않는 동작을 보장합니다.
+
+지원하는 기능은 `doctor`와 `wrapper`와 `extractor`와 `type`과 `clean-legacy`와 Google Sheets의 `upload` 및 `download`입니다. Sheets 기능을 사용하려면 service account 자격 증명과 접근 권한이 있는 spreadsheet가 필요합니다.
+
+`doctor`는 검사 명령이므로 바로 실행됩니다. 대상 프로젝트에 설치된 JavaScript를 실행한다는 사실은 결과의 `safety.executesProjectCode`에서도 확인할 수 있습니다.
+
+`extractor`와 `clean-legacy`와 Google Sheets 기능은 `applyChanges`가 없거나 `false`이면 자체 dry run으로 실행됩니다. upload 미리보기는 자격 증명을 확인하고 sheet를 읽어서 추가하거나 교체할 번역 수를 계산하지만 sheet를 바꾸지 않습니다. download 미리보기는 sheet를 읽고 로컬 변경 계획을 계산하지만 파일을 쓰지 않습니다. `wrapper`와 `type`은 자체 dry run이 없으므로 명령 계획만 반환합니다. 파일이나 sheet에 반영하려면 결과를 확인한 뒤 `applyChanges: true`를 명시해야 합니다.
+
+기본 download는 로컬 번역을 보존하면서 sheet에 새로 생긴 key를 더합니다. `force: true`를 사용하면 로컬 locale 파일을 sheet 내용으로 교체합니다. upload의 `force: true`는 기존 sheet 내용을 지운 뒤 로컬 번역으로 교체하므로 미리보기 결과를 먼저 확인해야 합니다. MCP 응답에는 자격 증명 파일의 내용이 포함되지 않습니다.
+
+```json
+{
+  "projectPath": "/absolute/path/to/project",
+  "tool": "extractor",
+  "languages": ["ko", "en"],
+  "staticKeyExtraction": "safe",
+  "applyChanges": false
+}
+```
+
+실행 파일과 source pattern과 locale 및 type 출력 경로는 대상 package와 프로젝트 폴더 밖으로 나갈 수 없습니다. Google Sheets 자격 증명 파일도 프로젝트 안에 있어야 합니다. 각 실행에는 시간 제한과 출력 크기 제한이 적용됩니다. 대상 package는 별도 sandbox가 아닌 로컬 Node.js 프로세스로 실행됩니다. MCP 서버의 임의 secret과 `NODE_OPTIONS`는 전달하지 않지만 대상 프로젝트에 신뢰할 수 있는 package가 설치됐는지 확인해야 합니다.
+
 ## setup이 만드는 파일
 
 Next.js App Router 프로젝트에는 보통 다음 파일이 생깁니다.
@@ -99,6 +125,6 @@ locales/
 
 ## 현재 구현 범위
 
-MCP 서버는 i18nexus config와 첫 locale 파일까지 준비합니다. 애플리케이션 provider나 component는 자동으로 바꾸지 않습니다. 이 부분은 프로젝트마다 렌더링 방식과 상태 경계가 달라 별도 판단이 필요하기 때문입니다. Google service account 자격 증명도 만들지 않습니다.
+MCP 서버는 i18nexus config와 첫 locale 파일을 준비하고 설치된 core workflow와 Google Sheets 명령을 계획하거나 실행합니다. 애플리케이션 provider나 component는 자동으로 바꾸지 않습니다. 이 부분은 프로젝트마다 렌더링 방식과 상태 경계가 달라 별도 판단이 필요하기 때문입니다. Google service account 자격 증명도 만들지 않습니다.
 
 setup 도구는 확인한 프로젝트 폴더 안의 config와 locale 경로만 수정합니다. 기존 JSON config가 올바르지 않으면 `overwriteExistingConfig`를 명시하기 전까지 덮어쓰지 않습니다.

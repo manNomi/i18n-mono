@@ -117,3 +117,68 @@ export interface ValidationResult {
   };
   recommendations: string[];
 }
+
+export type I18nexusToolAction =
+  | "doctor"
+  | "wrapper"
+  | "extractor"
+  | "type"
+  | "clean-legacy"
+  | "upload"
+  | "download";
+
+export interface RunI18nexusToolOptions {
+  projectPath: string;
+  tool: I18nexusToolAction;
+  applyChanges?: boolean;
+  pattern?: string;
+  languages?: string[];
+  sourceLanguage?: string;
+  outputDir?: string;
+  outputFormat?: "json" | "csv";
+  outputFile?: string;
+  localesDir?: string;
+  translationImportSource?: string;
+  typesOutputPath?: string;
+  staticKeyExtraction?: "off" | "safe" | "aggressive";
+  force?: boolean;
+  flat?: boolean;
+  generateTypes?: boolean;
+  strictTypes?: boolean;
+  keyFirst?: boolean;
+  keyFirstPattern?: string;
+  backup?: boolean;
+  spreadsheetId?: string;
+  credentialsPath?: string;
+  autoTranslate?: boolean;
+  timeoutMs?: number;
+}
+
+export interface I18nexusToolRunResult {
+  projectPath: string;
+  tool: I18nexusToolAction;
+  mode: "inspect" | "preview" | "apply";
+  command: {
+    name: string;
+    packageVersion: string;
+    args: string[];
+  };
+  safety: {
+    executesProjectCode: true;
+    sandboxed: false;
+    mutatesLocalFiles: boolean;
+    usesNetwork: boolean;
+    nativeDryRun: boolean;
+    note: string;
+  };
+  execution: {
+    status: "planned" | "completed" | "failed" | "timed-out";
+    ok: boolean;
+    exitCode?: number;
+    signal?: NodeJS.Signals;
+    stdout: string;
+    stderr: string;
+    stdoutTruncated: boolean;
+    stderrTruncated: boolean;
+  };
+}

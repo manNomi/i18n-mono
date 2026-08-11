@@ -173,7 +173,7 @@ describe("output-generator", () => {
         tempDir,
         "common",
         false,
-        true,
+        true
       );
 
       const indexPath = path.join(tempDir, "index.ts");
@@ -189,17 +189,17 @@ describe("output-generator", () => {
       expect(content).toContain("I18nexusGeneratedTranslationFunction");
       expect(content).toContain("I18nexusGeneratedClientTranslationFunction");
       expect(content).toContain(
-        'export const languages = ["en", "ko"] as const',
+        'export const languages = ["en", "ko"] as const'
       );
       expect(content).toContain(
-        'export const namespaces = ["common", "dashboard"] as const',
+        'export const namespaces = ["common", "dashboard"] as const'
       );
       expect(content).toContain("export const i18n = createI18n");
       expect(content).toContain(
-        "export const I18nProvider = i18n.I18nProvider",
+        "export const I18nProvider = i18n.I18nProvider"
       );
       expect(content).toContain(
-        "export const useTranslation = i18n.useTranslation",
+        "export const useTranslation = i18n.useTranslation"
       );
       expect(content).toContain("export type AppTranslationFunction");
       expect(content).toContain("export type AppClientTranslationFunction");
@@ -216,7 +216,7 @@ describe("output-generator", () => {
         false,
         true,
         true,
-        typesOutputPath,
+        typesOutputPath
       );
 
       const content = readFileContent(path.join(tempDir, "index.ts"));
@@ -232,13 +232,13 @@ describe("output-generator", () => {
         tempDir,
         "common",
         false,
-        true,
+        true
       );
 
       const content = readFileContent(path.join(tempDir, "index.ts"));
 
       expect(content).toContain(
-        'export const namespaces = ["common", "home"] as const',
+        'export const namespaces = ["common", "home"] as const'
       );
       expect(content).toContain('export type AppNamespace = "common" | "home"');
     });
@@ -251,17 +251,17 @@ describe("output-generator", () => {
         "common",
         false,
         true,
-        false,
+        false
       );
 
       const content = readFileContent(path.join(tempDir, "index.ts"));
 
       expect(content).not.toContain("./types/i18nexus");
       expect(content).toContain(
-        "type I18nexusGeneratedTranslations = Record<AppNamespace",
+        "type I18nexusGeneratedTranslations = Record<AppNamespace"
       );
       expect(content).toContain(
-        "type I18nexusGeneratedTranslationFunction<NS extends AppNamespace",
+        "type I18nexusGeneratedTranslationFunction<NS extends AppNamespace"
       );
     });
 
@@ -272,7 +272,7 @@ describe("output-generator", () => {
         tempDir,
         "common",
         false,
-        false,
+        false
       );
 
       const indexPath = path.join(tempDir, "index.ts");
@@ -286,7 +286,7 @@ describe("output-generator", () => {
         tempDir,
         "common",
         true,
-        true,
+        true
       );
 
       const indexPath = path.join(tempDir, "index.ts");
@@ -354,7 +354,7 @@ describe("output-generator", () => {
       fs.mkdirSync(tempDir, { recursive: true });
       fs.writeFileSync(
         path.join(tempDir, "ko.json"),
-        JSON.stringify({ "old.key": "기존 값" }, null, 2),
+        JSON.stringify({ "old.key": "기존 값" }, null, 2)
       );
 
       const data = {
@@ -380,7 +380,7 @@ describe("output-generator", () => {
       fs.mkdirSync(tempDir, { recursive: true });
       fs.writeFileSync(
         path.join(tempDir, "ko.json"),
-        JSON.stringify({ "old.key": "기존 값" }, null, 2),
+        JSON.stringify({ "old.key": "기존 값" }, null, 2)
       );
 
       const data = {
@@ -420,17 +420,19 @@ describe("output-generator", () => {
 
     it("dryRun 모드에서는 파일을 생성하지 않아야 함", () => {
       const data = { "test.key": "테스트" };
+      const outputDir = path.join(tempDir, "dry-run-output");
 
       writeOutputFile(data, {
         outputFormat: "json",
         languages: ["ko"],
-        outputDir: tempDir,
+        outputDir,
         outputFile: "translations.json",
         dryRun: true,
       });
 
-      const koFile = path.join(tempDir, "ko.json");
+      const koFile = path.join(outputDir, "ko.json");
       expect(fileExists(koFile)).toBe(false);
+      expect(fileExists(outputDir)).toBe(false);
     });
   });
 
@@ -494,7 +496,7 @@ describe("output-generator", () => {
       fs.mkdirSync(namespaceDir, { recursive: true });
       fs.writeFileSync(
         path.join(namespaceDir, "ko.json"),
-        JSON.stringify({ "old.key": "기존 값" }, null, 2),
+        JSON.stringify({ "old.key": "기존 값" }, null, 2)
       );
 
       const data = {
@@ -528,6 +530,24 @@ describe("output-generator", () => {
 
       const csvFile = path.join(tempDir, "common.csv");
       expect(fileExists(csvFile)).toBe(true);
+    });
+
+    it("dryRun 모드에서는 네임스페이스 디렉토리도 생성하지 않아야 함", () => {
+      const outputDir = path.join(tempDir, "dry-run-namespace-output");
+
+      writeOutputFileWithNamespace(
+        { "welcome.title": "환영합니다" },
+        {
+          outputFormat: "json",
+          languages: ["ko"],
+          outputDir,
+          namespace: "common",
+          dryRun: true,
+        }
+      );
+
+      expect(fileExists(outputDir)).toBe(false);
+      expect(fileExists(path.join(outputDir, "common"))).toBe(false);
     });
 
     it("기존 번역 파일 파싱 실패 시 경고만 출력하고 계속 진행해야 함", () => {
