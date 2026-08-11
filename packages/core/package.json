@@ -6,6 +6,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -16,6 +17,26 @@
       "types": "./dist/utils/server.d.ts",
       "import": "./dist/utils/server.js",
       "default": "./dist/utils/server.js"
+    },
+    "./edge": {
+      "types": "./dist/utils/edge.d.ts",
+      "import": "./dist/utils/edge.js",
+      "default": "./dist/utils/edge.js"
+    },
+    "./icu": {
+      "types": "./dist/utils/icu.d.ts",
+      "import": "./dist/utils/icu.js",
+      "default": "./dist/utils/icu.js"
+    },
+    "./icu/server": {
+      "types": "./dist/utils/icu-server.d.ts",
+      "import": "./dist/utils/icu-server.js",
+      "default": "./dist/utils/icu-server.js"
+    },
+    "./icu/formatter": {
+      "types": "./dist/utils/icu-formatter.d.ts",
+      "import": "./dist/utils/icu-formatter.js",
+      "default": "./dist/utils/icu-formatter.js"
     },
     "./devtools": {
       "types": "./dist/components/I18NexusDevtools.d.ts",
@@ -29,11 +50,16 @@
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.{ts,tsx} --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
     "prepack": "npm run build",
     "prepublishOnly": "npm run build",
     "smoke:pack": "node scripts/smoke-packed-package.mjs",
+    "smoke:bundle": "node scripts/smoke-browser-bundle.mjs",
+    "smoke:edge": "node scripts/smoke-edge-runtime.mjs",
+    "benchmark:translation": "node scripts/benchmark-translation.mjs",
     "version": "(npm run format || true) && git add -A src || true",
     "postversion": "echo '✅ Version updated successfully'",
     "validate": "npm run build && npm run test",
@@ -72,11 +98,16 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
+  "dependencies": {
+    "intl-messageformat": "11.2.13"
+  },
   "devDependencies": {
     "@babel/core": "^7.23.0",
+    "@babel/parser": "^7.23.0",
     "@babel/preset-env": "^7.23.0",
     "@babel/preset-react": "^7.22.0",
     "@babel/preset-typescript": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
     "@eslint/js": "^9.36.0",
     "@testing-library/jest-dom": "^6.1.0",
     "@testing-library/react": "^13.4.0",
@@ -86,6 +117,8 @@
     "@types/node": "^20.8.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "babel-jest": "^29.7.0",
+    "esbuild": "0.25.11",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
     "eslint": "^8.57.1",

@@ -6,6 +6,7 @@ import {
   LanguageConfig,
   LanguageManagerOptions,
 } from "../utils/languageManager.js";
+import type { MessageFormatter } from "../utils/message-formatter.js";
 
 /** 번역 객체에서 키 추출 */
 export type ExtractI18nKeys<T extends Record<string, Record<string, string>>> =
@@ -23,7 +24,7 @@ export type NamespaceTranslations = Record<
 /** Lazy loading용 네임스페이스 로더 타입 */
 export type NamespaceLoader = (
   namespace: string,
-  language: string,
+  language: string
 ) => Promise<Record<string, string>>;
 
 /** 네임스페이스에서 키 추출 */
@@ -68,13 +69,15 @@ export interface I18nContextType<
   loadNamespace?: NamespaceLoader;
   /** Fallback 네임스페이스 */
   fallbackNamespace?: keyof TTranslations;
+  /** Optional runtime-neutral formatter for ICU-capable translation catalogs */
+  messageFormatter?: MessageFormatter;
   /** 타입 정보 (런타임에는 사용하지 않음) */
   _type?: TTranslations;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const I18nContext = React.createContext<I18nContextType<any> | null>(
-  null,
+  null
 );
 
 export const useI18nContext = <
@@ -103,6 +106,8 @@ export interface I18nProviderProps<
   fallbackNamespace?: keyof TTranslations;
   /** 추가로 미리 로드할 네임스페이스 목록 */
   preloadNamespaces?: Array<keyof TTranslations>;
+  /** ICU 등 확장 메시지 문법을 처리하는 선택적 formatter */
+  messageFormatter?: MessageFormatter;
 }
 
 export function I18nProvider<
@@ -116,12 +121,13 @@ export function I18nProvider<
   loadNamespace,
   fallbackNamespace,
   preloadNamespaces,
+  messageFormatter,
 }: I18nProviderProps<TTranslations>) {
   // Lazy mode is automatically enabled if loadNamespace is provided
   const lazy = !!loadNamespace;
   const defaultTranslations = translations;
   const [languageManager] = React.useState(
-    () => new LanguageManager(languageManagerOptions),
+    () => new LanguageManager(languageManagerOptions)
   );
 
   const getInitialLanguage = () => {
@@ -141,11 +147,11 @@ export function I18nProvider<
     Map<string, Record<string, Record<string, string>>>
   >(() => new Map());
   const [loadingNamespaces, setLoadingNamespaces] = React.useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   );
   const loadedNamespacesRef = React.useRef(loadedNamespaces);
   const namespaceLoadPromisesRef = React.useRef<Map<string, Promise<void>>>(
-    new Map(),
+    new Map()
   );
 
   React.useEffect(() => {
@@ -167,11 +173,11 @@ export function I18nProvider<
           } catch (error) {
             console.warn(
               `Failed to load namespace "${namespaceKey}" for language "${lang}":`,
-              error,
+              error
             );
             return { lang, data: undefined };
           }
-        }),
+        })
       );
 
       const namespaceData: Record<string, Record<string, string>> = {};
@@ -193,7 +199,7 @@ export function I18nProvider<
         return next;
       });
     },
-    [languageManager, loadNamespace],
+    [languageManager, loadNamespace]
   );
 
   const ensureNamespaceLoaded = React.useCallback(
@@ -263,7 +269,7 @@ export function I18nProvider<
       namespaceLoadPromisesRef.current.set(namespaceKey, loadPromise);
       return loadPromise;
     },
-    [languageManager, lazy, loadNamespace, loadNamespaceForAllLanguages],
+    [languageManager, lazy, loadNamespace, loadNamespaceForAllLanguages]
   );
 
   // Preload namespaces (fallback + additional preload namespaces)
@@ -352,6 +358,7 @@ export function I18nProvider<
     lazy,
     loadNamespace,
     fallbackNamespace,
+    messageFormatter,
   };
 
   return (

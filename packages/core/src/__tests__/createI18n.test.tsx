@@ -13,6 +13,7 @@ import {
   fireEvent,
 } from "@testing-library/react";
 import { createI18n } from "../utils/createI18n";
+import { createFormatter } from "../utils/formatter";
 
 // Clean up after each test
 afterEach(() => {
@@ -154,7 +155,7 @@ describe("createI18n", () => {
           }}
         >
           <div data-testid="child">Test Child</div>
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("child")).toBeInTheDocument();
@@ -176,7 +177,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
@@ -204,11 +205,11 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "Custom Welcome",
+        "Custom Welcome"
       );
     });
   });
@@ -236,7 +237,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
@@ -273,7 +274,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       const firstT = seenT[0];
@@ -307,7 +308,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("common")).toHaveTextContent("Welcome");
@@ -330,7 +331,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
@@ -353,7 +354,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("환영합니다");
@@ -384,14 +385,14 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("greeting-john")).toHaveTextContent(
-        "Hello John",
+        "Hello John"
       );
       expect(screen.getByTestId("greeting-jane")).toHaveTextContent(
-        "Hello Jane",
+        "Hello Jane"
       );
     });
 
@@ -406,7 +407,7 @@ describe("createI18n", () => {
             {t(
               "greeting",
               { name: "World" },
-              { name: { color: "red", fontWeight: "bold" } },
+              { name: { color: "red", fontWeight: "bold" } }
             )}
           </div>
         );
@@ -419,7 +420,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       const styledElement = screen.getByTestId("styled");
@@ -449,7 +450,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // When namespace is invalid but key exists in flattened translations, it returns the translation value
@@ -474,11 +475,11 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "nonexistent",
+        "nonexistent"
       );
     });
   });
@@ -508,7 +509,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("h1")).toHaveTextContent("Welcome");
@@ -540,7 +541,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Since translations are flattened, keys from other namespaces are also accessible
@@ -584,7 +585,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Empty namespace should return key
@@ -615,7 +616,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Should return the key when language doesn't exist
@@ -658,11 +659,11 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("dash")).toHaveTextContent(
-        "Value with special chars: !@#$%",
+        "Value with special chars: !@#$%"
       );
       expect(screen.getByTestId("dots")).toHaveTextContent("Another value");
     });
@@ -676,12 +677,12 @@ describe("createI18n", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       function TestComponent() {
@@ -706,7 +707,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       const firstT = seenT[0];
@@ -727,7 +728,7 @@ describe("createI18n", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("translation")).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
@@ -743,12 +744,12 @@ describe("createI18n", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       function TestComponent() {
@@ -773,7 +774,7 @@ describe("createI18n", () => {
         >
           <TestComponent />
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       await waitFor(() => {
@@ -808,12 +809,12 @@ describe("createI18n", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       function TestComponent() {
@@ -838,7 +839,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       await waitFor(() => {
@@ -875,12 +876,12 @@ describe("createI18n", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       function TestComponent() {
@@ -904,7 +905,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       await waitFor(() => {
@@ -935,7 +936,7 @@ describe("createI18n", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(loadNamespace).toHaveBeenCalledTimes(2);
@@ -967,12 +968,14 @@ describe("createI18n", () => {
       // Type assertions to verify inference
       const assertCommonReturn: CommonReturn = {
         t: ((key: "welcome" | "goodbye" | "greeting") => key) as any,
+        format: createFormatter("en"),
         currentLanguage: "en",
         isReady: true,
       };
 
       const assertMenuReturn: MenuReturn = {
         t: ((key: "home" | "about" | "contact") => key) as any,
+        format: createFormatter("en"),
         currentLanguage: "en",
         isReady: true,
       };
