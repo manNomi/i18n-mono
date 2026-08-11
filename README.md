@@ -90,6 +90,19 @@ npx i18n-sheets        # sync translations with Google Sheets workflows
 npx i18n-clean-legacy  # remove obsolete translation keys from locale files
 ```
 
+## MCP Setup Server
+
+This monorepo includes `i18nexus-mcp`, a local stdio MCP server that turns the setup prompt below into callable tools.
+
+It provides a read-only project analysis tool, a dry-run-first setup tool, and a read-only validation tool. The setup tool detects React and Next.js structure, creates or merges `i18nexus.config.json`, adds non-conflicting package scripts, and creates initial locale files. Dependency installation runs only when the caller explicitly enables it.
+
+```bash
+npm run build --workspace=i18nexus-mcp
+node packages/mcp/dist/bin/i18nexus-mcp.js
+```
+
+See [`packages/mcp/README.md`](packages/mcp/README.md) for MCP host configuration, tool inputs, safety rules, and current implementation boundaries.
+
 ## AI Agent Setup Prompt
 
 The project keeps an agent-ready setup prompt because i18n setup is often a multi-file migration. Copy this section into Codex, Claude, or another coding agent when you want it to install and validate i18nexus in an existing project.

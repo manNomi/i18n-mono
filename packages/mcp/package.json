@@ -1,0 +1,63 @@
+{
+  "name": "i18nexus-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that analyzes projects and configures i18nexus safely",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "i18nexus-mcp": "dist/bin/i18nexus-mcp.js"
+  },
+  "scripts": {
+    "build": "npm run clean && tsc && npm run postbuild",
+    "postbuild": "chmod +x dist/bin/i18nexus-mcp.js 2>/dev/null || true",
+    "clean": "rm -rf dist",
+    "pretest": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prepublishOnly": "npm run build",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "i18nexus",
+    "mcp",
+    "model-context-protocol",
+    "i18n",
+    "localization",
+    "automation"
+  ],
+  "author": "manNomi <hanmw110@naver.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.ko.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.9.4",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/i18n-global/i18n-mono.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/i18n-global/i18n-mono/issues"
+  },
+  "homepage": "https://github.com/i18n-global/i18n-mono#readme"
+}
