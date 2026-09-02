@@ -8,16 +8,20 @@ import {
   ExtractKeysWithFallback,
 } from "../components/I18nProvider.js";
 import type { LanguageConfig } from "../utils/languageManager.js";
+import { createFormatter, type I18nFormatter } from "../utils/formatter.js";
 import {
   getNamespaceReadiness,
   resolveTranslationReady,
   resolveTranslationSnapshot,
   shouldLoadNamespace,
+  translateRichFromSnapshot,
   translateFromSnapshot,
   type RuntimeNamespaceTranslations,
   type TranslationStyles,
   type TranslationVariables,
 } from "../utils/translation-runtime.js";
+
+export type TranslationRichValues = Record<string, unknown>;
 
 export type {
   TranslationVariables,
@@ -31,17 +35,26 @@ export interface TranslationFunction<K extends string = string> {
   (
     key: K,
     variables: TranslationVariables,
-    styles: TranslationStyles,
+    styles: TranslationStyles
   ): React.ReactElement;
 
   /** 스타일 없는 번역 (문자열 반환) */
   (key: K, variables?: TranslationVariables): string;
 }
 
+export interface TranslationFunctionWithRich<
+  K extends string = string,
+> extends TranslationFunction<K> {
+  /** ICU 태그 콜백을 포함한 rich text 번역 */
+  rich(key: K, variables?: TranslationRichValues): React.ReactNode;
+}
+
 /** useTranslation 훅 반환 타입 */
 export interface UseTranslationReturn<K extends string = string> {
   /** 타입 가드가 있는 번역 함수 (스타일 제공 시 React 요소, 없으면 문자열) */
-  t: TranslationFunction<K>;
+  t: TranslationFunctionWithRich<K>;
+  /** 현재 언어용 native Intl formatter */
+  format: I18nFormatter;
   /** 현재 언어 코드 */
   currentLanguage: string;
   /** 현재 언어 코드 (react-i18next 호환성을 위한 별칭) */
@@ -53,7 +66,7 @@ export interface UseTranslationReturn<K extends string = string> {
 /** 번역 함수 및 현재 언어 접근 훅 (오버로드) */
 // 오버로드 1: 타입 명시 없이 사용 (기본 동작, 하위 호환성)
 export function useTranslation<K extends string = string>(
-  namespace?: string,
+  namespace?: string
 ): UseTranslationReturn<K>;
 
 // 오버로드 2: Context에서 타입 자동 추론 (v3.1 신기능)
@@ -62,7 +75,7 @@ export function useTranslation<
   NS extends keyof TTranslations & string,
   Fallback extends keyof TTranslations & string = never,
 >(
-  namespace: NS,
+  namespace: NS
 ): UseTranslationReturn<
   [Fallback] extends [never]
     ? ExtractNamespaceKeys<TTranslations, NS>
@@ -82,6 +95,7 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
     namespaceTranslations,
     languageManager,
     lazy,
+    messageFormatter,
   } = context;
 
   const staticTranslations =
@@ -100,7 +114,7 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
         loadedNamespaces,
         loadingNamespaces,
       }),
-    [namespace, staticTranslations, loadedNamespaces, loadingNamespaces],
+    [namespace, staticTranslations, loadedNamespaces, loadingNamespaces]
   );
 
   React.useEffect(() => {
@@ -146,22 +160,44 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
       fallbackLanguage,
       fallbackNamespace,
       loadedNamespaces,
-    ],
+    ]
   );
 
-  const translate = React.useCallback(
-    ((
+  const translate = React.useMemo(() => {
+    const t = ((
       key: string,
       variables?: TranslationVariables,
-      styles?: TranslationStyles,
+      styles?: TranslationStyles
     ): string | React.ReactElement => {
-      return translateFromSnapshot(currentTranslations, key, variables, styles);
-    }) as TranslationFunction<string>,
-    [currentTranslations],
+      return translateFromSnapshot(
+        currentTranslations,
+        key,
+        variables,
+        styles,
+        {
+          messageFormatter,
+          locale: currentLanguage,
+        }
+      );
+    }) as TranslationFunctionWithRich<string>;
+
+    t.rich = (key: string, variables?: TranslationRichValues) => {
+      return translateRichFromSnapshot(currentTranslations, key, variables, {
+        messageFormatter,
+        locale: currentLanguage,
+      }) as React.ReactNode;
+    };
+
+    return t;
+  }, [currentTranslations, currentLanguage, messageFormatter]);
+  const format = React.useMemo(
+    () => createFormatter(currentLanguage),
+    [currentLanguage]
   );
 
   return {
     t: translate,
+    format,
     currentLanguage,
     lng: currentLanguage, // Alias for react-i18next compatibility
     isReady: resolveTranslationReady({

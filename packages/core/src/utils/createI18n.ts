@@ -9,11 +9,14 @@ import {
   resolveTranslationReady,
   resolveTranslationSnapshot,
   shouldLoadNamespace,
+  translateRichFromSnapshot,
   translateFromSnapshot,
   type RuntimeNamespaceTranslations,
   TranslationStyles,
   TranslationVariables,
 } from "./translation-runtime.js";
+import type { MessageFormatter } from "./message-formatter.js";
+import { createFormatter, type I18nFormatter } from "./formatter.js";
 
 export type LegacyNamespaceTranslations = {
   readonly [namespace: string]: {
@@ -53,6 +56,7 @@ export interface CreateI18nOptions<
 > {
   fallbackNamespace?: FallbackNamespace;
   enableFallback?: boolean;
+  messageFormatter?: MessageFormatter;
 }
 
 export interface LegacyUseTranslationReturn<K extends string = string> {
@@ -60,10 +64,12 @@ export interface LegacyUseTranslationReturn<K extends string = string> {
     (
       key: K,
       variables: TranslationVariables,
-      styles: TranslationStyles,
+      styles: TranslationStyles
     ): React.ReactElement;
     (key: K, variables?: TranslationVariables): string;
+    rich(key: K, variables?: Record<string, unknown>): React.ReactNode;
   };
+  format: I18nFormatter;
   currentLanguage: string;
   isReady: boolean;
 }
@@ -86,7 +92,7 @@ export interface CreateI18nInstance<
   useTranslation: {
     (): CreateI18nUseTranslationReturn<AllTranslationKeys<TTranslations>>;
     <NS extends keyof TTranslations & string>(
-      namespace: NS,
+      namespace: NS
     ): CreateI18nUseTranslationReturn<
       | KeysOfNamespace<TTranslations, NS>
       | FallbackKeys<TTranslations, FallbackNamespace>
@@ -96,6 +102,7 @@ export interface CreateI18nInstance<
   options: {
     fallbackNamespace?: FallbackNamespace;
     enableFallback: boolean;
+    messageFormatter?: MessageFormatter;
   };
 }
 
@@ -104,21 +111,27 @@ export function createI18n<
   FallbackNamespace extends keyof TTranslations & string = never,
 >(
   translations: TTranslations,
-  options: CreateI18nOptions<TTranslations, FallbackNamespace> = {},
+  options: CreateI18nOptions<TTranslations, FallbackNamespace> = {}
 ): CreateI18nInstance<TTranslations, FallbackNamespace> {
   const normalizedOptions: {
     fallbackNamespace?: FallbackNamespace;
     enableFallback: boolean;
+    messageFormatter?: MessageFormatter;
   } = {
     fallbackNamespace: options.fallbackNamespace,
     enableFallback: options.enableFallback ?? true,
+    messageFormatter: options.messageFormatter,
   };
 
   const I18nProvider: CreateI18nInstance<
     TTranslations,
     FallbackNamespace
   >["I18nProvider"] = (providerProps) => {
-    const { translations: overrideTranslations, ...props } = providerProps;
+    const {
+      translations: overrideTranslations,
+      messageFormatter: overrideMessageFormatter,
+      ...props
+    } = providerProps;
     const runtimeTranslations =
       (overrideTranslations as TTranslations | undefined) || translations;
 
@@ -128,6 +141,8 @@ export function createI18n<
       fallbackNamespace: normalizedOptions.enableFallback
         ? normalizedOptions.fallbackNamespace
         : undefined,
+      messageFormatter:
+        overrideMessageFormatter ?? normalizedOptions.messageFormatter,
     });
   };
 
@@ -153,7 +168,7 @@ export function createI18n<
           loadedNamespaces: context.loadedNamespaces,
           loadingNamespaces: context.loadingNamespaces,
         }),
-      [namespace, source, context.loadedNamespaces, context.loadingNamespaces],
+      [namespace, source, context.loadedNamespaces, context.loadingNamespaces]
     );
 
     React.useEffect(() => {
@@ -199,27 +214,48 @@ export function createI18n<
         fallbackLanguage,
         context.fallbackNamespace,
         context.loadedNamespaces,
-      ],
+      ]
     );
 
-    const t = React.useCallback(
-      ((
+    const t = React.useMemo(() => {
+      const translate = ((
         key: string,
         variables?: TranslationVariables,
-        styles?: TranslationStyles,
+        styles?: TranslationStyles
       ): string | React.ReactElement => {
         return translateFromSnapshot(
           currentTranslations,
           key,
           variables,
           styles,
+          {
+            messageFormatter: context.messageFormatter,
+            locale: context.currentLanguage,
+          }
         );
-      }) as LegacyUseTranslationReturn<string>["t"],
-      [currentTranslations],
+      }) as LegacyUseTranslationReturn<string>["t"];
+
+      translate.rich = (key: string, variables?: Record<string, unknown>) => {
+        return translateRichFromSnapshot(currentTranslations, key, variables, {
+          messageFormatter: context.messageFormatter,
+          locale: context.currentLanguage,
+        }) as React.ReactNode;
+      };
+
+      return translate;
+    }, [
+      context.currentLanguage,
+      context.messageFormatter,
+      currentTranslations,
+    ]);
+    const format = React.useMemo(
+      () => createFormatter(context.currentLanguage),
+      [context.currentLanguage]
     );
 
     return {
       t,
+      format,
       currentLanguage: context.currentLanguage,
       isReady: resolveTranslationReady({
         isLoading: context.isLoading,

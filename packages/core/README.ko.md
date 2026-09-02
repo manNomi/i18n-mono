@@ -43,6 +43,53 @@ npm install i18nexus
 npm install -D i18nexus-tools  # CLI 도구를 위해 권장
 ```
 
+## ICU, 포맷터, Edge
+
+아래 API는 로컬 패키지 tarball로 검증한 배포 후보입니다. 현재 npm에 공개된
+`i18nexus` 4.0.1에는 아직 포함되지 않았습니다.
+
+```tsx
+"use client";
+
+import { IcuI18nProvider, useIcuTranslation } from "i18nexus/icu";
+
+const translations = {
+  common: {
+    en: { items: "{count, plural, one {# item} other {# items}}" },
+  },
+};
+
+function Items() {
+  const { t } = useIcuTranslation("common");
+  return <p>{t("items", { count: 2 })}</p>;
+}
+
+export function I18n() {
+  return (
+    <IcuI18nProvider initialLanguage="en" translations={translations}>
+      <Items />
+    </IcuI18nProvider>
+  );
+}
+```
+
+`createFormatter(locale)`, `useTranslation().format`, `useFormatter()`는 현재
+언어의 native `Intl`을 사용합니다.
+
+```ts
+import { createFormatter } from "i18nexus";
+
+const format = createFormatter("ko-KR");
+format.currency(12000, "KRW");
+format.list(["A", "B"]);
+```
+
+순수한 `i18nexus/edge` 진입점은 React나 Node.js API를 가져오지 않고
+`i18nexus/icu/formatter`를 통해 ICU를 선택적으로 사용할 수 있습니다.
+
+기본 root와 server 경로의 `{{name}}` 보간은 유지됩니다. ICU API나 formatter를
+선택한 경우에만 ICU 문법을 해석합니다.
+
 ### 1. 설정 초기화 (권장)
 
 ```bash
@@ -338,7 +385,7 @@ t("{{count}}/{{total}} 완료", { count: 7, total: 10 });
 t(
   "가격: {{amount}}",
   { amount: 100 },
-  { amount: { color: "red", fontWeight: "bold" } },
+  { amount: { color: "red", fontWeight: "bold" } }
 );
 ```
 
@@ -365,7 +412,7 @@ const I18NexusDevtools =
     : dynamic(
         () =>
           import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
-        { ssr: false },
+        { ssr: false }
       );
 
 export function ClientProvider({ children }: { children: React.ReactNode }) {

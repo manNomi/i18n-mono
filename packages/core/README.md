@@ -1,6 +1,6 @@
 # 🌐 i18nexus
 
-> Type-safe i18n for React with zero runtime overhead
+> Type-safe i18n for React with a small, tree-shakeable runtime
 
 [English](./README.md) | [한국어](./README.ko.md)
 
@@ -55,6 +55,67 @@ yarn add i18nexus
 # or
 pnpm add i18nexus
 ```
+
+## ICU, Formatting, and Edge
+
+The APIs below are release candidates verified from a local package tarball.
+They are not included in the published npm `i18nexus` 4.0.1 package yet.
+
+```tsx
+"use client";
+
+import { IcuI18nProvider, useIcuTranslation } from "i18nexus/icu";
+
+const translations = {
+  common: {
+    en: { items: "{count, plural, one {# item} other {# items}}" },
+  },
+};
+
+function Items() {
+  const { t } = useIcuTranslation("common");
+  return <p>{t("items", { count: 2 })}</p>;
+}
+
+export function I18n() {
+  return (
+    <IcuI18nProvider initialLanguage="en" translations={translations}>
+      <Items />
+    </IcuI18nProvider>
+  );
+}
+```
+
+`createFormatter(locale)`, `useTranslation().format`, and `useFormatter()`
+use native `Intl` with the active locale.
+
+```ts
+import { createFormatter } from "i18nexus";
+
+const format = createFormatter("ko-KR");
+format.currency(12000, "KRW");
+format.list(["A", "B"]);
+```
+
+The pure `i18nexus/edge` entrypoint can opt into ICU through
+`i18nexus/icu/formatter` without importing React or Node.js APIs.
+
+```ts
+import { getEdgeTranslation } from "i18nexus/edge";
+import { createIcuMessageFormatter } from "i18nexus/icu/formatter";
+
+const { t } = getEdgeTranslation(
+  request.headers,
+  { en: { items: "{count, plural, one {# item} other {# items}}" } },
+  {
+    availableLanguages: ["en"],
+    messageFormatter: createIcuMessageFormatter(),
+  }
+);
+```
+
+The default root and server paths continue to interpret `{{name}}` messages.
+ICU parsing is enabled only when an ICU API or formatter is selected.
 
 ## 🚀 Quick Start
 

@@ -8,6 +8,12 @@ import {
   cacheTranslations,
   invalidateCache as invalidateTranslationCache,
 } from "./translation-cache.js";
+import { createFormatter, type I18nFormatter } from "./formatter.js";
+import { createTranslation } from "./pure-translation.js";
+import type { MessageFormatter } from "./message-formatter.js";
+
+export { createFormatter } from "./formatter.js";
+export type { I18nFormatter } from "./formatter.js";
 
 type LocalConfig = {
   localesDir?: string;
@@ -37,8 +43,8 @@ function warnUnsupportedServerConfig(configPath: string): void {
   hasWarnedUnsupportedServerConfig = true;
   console.warn(
     `[i18nexus] ${path.basename(
-      configPath,
-    )} is ignored by i18nexus/server to avoid Next.js dynamic import warnings. Use i18nexus.config.json or pass getTranslation() options instead.`,
+      configPath
+    )} is ignored by i18nexus/server to avoid Next.js dynamic import warnings. Use i18nexus.config.json or pass getTranslation() options instead.`
   );
 }
 
@@ -59,7 +65,7 @@ async function loadConfigSilently(): Promise<ConfigWithPath> {
     // Server utilities intentionally avoid importing JS/TS config files.
     // Expression-based dynamic imports trigger Next.js bundler warnings.
     const unsupportedConfigPath = UNSUPPORTED_SERVER_CONFIG_FILES.map(
-      (fileName) => path.resolve(process.cwd(), fileName),
+      (fileName) => path.resolve(process.cwd(), fileName)
     ).find((candidate) => fs.existsSync(candidate));
 
     if (unsupportedConfigPath) {
@@ -75,7 +81,7 @@ async function loadConfigSilently(): Promise<ConfigWithPath> {
 /** Accept-Language 헤더 파싱하여 가장 적합한 언어 반환 */
 export function parseAcceptLanguage(
   acceptLanguage: string,
-  availableLanguages: string[],
+  availableLanguages: string[]
 ): string | null {
   if (!acceptLanguage || !availableLanguages.length) {
     return null;
@@ -102,7 +108,7 @@ export function parseAcceptLanguage(
     }
 
     const match = availableLanguages.find((lang) =>
-      lang.toLowerCase().startsWith(primaryLang),
+      lang.toLowerCase().startsWith(primaryLang)
     );
     if (match) {
       return match;
@@ -119,7 +125,7 @@ export function getServerLanguage(
     cookieName?: string;
     defaultLanguage?: string;
     availableLanguages?: string[];
-  },
+  }
 ): string {
   const cookieName = options?.cookieName || "i18n-language";
   const defaultLanguage = options?.defaultLanguage || "en";
@@ -147,7 +153,7 @@ export function getServerLanguage(
     if (acceptLanguage) {
       const detectedLang = parseAcceptLanguage(
         acceptLanguage,
-        availableLanguages,
+        availableLanguages
       );
       if (detectedLang) {
         return detectedLang;
@@ -160,7 +166,7 @@ export function getServerLanguage(
 
 /** 쿠키 헤더 문자열 파싱 */
 export function parseCookies(
-  cookieHeader: string | null,
+  cookieHeader: string | null
 ): Record<string, string> {
   if (!cookieHeader) {
     return {};
@@ -182,19 +188,8 @@ export function parseCookies(
 /** 서버 번역에서 사용하는 변수 타입 */
 export type ServerTranslationVariables = Record<string, string | number>;
 
-/** 서버 번역 문자열의 변수 치환 */
-function interpolateServer(
-  text: string,
-  variables?: ServerTranslationVariables,
-): string {
-  if (!variables) {
-    return text;
-  }
-
-  return text.replace(/\{\{(\w+)\}\}/g, (match, variableName) => {
-    const value = variables[variableName];
-    return value !== undefined ? String(value) : match;
-  });
+export interface ServerTranslationOptions {
+  messageFormatter?: MessageFormatter;
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {
@@ -210,7 +205,7 @@ function isLanguageCodeKey(key: string): boolean {
 }
 
 function getFirstStringRecord(
-  value: unknown,
+  value: unknown
 ): Record<string, string> | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
@@ -229,35 +224,28 @@ function getFirstStringRecord(
 export function createServerTranslation(
   language: string,
   translations: Record<string, unknown>,
+  options: ServerTranslationOptions = {}
 ) {
-  const dict = getServerTranslations(language, translations);
-
-  return function translate(
+  return createTranslation(language, translations, {
+    ...options,
+    onMissingKey: (key, dictionary) => {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          `[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(dictionary).slice(0, 5).join(", ")}...`
+        );
+      }
+    },
+  }) as (
     key: string,
     variables?: ServerTranslationVariables | string,
-    fallback?: string,
-  ): string {
-    // 디버깅: 번역 키가 없을 때 경고
-    if (!dict[key] && process.env.NODE_ENV === "development") {
-      console.warn(
-        `[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(dict).slice(0, 5).join(", ")}...`,
-      );
-    }
-
-    if (typeof variables === "string") {
-      // 두 번째 인자가 문자열이면 fallback으로 사용
-      return dict[key] || variables || key;
-    }
-
-    const translatedText = dict[key] || fallback || key;
-    return interpolateServer(translatedText, variables);
-  };
+    fallback?: string
+  ) => string;
 }
 
 /** 타입 안전한 서버 번역 객체 반환 */
 export function getServerTranslations<T extends Record<string, unknown>>(
   language: string,
-  translations: T,
+  translations: T
 ): Record<string, string> {
   const entries = Object.entries(translations as Record<string, unknown>);
   if (entries.length === 0) {
@@ -271,7 +259,7 @@ export function getServerTranslations<T extends Record<string, unknown>>(
   }
 
   const flatStringEntries = entries.filter(([, value]) =>
-    isStringRecord(value),
+    isStringRecord(value)
   );
   const allKeysLookLikeLanguageCodes =
     flatStringEntries.length > 0 &&
@@ -342,7 +330,7 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
 
 /** 디렉토리에서 번역 JSON 파일 로드 */
 export async function loadTranslations(
-  localesDir: string,
+  localesDir: string
 ): Promise<Record<string, Record<string, string>>> {
   const resolvedLocalesDir = localesDir.startsWith("/")
     ? localesDir
@@ -385,7 +373,7 @@ export async function loadTranslations(
 
       const language = path.basename(languageFile.name, ".json");
       const data = await readJsonFile<Record<string, string>>(
-        path.join(entryPath, languageFile.name),
+        path.join(entryPath, languageFile.name)
       );
       if (data) {
         namespaceTranslations[language] = data;
@@ -403,12 +391,12 @@ export async function loadTranslations(
 async function readNamespaceTranslationFile(
   resolvedLocalesDir: string,
   namespace: string,
-  language: string,
+  language: string
 ): Promise<Record<string, string>> {
   const translationFilePath = path.join(
     resolvedLocalesDir,
     namespace,
-    `${language}.json`,
+    `${language}.json`
   );
 
   if (!fs.existsSync(translationFilePath)) {
@@ -433,6 +421,8 @@ export interface GetTranslationOptions {
   useFallbackOnError?: boolean;
   /** Disable caching (useful for development) */
   disableCache?: boolean;
+  /** Optional runtime-neutral formatter for ICU-capable translation catalogs */
+  messageFormatter?: MessageFormatter;
 }
 
 export interface GetTranslationReturn<
@@ -443,8 +433,10 @@ export interface GetTranslationReturn<
   t: (
     key: K,
     variables?: Record<string, string | number>,
-    fallback?: string,
+    fallback?: string
   ) => string;
+  /** Formatter bound to the resolved language */
+  format: I18nFormatter;
   /** Current language */
   language: string;
   /** Language alias (react-i18next compatibility) */
@@ -486,7 +478,7 @@ export async function getTranslation<
   K extends string = string,
 >(
   namespace?: NS,
-  options?: GetTranslationOptions,
+  options?: GetTranslationOptions
 ): Promise<GetTranslationReturn<NS, K>> {
   // 1. Load config (with config directory path)
   let config: LocalConfig | null;
@@ -567,11 +559,14 @@ export async function getTranslation<
   if (!options?.disableCache) {
     const cached = getCachedTranslations(resolvedNamespace, language);
     if (cached) {
-      const t = createServerTranslation(language, cached);
+      const t = createServerTranslation(language, cached, {
+        messageFormatter: options?.messageFormatter,
+      });
       const dict = getServerTranslations(language, cached);
 
       return {
         t,
+        format: createFormatter(language),
         language,
         lng: language,
         namespace: resolvedNamespace,
@@ -588,7 +583,7 @@ export async function getTranslation<
     const translationData = await readNamespaceTranslationFile(
       resolvedLocalesDir,
       resolvedNamespace,
-      language,
+      language
     );
 
     translations = {};
@@ -601,14 +596,14 @@ export async function getTranslation<
         const fallbackData = await readNamespaceTranslationFile(
           resolvedLocalesDir,
           config.fallbackNamespace,
-          language,
+          language
         );
         translations[config.fallbackNamespace] = fallbackData;
       } catch (fallbackError) {
         if (process.env.NODE_ENV === "development") {
           console.warn(
             `[i18nexus] Failed to load fallback namespace '${config.fallbackNamespace}':`,
-            fallbackError,
+            fallbackError
           );
         }
       }
@@ -620,7 +615,7 @@ export async function getTranslation<
     if (process.env.NODE_ENV === "development") {
       const keyCount = Object.keys(translationData).length;
       console.log(
-        `[i18nexus] Loaded ${keyCount} translations for namespace '${resolvedNamespace}'`,
+        `[i18nexus] Loaded ${keyCount} translations for namespace '${resolvedNamespace}'`
       );
     }
   } catch (error) {
@@ -631,14 +626,14 @@ export async function getTranslation<
       config.fallbackNamespace !== resolvedNamespace
     ) {
       console.warn(
-        `⚠️  Namespace '${resolvedNamespace}' not found, using fallback '${config.fallbackNamespace}'`,
+        `⚠️  Namespace '${resolvedNamespace}' not found, using fallback '${config.fallbackNamespace}'`
       );
 
       try {
         const fallbackData = await readNamespaceTranslationFile(
           resolvedLocalesDir,
           config.fallbackNamespace,
-          language,
+          language
         );
         translations = {
           [config.fallbackNamespace]: fallbackData,
@@ -651,7 +646,7 @@ export async function getTranslation<
             `  Fallback error: ${fallbackError}\n\n` +
             `Please ensure the namespace files exist at:\n` +
             `  - ${resolvedLocalesDir}/${resolvedNamespace}/${language}.json\n` +
-            `  - ${resolvedLocalesDir}/${config.fallbackNamespace}/${language}.json`,
+            `  - ${resolvedLocalesDir}/${config.fallbackNamespace}/${language}.json`
         );
       }
     } else {
@@ -663,7 +658,7 @@ export async function getTranslation<
           `Tips:\n` +
           `  - Run 'npx i18n-extractor' to generate translation files\n` +
           `  - Check that the namespace name matches your folder structure\n` +
-          `  - Set fallbackNamespace in i18nexus.config.json for automatic fallback`,
+          `  - Set fallbackNamespace in i18nexus.config.json for automatic fallback`
       );
     }
   }
@@ -674,11 +669,14 @@ export async function getTranslation<
   }
 
   // 7. Create translation function
-  const t = createServerTranslation(language, translations);
+  const t = createServerTranslation(language, translations, {
+    messageFormatter: options?.messageFormatter,
+  });
   const dict = getServerTranslations(language, translations);
 
   return {
     t,
+    format: createFormatter(language),
     language,
     lng: language,
     namespace: resolvedNamespace,
@@ -703,14 +701,18 @@ export function createServerI18nWithTranslations(
     cookieName?: string;
     defaultLanguage?: string;
     availableLanguages?: string[];
-  },
+    messageFormatter?: MessageFormatter;
+  }
 ) {
   const language = getServerLanguage(headers, options);
-  const t = createServerTranslation(language, translations);
+  const t = createServerTranslation(language, translations, {
+    messageFormatter: options?.messageFormatter,
+  });
   const dict = getServerTranslations(language, translations);
 
   return {
     t,
+    format: createFormatter(language),
     language,
     translations,
     dict,

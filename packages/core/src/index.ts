@@ -7,13 +7,29 @@ export type {
   NamespaceLoader,
 } from "./components/I18nProvider.js";
 
+// Runtime-neutral message formatter boundary
+export type {
+  MessageFormatContext,
+  MessageFormatRequest,
+  MessageFormatRichTag,
+  MessageFormatRichValues,
+  MessageFormatter,
+  MessageFormatterValues,
+} from "./utils/message-formatter.js";
+
+export { createFormatter } from "./utils/formatter.js";
+export type { I18nFormatter } from "./utils/formatter.js";
+
 // Hooks
 export { useTranslation, useLanguageSwitcher } from "./hooks/useTranslation.js";
+export { useFormatter } from "./hooks/useFormatter.js";
 export type {
   TranslationVariables,
   TranslationStyles,
   VariableStyle,
   TranslationFunction,
+  TranslationFunctionWithRich,
+  TranslationRichValues,
   UseTranslationReturn,
   UseLanguageSwitcherReturn,
 } from "./hooks/useTranslation.js";
@@ -35,7 +51,7 @@ export type {
 
 // Config type helpers
 export { defineConfig } from "./utils/types.js";
-export type { ExtractLanguages } from "./utils/types.js";
+export type { ExtractLanguages, I18nexusConfig } from "./utils/types.js";
 
 // URL localization helpers
 export {

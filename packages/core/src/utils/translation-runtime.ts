@@ -1,4 +1,12 @@
 import React from "react";
+import {
+  ensureMessageFormatter,
+  hasMessageBraces,
+  isLegacyInterpolationOnly,
+  toI18nMessageFormatError,
+  type MessageFormatter,
+  type MessageFormatterValues,
+} from "./message-formatter.js";
 
 export type TranslationVariables = Record<string, string | number>;
 export type VariableStyle = React.CSSProperties;
@@ -38,9 +46,14 @@ export interface TranslationSnapshotOptions {
   staticMergeMode: StaticMergeMode;
 }
 
+export interface TranslationFormatOptions {
+  messageFormatter?: MessageFormatter;
+  locale?: string;
+}
+
 export const interpolate = (
   text: string,
-  variables?: TranslationVariables,
+  variables?: TranslationVariables
 ): string => {
   if (!variables) {
     return text;
@@ -55,7 +68,7 @@ export const interpolate = (
 export const interpolateWithStyles = (
   text: string,
   variables: TranslationVariables,
-  styles: TranslationStyles,
+  styles: TranslationStyles
 ): React.ReactElement => {
   const parts: Array<string | React.ReactElement> = [];
   let lastIndex = 0;
@@ -78,8 +91,8 @@ export const interpolateWithStyles = (
           React.createElement(
             "span",
             { key: `var-${key++}`, style },
-            String(value),
-          ),
+            String(value)
+          )
         );
       } else {
         parts.push(String(value));
@@ -103,8 +116,32 @@ export const translateFromSnapshot = (
   key: string,
   variables?: TranslationVariables,
   styles?: TranslationStyles,
+  formatOptions?: TranslationFormatOptions
 ): string | React.ReactElement => {
-  const translatedText = translations[key] || key;
+  const translatedText = Object.prototype.hasOwnProperty.call(translations, key)
+    ? translations[key]
+    : key;
+
+  const formatted = formatMessageIfAvailable(
+    translatedText,
+    key,
+    variables,
+    formatOptions
+  );
+
+  if (formatted !== undefined) {
+    if (typeof formatted !== "string") {
+      throw toI18nMessageFormatError(
+        "rich-result",
+        createMessageFormatContext(translatedText, key, formatOptions),
+        new Error(
+          "This ICU message returns rich content. Use t.rich(key, values)."
+        )
+      );
+    }
+
+    return formatted;
+  }
 
   if (styles && variables) {
     return interpolateWithStyles(translatedText, variables, styles);
@@ -113,9 +150,82 @@ export const translateFromSnapshot = (
   return interpolate(translatedText, variables);
 };
 
+export const translateRichFromSnapshot = (
+  translations: Record<string, string>,
+  key: string,
+  variables?: MessageFormatterValues,
+  formatOptions?: TranslationFormatOptions
+): unknown => {
+  const translatedText = Object.prototype.hasOwnProperty.call(translations, key)
+    ? translations[key]
+    : key;
+  const context = createMessageFormatContext(
+    translatedText,
+    key,
+    formatOptions
+  );
+  const formatter = ensureMessageFormatter(
+    formatOptions?.messageFormatter,
+    context
+  );
+
+  try {
+    return formatter.format({
+      ...context,
+      values: variables,
+    });
+  } catch (error) {
+    if (isLegacyInterpolationOnly(translatedText)) {
+      return interpolate(translatedText, variables as TranslationVariables);
+    }
+
+    throw toI18nMessageFormatError("format", context, error);
+  }
+};
+
+const createMessageFormatContext = (
+  message: string,
+  key: string,
+  options?: TranslationFormatOptions
+) => ({
+  locale: options?.locale || "en",
+  message,
+  key,
+});
+
+const formatMessageIfAvailable = (
+  message: string,
+  key: string,
+  variables: TranslationVariables | undefined,
+  options?: TranslationFormatOptions
+): unknown | undefined => {
+  if (!hasMessageBraces(message)) {
+    return undefined;
+  }
+
+  const formatter = options?.messageFormatter;
+  if (!formatter) {
+    return undefined;
+  }
+
+  const context = createMessageFormatContext(message, key, options);
+  try {
+    return formatter.format({
+      ...context,
+      values: variables,
+    });
+  } catch (error) {
+    if (isLegacyInterpolationOnly(message)) {
+      return undefined;
+    }
+
+    throw toI18nMessageFormatError("format", context, error);
+  }
+};
+
 export const hasOwnNamespace = (
   translations: RuntimeNamespaceTranslations,
-  namespace?: string,
+  namespace?: string
 ): boolean => {
   if (!namespace) {
     return true;
@@ -128,7 +238,7 @@ export const resolveNamespaceForLanguage = (
   translations: RuntimeNamespaceTranslations,
   namespace: string,
   language: string,
-  fallbackLanguage: string,
+  fallbackLanguage: string
 ): Record<string, string> => {
   const namespaceData = translations[namespace];
   if (!namespaceData || typeof namespaceData !== "object") {
@@ -156,7 +266,7 @@ export const resolveNamespaceForLanguage = (
 export const flattenTranslationsForLanguage = (
   translations: RuntimeNamespaceTranslations,
   language: string,
-  fallbackLanguage: string,
+  fallbackLanguage: string
 ): Record<string, string> => {
   const merged: Record<string, string> = {};
 
@@ -167,8 +277,8 @@ export const flattenTranslationsForLanguage = (
         translations,
         namespace,
         language,
-        fallbackLanguage,
-      ),
+        fallbackLanguage
+      )
     );
   }
 
@@ -196,7 +306,7 @@ const resolveLoadedTranslations = ({
       loadedNamespaces,
       String(fallbackNamespace),
       currentLanguage,
-      fallbackLanguage,
+      fallbackLanguage
     );
   }
 
@@ -207,7 +317,7 @@ const resolveLoadedTranslations = ({
         loadedNamespaces,
         namespace,
         currentLanguage,
-        fallbackLanguage,
+        fallbackLanguage
       ),
     };
   }
@@ -219,7 +329,7 @@ const resolveLoadedNamespaceForLanguage = (
   loadedNamespaces: LoadedNamespaces,
   namespace: string,
   language: string,
-  fallbackLanguage: string,
+  fallbackLanguage: string
 ): Record<string, string> => {
   const namespaceData = loadedNamespaces.get(namespace);
   if (!namespaceData || typeof namespaceData !== "object") {
@@ -258,7 +368,7 @@ const resolveNamespaceStaticTranslations = ({
     return flattenTranslationsForLanguage(
       staticTranslations,
       currentLanguage,
-      fallbackLanguage,
+      fallbackLanguage
     );
   }
 
@@ -271,7 +381,7 @@ const resolveNamespaceStaticTranslations = ({
         staticTranslations,
         String(fallbackNamespace),
         currentLanguage,
-        fallbackLanguage,
+        fallbackLanguage
       ),
     };
   }
@@ -280,7 +390,7 @@ const resolveNamespaceStaticTranslations = ({
     staticTranslations,
     namespace,
     currentLanguage,
-    fallbackLanguage,
+    fallbackLanguage
   );
 
   if (Object.keys(requested).length > 0) {
@@ -292,7 +402,7 @@ const resolveNamespaceStaticTranslations = ({
     ...flattenTranslationsForLanguage(
       staticTranslations,
       currentLanguage,
-      fallbackLanguage,
+      fallbackLanguage
     ),
   };
 };
@@ -301,13 +411,13 @@ const resolveStaticTranslations = (
   options: Omit<
     TranslationSnapshotOptions,
     "loadedNamespaces" | "staticMergeMode"
-  >,
+  >
 ): Record<string, string> => {
   if (options.staticResolutionMode === "flattened") {
     return flattenTranslationsForLanguage(
       options.staticTranslations,
       options.currentLanguage,
-      options.fallbackLanguage,
+      options.fallbackLanguage
     );
   }
 
@@ -315,7 +425,7 @@ const resolveStaticTranslations = (
 };
 
 export const resolveTranslationSnapshot = (
-  options: TranslationSnapshotOptions,
+  options: TranslationSnapshotOptions
 ): Record<string, string> => {
   if (
     options.staticResolutionMode === "namespace" &&
@@ -340,14 +450,14 @@ export const resolveTranslationSnapshot = (
 };
 
 const resolveNamespaceTranslationSnapshot = (
-  options: TranslationSnapshotOptions,
+  options: TranslationSnapshotOptions
 ): Record<string, string> => {
   const staticFallback = options.fallbackNamespace
     ? resolveNamespaceForLanguage(
         options.staticTranslations,
         String(options.fallbackNamespace),
         options.currentLanguage,
-        options.fallbackLanguage,
+        options.fallbackLanguage
       )
     : {};
   const loadedFallback = options.fallbackNamespace
@@ -355,7 +465,7 @@ const resolveNamespaceTranslationSnapshot = (
         options.loadedNamespaces,
         String(options.fallbackNamespace),
         options.currentLanguage,
-        options.fallbackLanguage,
+        options.fallbackLanguage
       )
     : {};
 
@@ -364,7 +474,7 @@ const resolveNamespaceTranslationSnapshot = (
       ...flattenTranslationsForLanguage(
         options.staticTranslations,
         options.currentLanguage,
-        options.fallbackLanguage,
+        options.fallbackLanguage
       ),
       ...loadedFallback,
     };
@@ -374,13 +484,13 @@ const resolveNamespaceTranslationSnapshot = (
     options.staticTranslations,
     options.namespace,
     options.currentLanguage,
-    options.fallbackLanguage,
+    options.fallbackLanguage
   );
   const loadedRequested = resolveLoadedNamespaceForLanguage(
     options.loadedNamespaces,
     options.namespace,
     options.currentLanguage,
-    options.fallbackLanguage,
+    options.fallbackLanguage
   );
   const staticRequestedLayer =
     Object.keys(staticRequested).length > 0
@@ -388,7 +498,7 @@ const resolveNamespaceTranslationSnapshot = (
       : flattenTranslationsForLanguage(
           options.staticTranslations,
           options.currentLanguage,
-          options.fallbackLanguage,
+          options.fallbackLanguage
         );
 
   return {
