@@ -1,6 +1,6 @@
 {
   "name": "i18nexus-tools",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "CLI tools for i18nexus - automate i18n workflows with type-safe configuration and Google Sheets integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -67,7 +67,8 @@
     "csv-writer": "^1.6.0",
     "glob": "^10.3.10",
     "google-auth-library": "^9.4.0",
-    "googleapis": "^129.0.0"
+    "googleapis": "^129.0.0",
+    "inquirer": "^13.0.2"
   },
   "devDependencies": {
     "@types/babel__generator": "^7.6.7",
@@ -75,7 +76,6 @@
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.9.4",
-    "inquirer": "^13.0.2",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.5",
     "typescript": "^5.3.2"
