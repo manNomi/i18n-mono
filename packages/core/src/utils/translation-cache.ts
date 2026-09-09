@@ -8,6 +8,7 @@ interface CacheEntry {
   timestamp: number;
   language: string;
   namespace: string;
+  scope: string;
 }
 
 const translationCache = new Map<string, CacheEntry>();
@@ -29,10 +30,14 @@ function getCacheTTL(): number {
 }
 
 /**
- * Generate cache key from namespace and language
+ * Generate cache key from the translation source, namespace, and language.
  */
-function getCacheKey(namespace: string, language: string): string {
-  return `${namespace}:${language}`;
+function getCacheKey(
+  namespace: string,
+  language: string,
+  scope: string
+): string {
+  return JSON.stringify([scope, namespace, language]);
 }
 
 /**
@@ -41,8 +46,9 @@ function getCacheKey(namespace: string, language: string): string {
 export function getCachedTranslations(
   namespace: string,
   language: string,
+  scope = ""
 ): Record<string, Record<string, string>> | null {
-  const key = getCacheKey(namespace, language);
+  const key = getCacheKey(namespace, language, scope);
   const entry = translationCache.get(key);
 
   if (!entry) {
@@ -66,14 +72,16 @@ export function cacheTranslations(
   namespace: string,
   language: string,
   translations: Record<string, Record<string, string>>,
+  scope = ""
 ): void {
-  const key = getCacheKey(namespace, language);
+  const key = getCacheKey(namespace, language, scope);
 
   translationCache.set(key, {
     translations,
     timestamp: Date.now(),
     language,
     namespace,
+    scope,
   });
 }
 
@@ -88,9 +96,12 @@ export function invalidateCache(namespace?: string, language?: string): void {
   }
 
   if (namespace && language) {
-    // Remove specific namespace+language
-    const key = getCacheKey(namespace, language);
-    translationCache.delete(key);
+    // Remove the namespace+language pair from every translation source.
+    for (const [key, entry] of translationCache.entries()) {
+      if (entry.namespace === namespace && entry.language === language) {
+        translationCache.delete(key);
+      }
+    }
     return;
   }
 
@@ -121,6 +132,7 @@ export function getCacheStats() {
     entries: entries.map((e) => ({
       namespace: e.namespace,
       language: e.language,
+      scope: e.scope,
       age: now - e.timestamp,
       isExpired: now - e.timestamp > ttl,
     })),

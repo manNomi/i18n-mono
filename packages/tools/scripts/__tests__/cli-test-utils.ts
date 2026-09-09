@@ -30,6 +30,7 @@ export function runCLICommand(
   command: string,
   args: string[] = [],
   cwd: string,
+  envOverrides: NodeJS.ProcessEnv = {}
 ): Promise<CLIResult> {
   return new Promise((resolve) => {
     // dist/bin 디렉토리에서 실행 파일 찾기
@@ -64,7 +65,7 @@ export function runCLICommand(
 
     const childProcess = child_process.spawn("node", [commandPath, ...args], {
       cwd,
-      env: { ...process.env, NODE_ENV: "test" },
+      env: { ...process.env, NODE_ENV: "test", ...envOverrides },
     });
 
     let stdout = "";
@@ -104,10 +105,10 @@ export function runCLICommand(
  */
 export function createTestProject(
   baseDir: string,
-  structure: ProjectStructure,
+  structure: ProjectStructure
 ): string {
   const projectDir = fs.mkdtempSync(
-    path.join(os.tmpdir(), "i18nexus-cli-test-"),
+    path.join(os.tmpdir(), "i18nexus-cli-test-")
   );
 
   function createStructure(currentDir: string, struct: ProjectStructure): void {
@@ -141,7 +142,7 @@ export function createTestProject(
  */
 export function createTestConfig(
   baseDir: string,
-  config: Partial<I18nexusConfig> = {},
+  config: Partial<I18nexusConfig> = {}
 ): string {
   const defaultConfig: I18nexusConfig = {
     languages: ["en", "ko"],

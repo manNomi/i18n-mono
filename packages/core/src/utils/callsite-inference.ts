@@ -3,7 +3,6 @@
  * Uses Error.stack to determine which file called getTranslation()
  */
 
-import * as pathLib from "path";
 import { inferNamespaceFromFile } from "./namespace-inference.js";
 
 export interface I18nexusConfig {
@@ -77,7 +76,7 @@ function getCallSiteFilePath(): string | null {
  * Infer namespace from the call site using config
  */
 export function inferNamespaceFromCallSite(
-  config: I18nexusConfig | null,
+  config: I18nexusConfig | null
 ): string | null {
   try {
     const filePath = getCallSiteFilePath();
@@ -112,11 +111,11 @@ export function inferNamespaceFromCallSite(
     const namespace = inferNamespaceFromFile(
       filePath,
       "", // sourceCode not needed for path-based inference
-      namespacingConfig,
+      namespacingConfig
     );
 
     return namespace;
-  } catch (error) {
+  } catch {
     // Silently fail - this is a best-effort feature
     return null;
   }

@@ -22,25 +22,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
             core:
               - 'packages/core/**'
+              - '.github/workflows/ci.yml'
               - 'turbo.json'
               - 'package.json'
               - 'package-lock.json'
               - 'tsconfig.json'
             tools:
               - 'packages/tools/**'
+              - '.github/workflows/ci.yml'
               - 'turbo.json'
               - 'package.json'
               - 'package-lock.json'
               - 'tsconfig.json'
             demo:
               - 'apps/demo/**'
+              - '.github/workflows/ci.yml'
               - 'packages/core/**'
               - 'packages/tools/**'
               - 'turbo.json'
@@ -53,7 +56,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.core == 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -75,6 +78,9 @@ jobs:
         run: npx turbo run lint --filter=i18nexus
         continue-on-error: false
 
+      - name: 🔎 Typecheck
+        run: npx turbo run typecheck --filter=i18nexus
+
       - name: 🧪 Test
         run: npx turbo run test --filter=i18nexus
         env:
@@ -89,12 +95,21 @@ jobs:
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
         continue-on-error: false
 
+      - name: 🧾 Verify tracked dist and reproducible build
+        run: npm run check:dist --workspace i18nexus
+
+      - name: 📦 Installed package smoke
+        run: npm run smoke:pack --workspace i18nexus
+
+      - name: ⚛️ React compatibility matrix
+        run: npm run smoke:react-matrix --workspace i18nexus
+
   tools:
     name: 🛠️ Tools Package
     needs: detect-changes
     if: needs.detect-changes.outputs.tools == 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -116,6 +131,9 @@ jobs:
         run: npx turbo run lint --filter=i18nexus-tools
         continue-on-error: false
 
+      - name: 🔎 Typecheck
+        run: npx turbo run typecheck --filter=i18nexus-tools
+
       - name: 🧪 Test
         run: npx turbo run test --filter=i18nexus-tools
         env:
@@ -130,12 +148,15 @@ jobs:
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
         continue-on-error: false
 
+      - name: 📦 Installed package smoke
+        run: npm run smoke:pack --workspace i18nexus-tools
+
   demo:
     name: 🎨 Demo App
     needs: detect-changes
     if: needs.detect-changes.outputs.demo == 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -157,6 +178,9 @@ jobs:
         run: npx turbo run lint --filter=i18nexus-demo
         continue-on-error: false
 
+      - name: 🔎 Typecheck
+        run: npx turbo run typecheck --filter=i18nexus-demo
+
       - name: 🧪 Test
         run: npx turbo run test --filter=i18nexus-demo
         env:
@@ -171,3 +195,36 @@ jobs:
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
           NEXT_PUBLIC_VERCEL_ENV: production
         continue-on-error: false
+
+  node-compatibility:
+    name: 🟢 Node ${{ matrix.node }} compatibility
+    needs: detect-changes
+    if: needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.tools == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24", "26"]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔎 Typecheck
+        run: npm run typecheck
+
+      - name: 🧪 Core tests
+        run: npm test --workspace i18nexus -- --runInBand
+
+      - name: 🧪 Tools tests
+        run: npm test --workspace i18nexus-tools -- --runInBand

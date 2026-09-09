@@ -33,6 +33,20 @@ i18nexus is designed to keep those pieces connected:
 | `i18nexus-tools` | CLI companion for wrapping text, extracting keys, generating types, legacy cleanup, and translation sync |
 | `apps/demo`      | Example app for validating runtime and CLI workflows                                                     |
 
+## Compatibility
+
+| Surface           | Supported and verified                                            |
+| ----------------- | ----------------------------------------------------------------- |
+| Node.js           | 22.x, 24.x, 26.x                                                  |
+| React / React DOM | 18.x, 19.x                                                        |
+| Core modules      | ESM (`i18nexus`, `i18nexus/server`, `i18nexus/devtools`)          |
+| Tools             | CommonJS CLI executables; the package root is intentionally empty |
+
+Node 16/18/20 and React 16/17 were allowed by older manifests but are no
+longer supported. CommonJS consumers must load the ESM core with dynamic
+`import()`. The server entrypoint uses Node filesystem APIs and is not an Edge
+runtime entrypoint.
+
 ## Quick Start
 
 Install the runtime and CLI companion:
@@ -57,17 +71,47 @@ Create `i18nexus.config.json`:
 }
 ```
 
+Create the resources used by the first screen:
+
+`locales/home/en.json`:
+
+```json
+{ "title": "Welcome" }
+```
+
+`locales/home/ko.json`:
+
+```json
+{ "title": "환영합니다" }
+```
+
 Use translations in React:
 
 ```tsx
-import { useTranslation } from "i18nexus";
+// localized-home.tsx
+"use client";
 
-export function HomeTitle() {
+import { I18nProvider, useTranslation } from "i18nexus";
+
+import homeEn from "./locales/home/en.json";
+import homeKo from "./locales/home/ko.json";
+
+const translations = { home: { en: homeEn, ko: homeKo } };
+
+function HomeTitle() {
   const { t, isReady } = useTranslation("home");
 
   if (!isReady) return null;
 
   return <h1>{t("title")}</h1>;
+}
+
+export function LocalizedHome() {
+  return (
+    <I18nProvider initialLanguage="ko" translations={translations}>
+      <HomeTitle />
+    </I18nProvider>
+  );
 }
 ```
 
@@ -89,6 +133,13 @@ npx i18n-type          # generate TypeScript translation key types
 npx i18n-sheets        # sync translations with Google Sheets workflows
 npx i18n-clean-legacy  # remove obsolete translation keys from locale files
 ```
+
+## Adoption Evidence
+
+- [Public behavior contract](./docs/BEHAVIOR_CONTRACT.md)
+- [Migration guide](./docs/MIGRATION.md)
+- [Troubleshooting and recovery](./docs/TROUBLESHOOTING.md)
+- [Performance baseline](./docs/PERFORMANCE_BASELINE.md)
 
 ## AI Agent Setup Prompt
 

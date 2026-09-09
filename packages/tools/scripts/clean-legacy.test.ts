@@ -23,6 +23,20 @@ jest.mock("./extractor/index", () => ({
   })),
 }));
 
+type CleanerFileSystem = NonNullable<
+  ConstructorParameters<typeof LegacyCleaner>[1]
+>;
+
+const realFileSystem: CleanerFileSystem = {
+  copyFileSync: fs.copyFileSync,
+  existsSync: fs.existsSync,
+  mkdirSync: fs.mkdirSync,
+  readFileSync: fs.readFileSync,
+  renameSync: fs.renameSync,
+  unlinkSync: fs.unlinkSync,
+  writeFileSync: fs.writeFileSync,
+};
+
 describe("LegacyCleaner", () => {
   let tempDir: string;
   let localesDir: string;
@@ -41,6 +55,7 @@ describe("LegacyCleaner", () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     cleanupTempDir(tempDir);
   });
 
@@ -57,8 +72,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused", // This should be removed
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -69,8 +84,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함", // This should be removed
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -98,8 +113,8 @@ describe("LegacyCleaner", () => {
             "empty.key": "", // Empty string
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -111,8 +126,8 @@ describe("LegacyCleaner", () => {
             "empty.key": "", // Empty string
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -138,8 +153,8 @@ describe("LegacyCleaner", () => {
             "button.save": "Save",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -149,8 +164,8 @@ describe("LegacyCleaner", () => {
             "button.save": "저장",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -179,8 +194,8 @@ describe("LegacyCleaner", () => {
             // "button.save" is missing but used in code
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -190,8 +205,8 @@ describe("LegacyCleaner", () => {
             // "button.save" is missing but used in code
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -210,8 +225,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -221,8 +236,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await cleaner.clean();
@@ -256,8 +271,8 @@ describe("LegacyCleaner", () => {
             "welcome.title": "Welcome",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -266,8 +281,8 @@ describe("LegacyCleaner", () => {
             "welcome.title": "환영합니다",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await noBackupCleaner.clean();
@@ -297,7 +312,7 @@ describe("LegacyCleaner", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify(originalEnData, null, 2),
+        JSON.stringify(originalEnData, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -307,8 +322,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await dryRunCleaner.clean();
@@ -336,8 +351,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -347,8 +362,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ja.json"),
@@ -358,8 +373,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "未使用",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats } = await multiLangCleaner.clean();
@@ -389,6 +404,186 @@ describe("LegacyCleaner", () => {
 
       // Should not throw error
       await expect(newCleaner.clean()).resolves.not.toThrow();
+    });
+
+    it("should abort without modifying any locale when JSON parsing fails", async () => {
+      fs.mkdirSync(localesDir, { recursive: true });
+      const enPath = path.join(localesDir, "en.json");
+      const koPath = path.join(localesDir, "ko.json");
+      const originalEn = '{"welcome.title":"Welcome"';
+      const originalKo = JSON.stringify(
+        { "welcome.title": "환영합니다", "button.save": "저장" },
+        null,
+        2
+      );
+      fs.writeFileSync(enPath, originalEn);
+      fs.writeFileSync(koPath, originalKo);
+
+      await expect(cleaner.clean()).rejects.toThrow(/parse|JSON/i);
+
+      expect(fs.readFileSync(enPath, "utf8")).toBe(originalEn);
+      expect(fs.readFileSync(koPath, "utf8")).toBe(originalKo);
+      expect(fs.readdirSync(localesDir)).not.toEqual(
+        expect.arrayContaining([expect.stringContaining(".backup-")])
+      );
+    });
+
+    it("should abort and remove partial backups when any backup fails", async () => {
+      fs.mkdirSync(localesDir, { recursive: true });
+      const enPath = path.join(localesDir, "en.json");
+      const koPath = path.join(localesDir, "ko.json");
+      const originalEn = JSON.stringify(
+        { "welcome.title": "Welcome", "button.save": "Save" },
+        null,
+        2
+      );
+      const originalKo = JSON.stringify(
+        { "welcome.title": "환영합니다", "button.save": "저장" },
+        null,
+        2
+      );
+      fs.writeFileSync(enPath, originalEn);
+      fs.writeFileSync(koPath, originalKo);
+
+      let copyCount = 0;
+      const failingCopyFileSync = ((
+        ...args: Parameters<typeof fs.copyFileSync>
+      ) => {
+        copyCount++;
+        if (copyCount === 2) {
+          throw new Error("injected backup failure");
+        }
+        return fs.copyFileSync(...args);
+      }) as typeof fs.copyFileSync;
+      const failingCleaner = new LegacyCleaner(
+        {
+          sourcePattern: "src/**/*.{ts,tsx}",
+          localesDir,
+          languages: ["en", "ko"],
+          dryRun: false,
+          backup: true,
+        },
+        { ...realFileSystem, copyFileSync: failingCopyFileSync }
+      );
+
+      await expect(failingCleaner.clean()).rejects.toThrow(
+        /injected backup failure/
+      );
+
+      expect(fs.readFileSync(enPath, "utf8")).toBe(originalEn);
+      expect(fs.readFileSync(koPath, "utf8")).toBe(originalKo);
+      expect(
+        fs.readdirSync(localesDir).filter((file) => file.includes(".backup-"))
+      ).toHaveLength(0);
+    });
+
+    it("should leave every original unchanged when staging a write fails", async () => {
+      fs.mkdirSync(localesDir, { recursive: true });
+      const enPath = path.join(localesDir, "en.json");
+      const koPath = path.join(localesDir, "ko.json");
+      const originalEn = JSON.stringify(
+        {
+          "welcome.title": "Welcome",
+          "button.save": "Save",
+          unused: "Unused",
+        },
+        null,
+        2
+      );
+      const originalKo = JSON.stringify(
+        {
+          "welcome.title": "환영합니다",
+          "button.save": "저장",
+          unused: "사용 안 함",
+        },
+        null,
+        2
+      );
+      fs.writeFileSync(enPath, originalEn);
+      fs.writeFileSync(koPath, originalKo);
+
+      let writeCount = 0;
+      const failingWriteFileSync = ((
+        ...args: Parameters<typeof fs.writeFileSync>
+      ) => {
+        writeCount++;
+        if (writeCount === 2) {
+          throw new Error("injected staging failure");
+        }
+        return fs.writeFileSync(...args);
+      }) as typeof fs.writeFileSync;
+      const atomicCleaner = new LegacyCleaner(
+        {
+          sourcePattern: "src/**/*.{ts,tsx}",
+          localesDir,
+          languages: ["en", "ko"],
+          dryRun: false,
+          backup: false,
+        },
+        { ...realFileSystem, writeFileSync: failingWriteFileSync }
+      );
+
+      await expect(atomicCleaner.clean()).rejects.toThrow(
+        /injected staging failure/
+      );
+
+      expect(fs.readFileSync(enPath, "utf8")).toBe(originalEn);
+      expect(fs.readFileSync(koPath, "utf8")).toBe(originalKo);
+    });
+
+    it("should roll back earlier files when a later atomic commit fails", async () => {
+      fs.mkdirSync(localesDir, { recursive: true });
+      const enPath = path.join(localesDir, "en.json");
+      const koPath = path.join(localesDir, "ko.json");
+      const originalEn = JSON.stringify(
+        {
+          "welcome.title": "Welcome",
+          "button.save": "Save",
+          unused: "Unused",
+        },
+        null,
+        2
+      );
+      const originalKo = JSON.stringify(
+        {
+          "welcome.title": "환영합니다",
+          "button.save": "저장",
+          unused: "사용 안 함",
+        },
+        null,
+        2
+      );
+      fs.writeFileSync(enPath, originalEn);
+      fs.writeFileSync(koPath, originalKo);
+
+      const failingRenameSync = ((source: fs.PathLike, target: fs.PathLike) => {
+        if (String(source).endsWith(".tmp") && String(target) === koPath) {
+          throw new Error("injected commit failure");
+        }
+        fs.renameSync(source, target);
+      }) as typeof fs.renameSync;
+      const atomicCleaner = new LegacyCleaner(
+        {
+          sourcePattern: "src/**/*.{ts,tsx}",
+          localesDir,
+          languages: ["en", "ko"],
+          dryRun: false,
+          backup: false,
+        },
+        { ...realFileSystem, renameSync: failingRenameSync }
+      );
+
+      await expect(atomicCleaner.clean()).rejects.toThrow(
+        /injected commit failure/
+      );
+
+      expect(fs.readFileSync(enPath, "utf8")).toBe(originalEn);
+      expect(fs.readFileSync(koPath, "utf8")).toBe(originalKo);
+      expect(
+        fs
+          .readdirSync(localesDir)
+          .filter((file) => file.endsWith(".tmp") || file.endsWith(".rollback"))
+      ).toHaveLength(0);
     });
   });
 

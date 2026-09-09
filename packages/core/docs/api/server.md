@@ -38,7 +38,7 @@ async function getTranslation<NS extends string = string>(
     disableAutoInference?: boolean;
     useFallbackOnError?: boolean;
     disableCache?: boolean;
-  },
+  }
 ): Promise<{
   t: TranslationFunction;
   language: string;
@@ -60,6 +60,16 @@ async function getTranslation<NS extends string = string>(
 - `options.disableAutoInference` - Disable namespace inference from the call site
 - `options.useFallbackOnError` - Try the configured fallback namespace when the requested namespace fails
 - `options.disableCache` - Disable translation cache reads and writes
+
+Without `options.language`, `getTranslation()` tries `next/headers`. If that
+module or request context is unavailable, it uses empty headers and therefore
+selects `options.defaultLanguage` (or the configured/default `"en"`). Pass an
+explicit language when calling this API outside a Next.js request context.
+
+Call-site namespace inference is best effort because it parses the runtime's
+`Error.stack` format. Bundlers, source maps, test runners, or runtime changes can
+make that path unavailable. Pass `namespace` explicitly, or set
+`disableAutoInference: true`, when deterministic namespace selection matters.
 
 **Returns:**
 
@@ -96,7 +106,7 @@ function getServerLanguage(
     cookieName?: string;
     defaultLanguage?: string;
     availableLanguages?: string[];
-  },
+  }
 ): string;
 ```
 
@@ -141,7 +151,7 @@ Parse Accept-Language header and find best match.
 ```typescript
 function parseAcceptLanguage(
   acceptLanguage: string,
-  availableLanguages: string[],
+  availableLanguages: string[]
 ): string | null;
 ```
 
@@ -181,11 +191,11 @@ Create translation function for Server Components.
 ```typescript
 function createServerTranslation(
   language: string,
-  translations: Record<string, Record<string, string>>,
+  translations: Record<string, Record<string, string>>
 ): (
   key: string,
   variables?: ServerTranslationVariables | string,
-  fallback?: string,
+  fallback?: string
 ) => string;
 ```
 
@@ -230,7 +240,7 @@ Get translations object for current language.
 ```typescript
 function getServerTranslations(
   language: string,
-  translations: Record<string, Record<string, string>>,
+  translations: Record<string, Record<string, string>>
 ): Record<string, string>;
 ```
 
@@ -259,7 +269,7 @@ Load translations from directory.
 
 ```typescript
 async function loadTranslations(
-  localesDir: string,
+  localesDir: string
 ): Promise<Record<string, Record<string, string>>>;
 ```
 
@@ -291,7 +301,7 @@ function createServerI18nWithTranslations(
     cookieName?: string;
     defaultLanguage?: string;
     availableLanguages?: string[];
-  },
+  }
 ): {
   t: TranslationFunction;
   language: string;
@@ -381,7 +391,7 @@ export async function getTranslations() {
 ### 3. Type-Safe Languages
 
 ```typescript
-// i18nexus.config.ts
+// src/i18n-config.ts (imported by application code; not auto-discovered)
 export const config = defineConfig({
   languages: ["en", "ko", "ja"] as const,
   defaultLanguage: "en",

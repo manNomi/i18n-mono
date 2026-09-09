@@ -2,7 +2,11 @@
  * Tests for Accept-Language header parsing
  */
 
-import { parseAcceptLanguage, getServerLanguage } from "../utils/server";
+import {
+  parseAcceptLanguage,
+  getServerLanguage,
+  parseCookies,
+} from "../utils/server";
 
 describe("parseAcceptLanguage", () => {
   const availableLanguages = ["en", "ko", "ja", "zh"];
@@ -20,7 +24,7 @@ describe("parseAcceptLanguage", () => {
   it("should parse multiple languages with quality values", () => {
     const result = parseAcceptLanguage(
       "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-      availableLanguages,
+      availableLanguages
     );
     expect(result).toBe("ko");
   });
@@ -28,7 +32,7 @@ describe("parseAcceptLanguage", () => {
   it("should respect quality values (higher quality first)", () => {
     const result = parseAcceptLanguage(
       "en;q=0.5,ko;q=0.9,ja;q=0.7",
-      availableLanguages,
+      availableLanguages
     );
     expect(result).toBe("ko");
   });
@@ -36,7 +40,7 @@ describe("parseAcceptLanguage", () => {
   it("should handle complex Accept-Language header", () => {
     const result = parseAcceptLanguage(
       "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
-      ["en", "ko"],
+      ["en", "ko"]
     );
     expect(result).toBe("en");
   });
@@ -74,7 +78,7 @@ describe("parseAcceptLanguage", () => {
   it("should handle whitespace", () => {
     const result = parseAcceptLanguage(
       " ko-KR , ko ; q=0.9 , en ; q=0.8 ",
-      availableLanguages,
+      availableLanguages
     );
     expect(result).toBe("ko");
   });
@@ -87,6 +91,35 @@ describe("parseAcceptLanguage", () => {
   it("should handle Chinese variants", () => {
     const result = parseAcceptLanguage("zh-CN,zh;q=0.9", ["en", "zh"]);
     expect(result).toBe("zh");
+  });
+
+  it("should reject explicitly unacceptable languages with q=0", () => {
+    const result = parseAcceptLanguage("ko;q=0,en;q=0.5", ["en", "ko"]);
+    expect(result).toBe("en");
+  });
+
+  it.each([
+    "ko;q=wat",
+    "ko;q=1.1",
+    "ko;q=-0.1",
+    "ko;q=0.1234",
+    "ko;q=1.",
+    "ko;q=0.",
+    "ko;q=.5",
+  ])("should ignore a language with an invalid quality value: %s", (header) => {
+    expect(parseAcceptLanguage(`${header},en;q=0.5`, ["en", "ko"])).toBe("en");
+  });
+
+  it("should ignore wildcard ranges in the supported negotiation subset", () => {
+    expect(parseAcceptLanguage("*;q=0.8", availableLanguages)).toBeNull();
+  });
+
+  it("should return the configured casing for case-insensitive matches", () => {
+    expect(parseAcceptLanguage("en-us", ["en-US", "ko-KR"])).toBe("en-US");
+  });
+
+  it("should not treat an unrelated prefix as a regional language", () => {
+    expect(parseAcceptLanguage("en", ["enochian", "ko"])).toBeNull();
   });
 });
 
@@ -201,5 +234,44 @@ describe("getServerLanguage with Accept-Language", () => {
     });
 
     expect(result).toBe("ko");
+  });
+
+  it("should ignore a malformed encoded cookie and continue negotiation", () => {
+    const headers = new Headers();
+    headers.set("cookie", "i18n-language=%E0%A4%A; session=valid");
+    headers.set("accept-language", "ko;q=0.9,en;q=0.8");
+
+    expect(
+      getServerLanguage(headers, {
+        availableLanguages: ["en", "ko"],
+        defaultLanguage: "en",
+      })
+    ).toBe("ko");
+  });
+});
+
+describe("parseCookies", () => {
+  it("should preserve equals signs and empty cookie values", () => {
+    expect(parseCookies("token=a=b=c; empty=; language=ko")).toEqual({
+      token: "a=b=c",
+      empty: "",
+      language: "ko",
+    });
+  });
+
+  it("should skip only malformed percent-encoded cookies", () => {
+    expect(parseCookies("bad=%E0%A4%A; good=value%20with%20spaces")).toEqual({
+      good: "value with spaces",
+    });
+  });
+
+  it("should keep the first duplicate cookie and resist prototype setters", () => {
+    const cookies = parseCookies("language=ko; language=en; __proto__=owned");
+
+    expect(cookies.language).toBe("ko");
+    expect(Object.prototype.hasOwnProperty.call(cookies, "__proto__")).toBe(
+      true
+    );
+    expect(Object.getPrototypeOf(cookies)).toBe(Object.prototype);
   });
 });

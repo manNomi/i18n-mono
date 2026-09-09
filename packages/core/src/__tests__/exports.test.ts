@@ -84,7 +84,7 @@ describe("root exports", () => {
     }
   });
 
-  it("declares devtools and server as explicit package subpaths", () => {
+  it("declares devtools, server, and edge as explicit package subpaths", () => {
     expect(packageJson.version).toBe("4.0.1");
     expect(packageJson.files).toContain("CHANGELOG.md");
     expect(Object.prototype.hasOwnProperty.call(packageJson.exports, ".")).toBe(
@@ -94,8 +94,25 @@ describe("root exports", () => {
       Object.prototype.hasOwnProperty.call(packageJson.exports, "./server")
     ).toBe(true);
     expect(
+      Object.prototype.hasOwnProperty.call(packageJson.exports, "./edge")
+    ).toBe(true);
+    expect(
       Object.prototype.hasOwnProperty.call(packageJson.exports, "./devtools")
     ).toBe(true);
     expect(typeof I18NexusDevtools).toBe("function");
+  });
+
+  it("points package support metadata at the canonical monorepo", () => {
+    expect(packageJson.repository).toEqual({
+      type: "git",
+      url: "git+https://github.com/i18n-global/i18n-mono.git",
+      directory: "packages/core",
+    });
+    expect(packageJson.bugs.url).toBe(
+      "https://github.com/i18n-global/i18n-mono/issues"
+    );
+    expect(packageJson.homepage).toBe(
+      "https://github.com/i18n-global/i18n-mono/tree/main/packages/core#readme"
+    );
   });
 });

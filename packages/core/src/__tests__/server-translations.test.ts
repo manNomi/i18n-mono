@@ -6,11 +6,65 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import {
+  createServerI18nWithTranslations,
+  createServerTranslation,
   getServerTranslations,
   getTranslation,
   invalidateCache,
   loadTranslations,
 } from "../utils/server";
+
+describe("createServerI18nWithTranslations", () => {
+  const translations = {
+    en: { title: "Title" },
+    ko: { title: "제목" },
+  };
+
+  it("uses cookie negotiation with preloaded resources", () => {
+    const headers = new Headers({ cookie: "i18n-language=ko" });
+    const result = createServerI18nWithTranslations(headers, translations, {
+      availableLanguages: ["en", "ko"],
+      defaultLanguage: "en",
+    });
+
+    expect(result.language).toBe("ko");
+    expect(result.t("title")).toBe("제목");
+    expect(result.dict).toEqual({ title: "제목" });
+  });
+
+  it("falls back after malformed cookie and unacceptable header ranges", () => {
+    const headers = new Headers({
+      cookie: "i18n-language=%E0%A4%A",
+      "accept-language": "ko;q=0,*;q=1",
+    });
+    const result = createServerI18nWithTranslations(headers, translations, {
+      availableLanguages: ["en", "ko"],
+      defaultLanguage: "en",
+    });
+
+    expect(result.language).toBe("en");
+    expect(result.t("missing")).toBe("missing");
+  });
+});
+
+describe("createServerTranslation", () => {
+  const t = createServerTranslation("en", {
+    en: { blank: "", present: "Present" },
+  });
+
+  it("preserves an intentionally empty translation", () => {
+    expect(t("blank")).toBe("");
+  });
+
+  it("preserves an explicitly empty fallback for a missing key", () => {
+    expect(t("missing", "")).toBe("");
+    expect(t("missing", undefined, "")).toBe("");
+  });
+
+  it("returns the key only when translation and fallback are absent", () => {
+    expect(t("missing")).toBe("missing");
+  });
+});
 
 describe("getServerTranslations (Type-Safe)", () => {
   const translations = {
@@ -146,11 +200,11 @@ describe("loadTranslations", () => {
     fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
     fs.writeFileSync(
       path.join(tempDir, "locales", "en.json"),
-      JSON.stringify({ welcome: "Welcome" }),
+      JSON.stringify({ welcome: "Welcome" })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "ko.json"),
-      JSON.stringify({ welcome: "환영합니다" }),
+      JSON.stringify({ welcome: "환영합니다" })
     );
 
     const translations = await loadTranslations("./locales");
@@ -165,17 +219,72 @@ describe("loadTranslations", () => {
     });
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "en.json"),
-      JSON.stringify({ welcome: "Welcome" }),
+      JSON.stringify({ welcome: "Welcome" })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "ko.json"),
-      JSON.stringify({ welcome: "환영합니다" }),
+      JSON.stringify({ welcome: "환영합니다" })
     );
 
     const translations = await loadTranslations("./locales");
     const dict = getServerTranslations("ko", translations);
 
     expect(dict.welcome).toBe("환영합니다");
+  });
+
+  it("returns an empty object for a missing locale directory", async () => {
+    await expect(loadTranslations("./missing-locales")).resolves.toEqual({});
+  });
+
+  it("ignores non-JSON, malformed, and non-string translation resources", async () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+    fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
+    fs.writeFileSync(path.join(tempDir, "locales", "notes.txt"), "ignored");
+    fs.writeFileSync(path.join(tempDir, "locales", "en.json"), "{");
+    fs.writeFileSync(
+      path.join(tempDir, "locales", "ko.json"),
+      JSON.stringify({ nested: { title: "invalid" } })
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "locales", "ja.json"),
+      JSON.stringify({ title: "有効" })
+    );
+
+    await expect(loadTranslations("./locales")).resolves.toEqual({
+      ja: { title: "有効" },
+    });
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it("propagates locale directory read failures", async () => {
+    fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
+    const readdirSpy = jest
+      .spyOn(fs.promises, "readdir")
+      .mockRejectedValueOnce(new Error("permission denied"));
+
+    await expect(loadTranslations("./locales")).rejects.toThrow(
+      "permission denied"
+    );
+    readdirSpy.mockRestore();
+  });
+
+  it("does not follow symlink entries outside the locale directory", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    const outsideDir = path.join(tempDir, "outside");
+    fs.mkdirSync(localesDir, { recursive: true });
+    fs.mkdirSync(outsideDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(outsideDir, "en.json"),
+      JSON.stringify({ secret: "outside" })
+    );
+    fs.symlinkSync(
+      path.join(outsideDir, "en.json"),
+      path.join(localesDir, "linked.json")
+    );
+    fs.symlinkSync(outsideDir, path.join(localesDir, "linked-namespace"));
+
+    await expect(loadTranslations(localesDir)).resolves.toEqual({});
   });
 });
 
@@ -208,20 +317,20 @@ describe("getTranslation server namespace fallback", () => {
         localesDir: "./locales",
         defaultLanguage: "en",
         fallbackNamespace: "common",
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "en.json"),
       JSON.stringify({
         save: "Save",
         title: "Common title",
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "dashboard", "en.json"),
       JSON.stringify({
         title: "Dashboard title",
-      }),
+      })
     );
 
     const { t, dict, translations, namespace } = await getTranslation(
@@ -229,7 +338,7 @@ describe("getTranslation server namespace fallback", () => {
       {
         language: "en",
         disableCache: true,
-      },
+      }
     );
 
     expect(namespace).toBe("dashboard");
@@ -246,7 +355,7 @@ describe("getTranslation server namespace fallback", () => {
 
     fs.writeFileSync(
       path.join(tempDir, "i18nexus.config.js"),
-      `export default { localesDir: "./messages" };`,
+      `export default { localesDir: "./messages" };`
     );
     fs.mkdirSync(path.join(tempDir, "locales", "common"), {
       recursive: true,
@@ -255,7 +364,7 @@ describe("getTranslation server namespace fallback", () => {
       path.join(tempDir, "locales", "common", "en.json"),
       JSON.stringify({
         title: "Common title",
-      }),
+      })
     );
 
     const { t } = await getTranslation("common", {
@@ -265,9 +374,363 @@ describe("getTranslation server namespace fallback", () => {
 
     expect(t("title")).toBe("Common title");
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("i18nexus.config.js is ignored"),
+      expect.stringContaining("i18nexus.config.js is ignored")
     );
 
     warnSpy.mockRestore();
+  });
+
+  it("uses the configured default when automatic Next headers are unavailable", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    fs.mkdirSync(path.join(localesDir, "common"), { recursive: true });
+    fs.writeFileSync(
+      path.join(localesDir, "common", "ko.json"),
+      JSON.stringify({ title: "기본 언어" })
+    );
+
+    const result = await getTranslation("common", {
+      localesDir,
+      defaultLanguage: "ko",
+      availableLanguages: ["en", "ko"],
+      disableCache: true,
+    });
+
+    expect(result.language).toBe("ko");
+    expect(result.t("title")).toBe("기본 언어");
+  });
+
+  it("rejects namespace and language paths outside the locale root", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    const outsideDir = path.join(tempDir, "outside");
+    fs.mkdirSync(localesDir, { recursive: true });
+    fs.mkdirSync(outsideDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(outsideDir, "en.json"),
+      JSON.stringify({ secret: "outside" })
+    );
+
+    await expect(
+      getTranslation("../outside", {
+        language: "en",
+        localesDir,
+        disableCache: true,
+      })
+    ).rejects.toThrow("must remain inside locales directory");
+    await expect(
+      getTranslation("common", {
+        language: "../../outside/en",
+        localesDir,
+        disableCache: true,
+      })
+    ).rejects.toThrow("must remain inside locales directory");
+  });
+
+  it("rejects translation files reached through a symlink outside the locale root", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    const outsideDir = path.join(tempDir, "outside");
+    fs.mkdirSync(localesDir, { recursive: true });
+    fs.mkdirSync(outsideDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(outsideDir, "en.json"),
+      JSON.stringify({ secret: "outside" })
+    );
+    fs.symlinkSync(outsideDir, path.join(localesDir, "linked"));
+
+    await expect(
+      getTranslation("linked", {
+        language: "en",
+        localesDir,
+        disableCache: true,
+      })
+    ).rejects.toThrow("must remain inside locales directory");
+  });
+
+  it("rejects a translation JSON object with non-string values", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    fs.mkdirSync(path.join(localesDir, "common"), { recursive: true });
+    fs.writeFileSync(
+      path.join(localesDir, "common", "en.json"),
+      JSON.stringify({ nested: { title: "invalid" } })
+    );
+
+    await expect(
+      getTranslation("common", {
+        language: "en",
+        localesDir,
+        disableCache: true,
+      })
+    ).rejects.toThrow("expected a JSON object with string values");
+  });
+});
+
+describe("getTranslation cache isolation", () => {
+  const originalCwd = process.cwd();
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "i18nexus-cache-scope-"));
+    process.chdir(tempDir);
+    invalidateCache();
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    invalidateCache();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  function writeTranslation(
+    localesDir: string,
+    namespace: string,
+    language: string,
+    title: string
+  ): void {
+    fs.mkdirSync(path.join(localesDir, namespace), { recursive: true });
+    fs.writeFileSync(
+      path.join(localesDir, namespace, `${language}.json`),
+      JSON.stringify({ title })
+    );
+  }
+
+  it("isolates concurrent and subsequent reads by locale root", async () => {
+    const firstLocalesDir = path.join(tempDir, "first", "locales");
+    const secondLocalesDir = path.join(tempDir, "second", "locales");
+
+    writeTranslation(firstLocalesDir, "common", "en", "First project");
+    writeTranslation(secondLocalesDir, "common", "en", "Second project");
+
+    const [first, second] = await Promise.all([
+      getTranslation("common", {
+        language: "en",
+        localesDir: firstLocalesDir,
+      }),
+      getTranslation("common", {
+        language: "en",
+        localesDir: secondLocalesDir,
+      }),
+    ]);
+    const [secondAgain, firstAgain] = await Promise.all([
+      getTranslation("common", {
+        language: "en",
+        localesDir: secondLocalesDir,
+      }),
+      getTranslation("common", {
+        language: "en",
+        localesDir: firstLocalesDir,
+      }),
+    ]);
+
+    expect(first.t("title")).toBe("First project");
+    expect(second.t("title")).toBe("Second project");
+    expect(firstAgain.t("title")).toBe("First project");
+    expect(secondAgain.t("title")).toBe("Second project");
+  });
+
+  it("returns a same-root cache hit before expiry", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    writeTranslation(localesDir, "common", "en", "Cached value");
+
+    await getTranslation("common", { language: "en", localesDir });
+    writeTranslation(localesDir, "common", "en", "Changed on disk");
+
+    const cached = await getTranslation("common", {
+      language: "en",
+      localesDir,
+    });
+
+    expect(cached.t("title")).toBe("Cached value");
+  });
+
+  it("bypasses without replacing the cache when disableCache is true", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    writeTranslation(localesDir, "common", "en", "Cached value");
+
+    await getTranslation("common", { language: "en", localesDir });
+    writeTranslation(localesDir, "common", "en", "Fresh value");
+
+    const fresh = await getTranslation("common", {
+      language: "en",
+      localesDir,
+      disableCache: true,
+    });
+    const cached = await getTranslation("common", {
+      language: "en",
+      localesDir,
+    });
+
+    expect(fresh.t("title")).toBe("Fresh value");
+    expect(cached.t("title")).toBe("Cached value");
+  });
+
+  it("invalidates a namespace and language across all locale roots", async () => {
+    const firstLocalesDir = path.join(tempDir, "first", "locales");
+    const secondLocalesDir = path.join(tempDir, "second", "locales");
+
+    for (const localesDir of [firstLocalesDir, secondLocalesDir]) {
+      writeTranslation(localesDir, "common", "en", "Before invalidation");
+      await getTranslation("common", { language: "en", localesDir });
+      writeTranslation(localesDir, "common", "en", "After invalidation");
+    }
+
+    invalidateCache("common", "en");
+
+    const [first, second] = await Promise.all(
+      [firstLocalesDir, secondLocalesDir].map((localesDir) =>
+        getTranslation("common", { language: "en", localesDir })
+      )
+    );
+
+    expect(first.t("title")).toBe("After invalidation");
+    expect(second.t("title")).toBe("After invalidation");
+  });
+
+  it("invalidates a namespace across roots without clearing other namespaces", async () => {
+    const firstLocalesDir = path.join(tempDir, "first", "locales");
+    const secondLocalesDir = path.join(tempDir, "second", "locales");
+
+    for (const localesDir of [firstLocalesDir, secondLocalesDir]) {
+      writeTranslation(localesDir, "common", "en", "Common before");
+      writeTranslation(localesDir, "dashboard", "en", "Dashboard before");
+      await getTranslation("common", { language: "en", localesDir });
+      await getTranslation("dashboard", { language: "en", localesDir });
+      writeTranslation(localesDir, "common", "en", "Common after");
+      writeTranslation(localesDir, "dashboard", "en", "Dashboard after");
+    }
+
+    invalidateCache("common");
+
+    const commonResults = await Promise.all(
+      [firstLocalesDir, secondLocalesDir].map((localesDir) =>
+        getTranslation("common", { language: "en", localesDir })
+      )
+    );
+    const dashboard = await getTranslation("dashboard", {
+      language: "en",
+      localesDir: firstLocalesDir,
+    });
+
+    expect(commonResults.map(({ t }) => t("title"))).toEqual([
+      "Common after",
+      "Common after",
+    ]);
+    expect(dashboard.t("title")).toBe("Dashboard before");
+  });
+
+  it("invalidates a language across roots without clearing other languages", async () => {
+    const firstLocalesDir = path.join(tempDir, "first", "locales");
+    const secondLocalesDir = path.join(tempDir, "second", "locales");
+
+    for (const localesDir of [firstLocalesDir, secondLocalesDir]) {
+      writeTranslation(localesDir, "common", "en", "English before");
+      writeTranslation(localesDir, "common", "ko", "Korean before");
+      await getTranslation("common", { language: "en", localesDir });
+      await getTranslation("common", { language: "ko", localesDir });
+      writeTranslation(localesDir, "common", "en", "English after");
+      writeTranslation(localesDir, "common", "ko", "Korean after");
+    }
+
+    invalidateCache(undefined, "en");
+
+    const englishResults = await Promise.all(
+      [firstLocalesDir, secondLocalesDir].map((localesDir) =>
+        getTranslation("common", { language: "en", localesDir })
+      )
+    );
+    const korean = await getTranslation("common", {
+      language: "ko",
+      localesDir: firstLocalesDir,
+    });
+
+    expect(englishResults.map(({ t }) => t("title"))).toEqual([
+      "English after",
+      "English after",
+    ]);
+    expect(korean.t("title")).toBe("Korean before");
+  });
+
+  it("invalidates every cached root when called without selectors", async () => {
+    const firstLocalesDir = path.join(tempDir, "first", "locales");
+    const secondLocalesDir = path.join(tempDir, "second", "locales");
+
+    writeTranslation(firstLocalesDir, "common", "en", "First before");
+    writeTranslation(secondLocalesDir, "dashboard", "ko", "Second before");
+    await getTranslation("common", {
+      language: "en",
+      localesDir: firstLocalesDir,
+    });
+    await getTranslation("dashboard", {
+      language: "ko",
+      localesDir: secondLocalesDir,
+    });
+    writeTranslation(firstLocalesDir, "common", "en", "First after");
+    writeTranslation(secondLocalesDir, "dashboard", "ko", "Second after");
+
+    invalidateCache();
+
+    const [first, second] = await Promise.all([
+      getTranslation("common", {
+        language: "en",
+        localesDir: firstLocalesDir,
+      }),
+      getTranslation("dashboard", {
+        language: "ko",
+        localesDir: secondLocalesDir,
+      }),
+    ]);
+
+    expect(first.t("title")).toBe("First after");
+    expect(second.t("title")).toBe("Second after");
+  });
+
+  it.each([
+    ["production", 60_000],
+    ["development", 5_000],
+  ])("expires %s cache entries after %i ms", async (nodeEnv, ttl) => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const nowSpy = jest.spyOn(Date, "now");
+    let now = 1_000;
+    nowSpy.mockImplementation(() => now);
+    process.env.NODE_ENV = nodeEnv;
+
+    try {
+      const localesDir = path.join(tempDir, "locales");
+      writeTranslation(localesDir, "common", "en", "Before expiry");
+      await getTranslation("common", { language: "en", localesDir });
+      writeTranslation(localesDir, "common", "en", "After expiry");
+
+      now += ttl + 1;
+      const expired = await getTranslation("common", {
+        language: "en",
+        localesDir,
+      });
+
+      expect(expired.t("title")).toBe("After expiry");
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("includes fallback namespace identity in the cache scope", async () => {
+    const localesDir = path.join(tempDir, "locales");
+    writeTranslation(localesDir, "dashboard", "en", "Dashboard");
+    writeTranslation(localesDir, "common", "en", "Common fallback");
+    writeTranslation(localesDir, "shared", "en", "Shared fallback");
+    fs.writeFileSync(
+      path.join(tempDir, "i18nexus.config.json"),
+      JSON.stringify({ localesDir: "./locales", fallbackNamespace: "common" })
+    );
+
+    const first = await getTranslation("dashboard", { language: "en" });
+
+    fs.writeFileSync(
+      path.join(tempDir, "i18nexus.config.json"),
+      JSON.stringify({ localesDir: "./locales", fallbackNamespace: "shared" })
+    );
+    const second = await getTranslation("dashboard", { language: "en" });
+
+    expect(first.translations.common.title).toBe("Common fallback");
+    expect(second.translations.shared.title).toBe("Shared fallback");
+    expect(second.translations.common).toBeUndefined();
   });
 });

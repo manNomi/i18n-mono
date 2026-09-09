@@ -334,16 +334,18 @@ export function AppI18nProvider({ children }: { children: React.ReactNode }) {
 Hook for language switching functionality.
 
 ```typescript
-function useLanguageSwitcher(): UseLanguageSwitcherReturn;
+function useLanguageSwitcher<
+  TLanguage extends string = string,
+>(): UseLanguageSwitcherReturn<TLanguage>;
 
-interface UseLanguageSwitcherReturn {
+interface UseLanguageSwitcherReturn<TLanguage extends string = string> {
   currentLanguage: string;
   availableLanguages: LanguageConfig[];
-  changeLanguage: (lang: string) => Promise<void>;
-  switchLng: (lang: string) => Promise<void>;
+  changeLanguage: (lang: TLanguage) => Promise<void>;
+  switchLng: (lang: TLanguage) => Promise<void>;
   switchToNextLanguage: () => Promise<void>;
   switchToPreviousLanguage: () => Promise<void>;
-  getLanguageConfig: (code?: string) => LanguageConfig | undefined;
+  getLanguageConfig: (code?: TLanguage) => LanguageConfig | undefined;
   detectBrowserLanguage: () => string | null;
   resetLanguage: () => void;
   isLoading: boolean;

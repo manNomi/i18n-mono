@@ -127,10 +127,11 @@ export class PerformanceMonitor {
   ): T {
     if (!this.enabled) return fn;
 
-    const monitor = this;
+    const start = this.start.bind(this);
+    const end = this.end.bind(this);
 
     return function (this: any, ...args: Parameters<T>): ReturnType<T> {
-      monitor.start(name, metadata);
+      start(name, metadata);
       try {
         const result = fn.apply(this, args);
 
@@ -138,20 +139,20 @@ export class PerformanceMonitor {
         if (result && typeof result.then === "function") {
           return result.then(
             (value: any) => {
-              monitor.end(name, metadata);
+              end(name, metadata);
               return value;
             },
             (error: any) => {
-              monitor.end(name, { ...metadata, error: true });
+              end(name, { ...metadata, error: true });
               throw error;
             }
           ) as ReturnType<T>;
         }
 
-        monitor.end(name, metadata);
+        end(name, metadata);
         return result;
       } catch (error) {
-        monitor.end(name, { ...metadata, error: true });
+        end(name, { ...metadata, error: true });
         throw error;
       }
     } as T;
@@ -171,7 +172,6 @@ export class PerformanceMonitor {
       const methodName = `${className}.${propertyKey}`;
 
       descriptor.value = function (this: any, ...args: any[]) {
-        // @ts-ignore
         const monitor = this.performanceMonitor as PerformanceMonitor;
 
         if (!monitor || !monitor.enabled) {

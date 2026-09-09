@@ -6,6 +6,10 @@ Complete reference for the `i18n-upload` command.
 
 The `i18n-upload` command uploads local translation files to Google Sheets for collaborative translation work.
 
+Before worksheet access, the command parses every local JSON resource as a
+flat string map and requires a locale file for each configured language. A
+missing or malformed file aborts without remote mutation.
+
 ## Basic Usage
 
 ```bash
@@ -52,7 +56,7 @@ npx i18n-upload --force --auto-translate
 
 ### `--dry-run`
 
-Preview upload without modifying Google Sheets.
+Print the local namespace-to-sheet plan without modifying Google Sheets. This is a config-only preview: it does not authenticate, make network requests, fetch existing sheet data, or calculate a remote diff.
 
 **Usage:**
 
@@ -332,21 +336,13 @@ npx i18n-upload --force
 ### Environment Variables
 
 ```bash
-# .env.local
-GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
-GOOGLE_CREDENTIALS_PATH=./credentials.json
+# Export in the current shell or configure the variables in CI.
+export GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
+export GOOGLE_CREDENTIALS_PATH=./credentials.json
 ```
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  googleSheets: {
-    spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,
-    credentialsPath: process.env.GOOGLE_CREDENTIALS_PATH!,
-    sheetName: "Translations",
-  },
-});
-```
+Environment variables override the corresponding values in
+`i18nexus.config.json`; explicit CLI flags override both.
 
 ## Advanced Usage
 

@@ -4,6 +4,8 @@ import { useTranslation } from "i18nexus";
 import Link from "next/link";
 import { useState } from "react";
 
+import { DocIcon } from "@/shared/ui/DocIcon";
+
 export default function UseTranslationPage() {
   const { t } = useTranslation("docs-i18nexus-use-translation");
   type TranslationKey = Parameters<typeof t>[0];

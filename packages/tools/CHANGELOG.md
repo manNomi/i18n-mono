@@ -4,15 +4,51 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Narrowed the supported runtime matrix to Node.js 22.x, 24.x and 26.x. Node
+  18 and 20 are no longer supported; release this policy change in the next
+  major version.
+
 ### ✨ Features
 
 - Added `sourceLanguage` support for extractor and wrapper workflows, including English-source project initialization.
 - Generated locale entrypoints now export typed `AppTranslationFunction` helpers for passing `t` through props.
 - `i18n-doctor` now checks installed core package exports and TypeScript module resolution for `i18nexus/server`.
+- `i18n-doctor` now treats missing or malformed `i18nexus.config.json` as a
+  blocking finding.
+
+### Fixed
+
+- `i18n-sheets init` no longer overwrites an existing config, locale file, or
+  generated example when rerun. Its optional `.env.sheets` output now follows
+  the same create-if-absent contract and emits a version-control warning.
+- Google Sheets connection options now consistently use CLI option >
+  environment variable > JSON config > built-in default precedence.
+- Made download, sync-local, CSV conversion and generated-index writes one
+  recoverable local transaction with traversal, duplicate-target and symlink
+  rejection.
+- Made incremental upload append after existing remote rows, generated
+  auto-translate formulas executable, and mapped worksheet language headers
+  dynamically while preserving locale codes such as `pt-BR`.
+- Reject upload when a configured locale file is absent before worksheet
+  access, preflight every namespace before the first remote mutation, and
+  preserve intentional empty-string keys in force downloads and CSV imports.
+- Abort downloads before local replacement when a requested language column or
+  flat string resource is missing/malformed.
+- Wrapper CLIs now report parse failures with a nonzero exit instead of
+  silently succeeding, and download warns that deprecated `--sheet-name` is
+  ignored because every sheet is treated as a namespace.
 
 ### 📚 Documentation
 
 - Reworked the Next.js App Router guide around a client Provider wrapper, server/client language sync, and `router.refresh()`.
+- Corrected `i18n-wrapper-swc`: it is a deprecated adaptive-wrapper alias and
+  now reports the strategy actually selected. Use `i18n-wrapper-swc-worker`
+  to force the SWC worker implementation.
+- Standardized automatic configuration discovery on `i18nexus.config.json`.
+  The legacy `i18n-sheets init --typescript` flag now warns and generates JSON;
+  migrate JS/TS-only configuration values into the JSON file.
 
 ## [3.1.0] - 2026-05-27
 

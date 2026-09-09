@@ -3,19 +3,12 @@
 import * as fs from "fs";
 import * as pathLib from "path";
 import { glob } from "glob";
-import traverse, { NodePath } from "@babel/traverse";
-import * as t from "@babel/types";
+import traverse from "@babel/traverse";
 import { parseWithBabel } from "../common/ast/parser-utils";
 import { COMMON_DEFAULTS } from "../common/default-config";
 import { loadConfig } from "../config-loader";
 import {
-  isTFunction,
-  getDefaultValue,
-  escapeCsvValue,
-} from "./extractor-utils";
-import {
   extractTranslationKey,
-  createExtractedKey,
   ExtractedKey,
   StaticKeyExtractionMode,
 } from "./key-extractor";
@@ -31,7 +24,8 @@ import {
   OUTPUT_FORMATS,
 } from "./constants";
 import {
-  inferNamespace,
+  findUseTranslationCalls,
+  inferNamespaceFromFile,
   validateNamespace,
   NamespacingConfig,
 } from "./namespace-inference";
@@ -188,7 +182,6 @@ export class TranslationExtractor {
       let namespace: string;
       if (this.config.namespacing.enabled) {
         // 개선: useTranslation() 우선, 파일 경로는 대체
-        const { inferNamespaceFromFile } = require("./namespace-inference");
         namespace = inferNamespaceFromFile(
           filePath,
           code,
@@ -198,7 +191,6 @@ export class TranslationExtractor {
         // 네임스페이스 검증 (skipValidation이 false일 때만)
         if (!this.config.skipValidation) {
           // useTranslation()이 있는 경우 검증 스킵 (이미 올바른 네임스페이스)
-          const { findUseTranslationCalls } = require("./namespace-inference");
           const useTranslationCalls = findUseTranslationCalls(filePath, code);
           const hasExplicitNamespace =
             useTranslationCalls.length > 0 && useTranslationCalls[0].namespace;

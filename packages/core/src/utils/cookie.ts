@@ -9,7 +9,7 @@ export interface CookieOptions {
 export const setCookie = (
   name: string,
   value: string,
-  options: CookieOptions = {},
+  options: CookieOptions = {}
 ): void => {
   if (typeof document === "undefined") {
     return; // SSR support
@@ -53,7 +53,11 @@ export const getCookie = (name: string): string | null => {
   for (let cookie of cookies) {
     cookie = cookie.trim();
     if (cookie.indexOf(nameEQ) === 0) {
-      return decodeURIComponent(cookie.substring(nameEQ.length));
+      try {
+        return decodeURIComponent(cookie.substring(nameEQ.length));
+      } catch {
+        return null;
+      }
     }
   }
 
@@ -62,7 +66,7 @@ export const getCookie = (name: string): string | null => {
 
 export const deleteCookie = (
   name: string,
-  options: Omit<CookieOptions, "expires"> = {},
+  options: Omit<CookieOptions, "expires"> = {}
 ): void => {
   setCookie(name, "", { ...options, expires: -1 });
 };
@@ -77,9 +81,24 @@ export const getAllCookies = (): Record<string, string> => {
 
   for (let cookie of cookieArray) {
     cookie = cookie.trim();
-    const [name, value] = cookie.split("=");
-    if (name && value) {
-      cookies[decodeURIComponent(name)] = decodeURIComponent(value);
+    const separatorIndex = cookie.indexOf("=");
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    try {
+      const name = decodeURIComponent(cookie.slice(0, separatorIndex));
+      const value = decodeURIComponent(cookie.slice(separatorIndex + 1));
+      if (!Object.prototype.hasOwnProperty.call(cookies, name)) {
+        Object.defineProperty(cookies, name, {
+          value,
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
+      }
+    } catch {
+      // Ignore malformed percent encoding in one cookie without rejecting all.
     }
   }
 

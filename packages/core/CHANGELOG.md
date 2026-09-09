@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Narrowed the supported runtime matrix to Node.js 22.x, 24.x and 26.x and
+  React/React DOM 18.x and 19.x. Node 16/18/20 and React 16/17 are no longer
+  supported. This support-policy change requires a new major release.
+
+### Verification
+
+- Added clean-installed tarball smoke tests for React 18.3.1 and 19.2.7.
+- Added repository compatibility gates for Node 22, 24 and 26.
+- Added a CI gate that compares tracked dist with a clean source build and
+  verifies two clean builds are byte-identical.
+- Added installed-consumer type checks for `defineConfig`, `ExtractLanguages`,
+  and the restored `useLanguageSwitcher<TLanguage>()` input contract.
+
+### Fixed
+
+- Kept Provider state and `onLanguageChange` synchronized exactly once when
+  mount effects, public reset or devtools controls update the language manager,
+  and made cyclic switching over an empty language list a no-op.
+- Preserved intentional empty-string translations instead of treating them as
+  missing keys.
+- Made lazy namespace commits atomic and retryable after loader failures.
+- Hardened server locale reads against traversal, symlink escape, and malformed
+  non-string translation resources.
+- Rejected malformed decimal `Accept-Language` weights such as `q=1.` and
+  documented the configured-default fallback outside a Next.js request.
+- Standardized automatic configuration discovery on `i18nexus.config.json`;
+  JavaScript and TypeScript config files now produce an explicit warning.
+
 ## [4.0.0] - 2026-05-25
 
 ### Breaking Changes

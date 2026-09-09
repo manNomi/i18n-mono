@@ -50,6 +50,11 @@ describe("Cookie Utils", () => {
       document.cookie = "test=value%20with%20spaces";
       expect(getCookie("test")).toBe("value with spaces");
     });
+
+    it("should return null for malformed percent encoding", () => {
+      document.cookie = "test=%E0%A4%A";
+      expect(getCookie("test")).toBeNull();
+    });
   });
 
   describe("deleteCookie", () => {
@@ -75,6 +80,23 @@ describe("Cookie Utils", () => {
     it("should return empty object when no cookies exist", () => {
       const allCookies = getAllCookies();
       expect(allCookies).toEqual({});
+    });
+
+    it("should preserve equals signs and empty values", () => {
+      document.cookie = "token=a=b=c; empty=";
+      expect(getAllCookies()).toEqual({ token: "a=b=c", empty: "" });
+    });
+
+    it("should skip malformed values without mutating the object prototype", () => {
+      document.cookie = "bad=%E0%A4%A; good=value; __proto__=owned";
+      const allCookies = getAllCookies();
+
+      expect(allCookies.good).toBe("value");
+      expect(allCookies.bad).toBeUndefined();
+      expect(
+        Object.prototype.hasOwnProperty.call(allCookies, "__proto__")
+      ).toBe(true);
+      expect(Object.getPrototypeOf(allCookies)).toBe(Object.prototype);
     });
   });
 });

@@ -44,7 +44,12 @@ The tool automatically creates headers based on your configuration:
 }
 ```
 
-Creates columns: `Key`, `Korean`, `English`, `Japanese`, `Chinese`
+Creates columns in configured order: `Key`, `English`, `Korean`, `Japanese`,
+`Chinese`.
+
+Existing worksheets may use recognized language names or exact locale codes
+such as `pt-BR`. Every downloaded sheet must contain every requested language
+column; a mismatch fails before local files are replaced.
 
 ## 🔄 Workflow
 
@@ -91,6 +96,11 @@ npx i18n-upload --auto-translate
 npx i18n-upload --force --auto-translate
 ```
 
+Normal upload appends new keys after existing rows. Force upload clears and
+replaces the remote table and is not transactional across Google Sheets API
+calls. Both modes parse every local resource and require a locale file for each
+configured language before worksheet access.
+
 ### Download Commands
 
 ```bash
@@ -100,6 +110,9 @@ npx i18n-download
 # Force download (overwrite all)
 npx i18n-download-force
 ```
+
+Force download replaces local keys from the remote snapshot and retains keys
+whose remote value is an intentional empty string.
 
 ### Status Commands
 
@@ -128,21 +141,13 @@ npx i18n-sheets status -s <spreadsheet-id>
 ### Environment Variables
 
 ```bash
-# .env.local
-GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
-GOOGLE_CREDENTIALS_PATH=./credentials.json
+# Export in the current shell or configure the variables in CI.
+export GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
+export GOOGLE_CREDENTIALS_PATH=./credentials.json
 ```
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  googleSheets: {
-    spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,
-    credentialsPath: process.env.GOOGLE_CREDENTIALS_PATH!,
-    sheetName: "Translations",
-  },
-});
-```
+These variables override values in `i18nexus.config.json` for
+`i18n-sheets` Google Sheets subcommands and `i18n-upload`.
 
 ## 🎨 Advanced Features
 

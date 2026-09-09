@@ -161,7 +161,7 @@ npx i18n-download-force
 i18nexus-tools/
 ├── bin/                    # CLI 진입점
 │   ├── i18n-wrapper.ts    # 문자열 래핑 (Babel)
-│   ├── i18n-wrapper-swc.ts # 문자열 래핑 (SWC 실험적)
+│   ├── i18n-wrapper-swc.ts # adaptive wrapper 호환 alias (deprecated)
 │   ├── i18n-extractor.ts  # 번역 키 추출
 │   ├── i18n-upload.ts     # Google Sheets 업로드
 │   ├── i18n-download.ts   # Google Sheets 다운로드
@@ -413,7 +413,7 @@ npx i18n-extractor
 ### 버전 정보
 
 - **현재 버전**: 1.7.7
-- **Node.js 요구사항**: >= 18.0.0
+- **Node.js 요구사항**: 22.x, 24.x, 26.x 중 하나
 - **npm 요구사항**: >= 9.0.0
 - **라이선스**: MIT
 
@@ -678,7 +678,7 @@ function inferNamespace(filePath: string, config: NamespacingConfig): string {
   const cleanedPath = removeFrameworkPatterns(
     relativePath,
     config.framework,
-    config.ignorePatterns,
+    config.ignorePatterns
   );
   // 예: "dashboard/Chart.tsx"
 
@@ -702,7 +702,7 @@ function validateNamespace(
   filePath: string,
   code: string,
   expectedNamespace: string,
-  config: NamespacingConfig,
+  config: NamespacingConfig
 ): { valid: boolean; error?: string } {
   // 1. 파일 내 useTranslation 호출 찾기
   const useTranslationCalls = findUseTranslationCalls(filePath, code);
@@ -733,7 +733,7 @@ function validateNamespace(
 ```typescript
 function writeOutputFileWithNamespace(
   data: any,
-  config: OutputConfig & { namespace: string },
+  config: OutputConfig & { namespace: string }
 ): void {
   // 1. 네임스페이스 디렉토리 생성
   const namespaceDir = path.join(config.outputDir, config.namespace);

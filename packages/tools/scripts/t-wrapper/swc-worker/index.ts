@@ -12,9 +12,9 @@ import { ScriptConfig } from "../../common/default-config";
 import { wrapTranslations } from "./wrapper";
 import { CLI_OPTIONS, CLI_HELP } from "../common/utils/constants";
 
-// CLI 실행 부분
-if (require.main === module) {
-  const args = process.argv.slice(2);
+export async function runCli(
+  args: string[] = process.argv.slice(2)
+): Promise<void> {
   const config: Partial<ScriptConfig> = {};
 
   for (let i = 0; i < args.length; i++) {
@@ -22,6 +22,9 @@ if (require.main === module) {
       case CLI_OPTIONS.PATTERN:
       case CLI_OPTIONS.PATTERN_SHORT:
         config.sourcePattern = args[++i];
+        break;
+      case CLI_OPTIONS.DRY_RUN:
+        config.dryRun = true;
         break;
       case CLI_OPTIONS.HELP:
       case CLI_OPTIONS.HELP_SHORT:
@@ -42,35 +45,42 @@ ${CLI_HELP.EXAMPLES}
 Note: This version uses Worker Threads and may consume more memory.
       Use standard i18n-wrapper for memory-constrained environments.
         `);
-        process.exit(0);
-        break;
+        return;
     }
   }
 
   console.log("🚀 Starting i18n-wrapper-swc-worker...\n");
 
-  wrapTranslations(config)
-    .then((result) => {
-      const timeInSeconds = (result.totalTime / 1000).toFixed(2);
-      console.log("\n✅ Processing complete!");
-      console.log("═══════════════════════════════════════");
-      console.log(`⏱️  Total time: ${timeInSeconds}s`);
-      console.log(`📊 Total files: ${result.stats.totalFiles}`);
-      console.log(`✏️  Modified: ${result.stats.modifiedFiles}`);
-      console.log(`⏭️  Skipped: ${result.stats.skippedFiles}`);
-      console.log(`❌ Errors: ${result.stats.errorFiles}`);
-      console.log(
-        `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`,
-      );
-      console.log("═══════════════════════════════════════");
-      console.log(
-        `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`,
-      );
-    })
-    .catch((error) => {
-      console.error("❌ Fatal error:", error);
-      process.exit(1);
-    });
+  try {
+    const result = await wrapTranslations(config);
+    const timeInSeconds = (result.totalTime / 1000).toFixed(2);
+    console.log("\n✅ Processing complete!");
+    console.log("═══════════════════════════════════════");
+    console.log(`⏱️  Total time: ${timeInSeconds}s`);
+    console.log(`📊 Total files: ${result.stats.totalFiles}`);
+    console.log(
+      `✏️  ${config.dryRun ? "Would modify" : "Modified"}: ${result.stats.modifiedFiles}`
+    );
+    console.log(`⏭️  Skipped: ${result.stats.skippedFiles}`);
+    console.log(`❌ Errors: ${result.stats.errorFiles}`);
+    console.log(
+      `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`
+    );
+    console.log("═══════════════════════════════════════");
+    console.log(
+      `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`
+    );
+    if (result.stats.errorFiles > 0) {
+      process.exitCode = 1;
+    }
+  } catch (error) {
+    console.error("❌ Fatal error:", error);
+    process.exitCode = 1;
+  }
+}
+
+if (require.main === module) {
+  void runCli();
 }
 
 export { wrapTranslations };

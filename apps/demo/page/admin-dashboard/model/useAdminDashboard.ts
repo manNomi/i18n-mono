@@ -85,11 +85,6 @@ export function useAdminDashboard() {
             )
             : data.error;
           setError(message);
-
-          // 콘솔에도 링크 출력
-          if (data.indexUrl) {
-            console.log(t("🔗 Firestore 인덱스 생성 링크:"), data.indexUrl);
-          }
         } else if (data.code === "FIRESTORE_NOT_CONFIGURED") {
           setError(
             t(
@@ -125,6 +120,7 @@ export function useAdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
+    // eslint-disable-next-line no-alert -- destructive demo action requires explicit confirmation
     if (!confirm(t("정말 삭제하시겠습니까?"))) return;
 
     try {

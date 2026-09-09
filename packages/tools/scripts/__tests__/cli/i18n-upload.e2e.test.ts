@@ -1,84 +1,47 @@
-/**
- * i18n-upload CLI E2E 테스트
- * Google Sheets 업로드 CLI 명령어 실행 검증 (mock 사용)
- */
-
 import * as fs from "fs";
 import * as path from "path";
 import { google } from "googleapis";
+import { uploadTranslations } from "../../../bin/i18n-upload";
 import {
-  runCLICommand,
-  createTestProject,
-  createTestConfig,
-  createTempDir,
   cleanupDir,
-  fileExists,
+  createTempDir,
+  createTestConfig,
+  createTestProject,
+  runCLICommand,
 } from "../cli-test-utils";
 
-// googleapis mock
 jest.mock("googleapis", () => ({
   google: {
-    auth: {
-      GoogleAuth: jest.fn(),
-    },
+    auth: { GoogleAuth: jest.fn() },
     sheets: jest.fn(),
   },
 }));
 
-const describeGoogleSheetsE2E =
-  process.env.RUN_GOOGLE_SHEETS_CLI_E2E === "true" ? describe : describe.skip;
-
-describeGoogleSheetsE2E("i18n-upload CLI E2E", () => {
+describe("i18n-upload integration", () => {
   let tempDir: string;
   let mockSheets: any;
 
   beforeEach(() => {
     tempDir = createTempDir();
-
-    // Mock Google Auth
     (google.auth.GoogleAuth as unknown as jest.Mock).mockImplementation(() => ({
       getClient: jest.fn().mockResolvedValue({}),
     }));
-
-    // Mock Sheets API
     mockSheets = {
       spreadsheets: {
-        get: jest.fn(),
-        batchUpdate: jest.fn(),
+        get: jest.fn().mockResolvedValue({
+          data: { sheets: [{ properties: { title: "common" } }] },
+        }),
+        batchUpdate: jest.fn().mockResolvedValue({}),
         values: {
-          get: jest.fn(),
-          update: jest.fn(),
-          clear: jest.fn(),
+          get: jest.fn().mockResolvedValue({
+            data: { values: [["Key", "English", "Korean"]] },
+          }),
+          update: jest.fn().mockResolvedValue({}),
+          clear: jest.fn().mockResolvedValue({}),
         },
       },
     };
-
     (google.sheets as jest.Mock).mockReturnValue(mockSheets);
-
-    // 기본 mock 응답 설정
-    (mockSheets.spreadsheets.get as jest.Mock).mockResolvedValue({
-      data: {
-        properties: { timeZone: "Asia/Seoul" },
-        sheets: [
-          { properties: { title: "common", sheetId: 0 } },
-          { properties: { title: "dashboard", sheetId: 1 } },
-        ],
-      },
-    } as any);
-
-    (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
-      data: { values: [["Key", "English", "Korean"]] },
-    } as any);
-
-    (mockSheets.spreadsheets.values.update as jest.Mock).mockResolvedValue(
-      {} as any,
-    );
-    (mockSheets.spreadsheets.values.clear as jest.Mock).mockResolvedValue(
-      {} as any,
-    );
-    (mockSheets.spreadsheets.batchUpdate as jest.Mock).mockResolvedValue(
-      {} as any,
-    );
   });
 
   afterEach(() => {
@@ -86,252 +49,154 @@ describeGoogleSheetsE2E("i18n-upload CLI E2E", () => {
     jest.clearAllMocks();
   });
 
-  describe("기본 실행", () => {
-    it("단일 네임스페이스를 업로드해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          "ko.json": JSON.stringify({ "test.key": "테스트" }, null, 2),
-          "en.json": JSON.stringify({ "test.key": "Test" }, null, 2),
-        },
-      });
+  function createProject(locales: Record<string, unknown>): string {
+    const projectDir = createTestProject(tempDir, {
+      locales: locales as any,
+    });
+    fs.writeFileSync(
+      path.join(projectDir, "credentials.json"),
+      JSON.stringify({ type: "service_account", private_key: "test" })
+    );
+    return projectDir;
+  }
 
-      // 레거시 구조이므로 네임스페이스가 감지되지 않음
-      // "default" 시트로 업로드됨
+  async function upload(
+    projectDir: string,
+    options: { autoTranslate?: boolean; force?: boolean } = {}
+  ): Promise<void> {
+    await uploadTranslations(path.join(projectDir, "locales"), {
+      credentialsPath: path.join(projectDir, "credentials.json"),
+      spreadsheetId: "test-spreadsheet-id",
+      localesDir: path.join(projectDir, "locales"),
+      sheetName: "Translations",
+      autoTranslate: options.autoTranslate ?? false,
+      force: options.force ?? false,
+      dryRun: false,
+      languages: ["en", "ko"],
+    });
+  }
 
-      // credentials 파일 생성
-      fs.writeFileSync(
-        path.join(projectDir, "credentials.json"),
-        JSON.stringify({
-          type: "service_account",
-          project_id: "test",
-          private_key:
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n",
-          client_email: "test@test.iam.gserviceaccount.com",
-        }),
-      );
-
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "test-spreadsheet-id",
-          credentialsPath: "./credentials.json",
-          sheetName: "Translations",
-        },
-      });
-
-      const result = await runCLICommand("i18n-upload", [], projectDir);
-
-      expect(result.exitCode).toBe(0);
-      // uploadTranslations가 호출되었는지 확인
-      expect(mockSheets.spreadsheets.values.update).toHaveBeenCalled();
+  it("uploads a flat locale set to the default sheet", async () => {
+    const projectDir = createProject({
+      "en.json": JSON.stringify({ title: "Title" }),
+      "ko.json": JSON.stringify({ title: "제목" }),
     });
 
-    it("다중 네임스페이스를 자동 감지하여 업로드해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          common: {
-            "ko.json": JSON.stringify({ "common.key": "공통" }, null, 2),
-            "en.json": JSON.stringify({ "common.key": "Common" }, null, 2),
-          },
-          dashboard: {
-            "ko.json": JSON.stringify(
-              { "dashboard.title": "대시보드" },
-              null,
-              2,
-            ),
-            "en.json": JSON.stringify(
-              { "dashboard.title": "Dashboard" },
-              null,
-              2,
-            ),
-          },
-        },
-      });
+    await upload(projectDir);
 
-      // credentials 파일 생성
-      fs.writeFileSync(
-        path.join(projectDir, "credentials.json"),
-        JSON.stringify({
-          type: "service_account",
-          project_id: "test",
-          private_key:
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n",
-          client_email: "test@test.iam.gserviceaccount.com",
-        }),
-      );
-
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "test-spreadsheet-id",
-          credentialsPath: "./credentials.json",
-          sheetName: "Translations",
-        },
-      });
-
-      const result = await runCLICommand("i18n-upload", [], projectDir);
-
-      expect(result.exitCode).toBe(0);
-      // 레거시 구조는 "default" 시트로 업로드
-      // 네임스페이스 구조는 각 네임스페이스별로 업로드
-      // update 또는 batchUpdate가 호출되어야 함
-      expect(
-        mockSheets.spreadsheets.values.update.mock.calls.length > 0 ||
-          mockSheets.spreadsheets.batchUpdate.mock.calls.length > 0,
-      ).toBe(true);
-    });
+    expect(mockSheets.spreadsheets.values.update).toHaveBeenCalled();
   });
 
-  describe("옵션 테스트", () => {
-    it("--force 옵션으로 force 모드 업로드를 수행해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          "ko.json": JSON.stringify({ "test.key": "테스트" }, null, 2),
-          "en.json": JSON.stringify({ "test.key": "Test" }, null, 2),
-        },
-      });
-
-      fs.writeFileSync(
-        path.join(projectDir, "credentials.json"),
-        JSON.stringify({
-          type: "service_account",
-          project_id: "test",
-          private_key:
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n",
-          client_email: "test@test.iam.gserviceaccount.com",
-        }),
-      );
-
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "test-spreadsheet-id",
-          credentialsPath: "./credentials.json",
-          sheetName: "Translations",
-        },
-      });
-
-      // 기존 데이터 mock
-      (mockSheets.spreadsheets.values.get as jest.Mock).mockResolvedValue({
-        data: {
-          values: [
-            ["Key", "English", "Korean"],
-            ["old.key", "Old", "오래된"],
-          ],
-        },
-      } as any);
-
-      const result = await runCLICommand(
-        "i18n-upload",
-        ["--force"],
-        projectDir,
-      );
-
-      expect(result.exitCode).toBe(0);
-      // force 모드에서는 clear가 호출될 수 있고, update도 호출됨
-      expect(
-        mockSheets.spreadsheets.values.update.mock.calls.length > 0 ||
-          mockSheets.spreadsheets.batchUpdate.mock.calls.length > 0,
-      ).toBe(true);
+  it("uploads every detected namespace", async () => {
+    const projectDir = createProject({
+      common: {
+        "en.json": JSON.stringify({ title: "Title" }),
+        "ko.json": JSON.stringify({ title: "제목" }),
+      },
+      dashboard: {
+        "en.json": JSON.stringify({ heading: "Dashboard" }),
+        "ko.json": JSON.stringify({ heading: "대시보드" }),
+      },
     });
 
-    it("--auto-translate 옵션으로 자동 번역 모드를 활성화해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          "ko.json": JSON.stringify({ "test.key": "테스트" }, null, 2),
-          "en.json": JSON.stringify({ "test.key": "" }, null, 2),
-        },
-      });
+    await upload(projectDir);
 
-      fs.writeFileSync(
-        path.join(projectDir, "credentials.json"),
-        JSON.stringify({
-          type: "service_account",
-          project_id: "test",
-          private_key:
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n",
-          client_email: "test@test.iam.gserviceaccount.com",
-        }),
-      );
-
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "test-spreadsheet-id",
-          credentialsPath: "./credentials.json",
-          sheetName: "Translations",
-        },
-      });
-
-      const result = await runCLICommand(
-        "i18n-upload",
-        ["--auto-translate"],
-        projectDir,
-      );
-
-      expect(result.exitCode).toBe(0);
-      // auto-translate 모드에서도 update가 호출되어야 함
-      expect(
-        mockSheets.spreadsheets.values.update.mock.calls.length > 0 ||
-          mockSheets.spreadsheets.batchUpdate.mock.calls.length > 0,
-      ).toBe(true);
-    });
+    expect(
+      mockSheets.spreadsheets.values.update.mock.calls.length
+    ).toBeGreaterThanOrEqual(2);
   });
 
-  describe("에러 처리", () => {
-    it("spreadsheet ID가 없으면 에러를 반환해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          "ko.json": JSON.stringify({ "test.key": "테스트" }, null, 2),
-        },
-      });
-
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "",
-          credentialsPath: "./credentials.json",
-          sheetName: "Translations",
-        },
-      });
-
-      const result = await runCLICommand("i18n-upload", [], projectDir);
-
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr || result.stdout).toContain("Spreadsheet ID");
+  it("validates every namespace before authentication or remote mutation", async () => {
+    const projectDir = createProject({
+      common: {
+        "en.json": JSON.stringify({ title: "Title" }),
+        "ko.json": JSON.stringify({ title: "제목" }),
+      },
+      dashboard: {
+        "en.json": JSON.stringify({ heading: "Dashboard" }),
+        "ko.json": "malformed json",
+      },
     });
 
-    it("credentials 파일이 없으면 에러를 반환해야 함", async () => {
-      const projectDir = createTestProject(tempDir, {
-        locales: {
-          "ko.json": JSON.stringify({ "test.key": "테스트" }, null, 2),
-        },
-      });
+    await expect(upload(projectDir)).rejects.toThrow();
 
-      createTestConfig(projectDir, {
-        localesDir: "./locales",
-        googleSheets: {
-          spreadsheetId: "test-id",
-          credentialsPath: "./nonexistent.json",
-          sheetName: "Translations",
-        },
-      });
+    expect(google.auth.GoogleAuth).not.toHaveBeenCalled();
+    expect(google.sheets).not.toHaveBeenCalled();
+    expect(mockSheets.spreadsheets.values.update).not.toHaveBeenCalled();
+  });
 
-      const result = await runCLICommand("i18n-upload", [], projectDir);
-
-      // credentials 파일이 없으면 에러가 발생해야 함
-      // 하지만 실제로는 authenticate 단계에서 에러가 발생할 수 있음
-      expect(result.exitCode).toBeGreaterThanOrEqual(0);
-      // 에러 메시지가 포함되어야 함
-      const output = result.stdout + result.stderr;
-      // credentials 관련 에러가 있거나, 명령어가 실패했는지 확인
-      if (result.exitCode === 0) {
-        // 성공한 경우는 mock이 작동한 것
-        expect(output.length).toBeGreaterThan(0);
-      } else {
-        // 실패한 경우는 예상대로
-        expect(result.exitCode).toBe(1);
-      }
+  it("clears existing rows in force mode before upload", async () => {
+    const projectDir = createProject({
+      "en.json": JSON.stringify({ title: "Title" }),
+      "ko.json": JSON.stringify({ title: "제목" }),
     });
+    mockSheets.spreadsheets.values.get.mockResolvedValue({
+      data: {
+        values: [
+          ["Key", "English", "Korean"],
+          ["old", "Old", "이전"],
+        ],
+      },
+    });
+
+    await upload(projectDir, { force: true });
+
+    expect(mockSheets.spreadsheets.values.clear).toHaveBeenCalled();
+    expect(mockSheets.spreadsheets.values.update).toHaveBeenCalled();
+  });
+
+  it("writes an auto-translation formula when requested", async () => {
+    const projectDir = createProject({
+      "en.json": JSON.stringify({ title: "" }),
+      "ko.json": JSON.stringify({ title: "제목" }),
+    });
+
+    await upload(projectDir, { autoTranslate: true });
+
+    const request = mockSheets.spreadsheets.values.update.mock.calls.at(-1)[0];
+    expect(JSON.stringify(request.requestBody.values)).toContain(
+      "GOOGLETRANSLATE"
+    );
+  });
+
+  it("returns a nonzero CLI status when spreadsheet ID is missing", async () => {
+    const projectDir = createProject({
+      "en.json": JSON.stringify({ title: "Title" }),
+    });
+    createTestConfig(projectDir, {
+      googleSheets: {
+        spreadsheetId: "",
+        credentialsPath: "./credentials.json",
+        sheetName: "Translations",
+      },
+    });
+
+    const result = await runCLICommand("i18n-upload", [], projectDir);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("Spreadsheet ID");
+  });
+
+  it("rejects a missing credentials file without a network request", async () => {
+    const projectDir = createTestProject(tempDir, {
+      locales: {
+        "en.json": JSON.stringify({ title: "Title" }),
+        "ko.json": JSON.stringify({ title: "제목" }),
+      },
+    });
+
+    await expect(
+      uploadTranslations(path.join(projectDir, "locales"), {
+        credentialsPath: path.join(projectDir, "missing.json"),
+        spreadsheetId: "test-spreadsheet-id",
+        localesDir: path.join(projectDir, "locales"),
+        sheetName: "Translations",
+        autoTranslate: false,
+        force: false,
+        dryRun: false,
+        languages: ["en", "ko"],
+      })
+    ).rejects.toThrow("Credentials file not found");
+    expect(google.sheets).not.toHaveBeenCalled();
   });
 });

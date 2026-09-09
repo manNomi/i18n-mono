@@ -17,7 +17,7 @@ import { inferNamespaceFromFile } from "../../extractor/namespace-inference";
 import { loadConfig } from "../../config-loader";
 
 export async function wrapTranslations(
-  config: Partial<ScriptConfig> = {},
+  config: Partial<ScriptConfig> = {}
 ): Promise<{
   processedFiles: string[];
   totalTime: number;
@@ -30,6 +30,7 @@ export async function wrapTranslations(
   const startTime = Date.now();
   const filePaths = await glob(fullConfig.sourcePattern);
   const processedFiles: string[] = [];
+  const failures: string[] = [];
 
   for (const filePath of filePaths) {
     let isFileModified = false;
@@ -54,13 +55,13 @@ export async function wrapTranslations(
         const correctNamespace = inferNamespaceFromFile(
           filePath,
           code,
-          i18nexusConfig.namespacing,
+          i18nexusConfig.namespacing
         );
         if (correctNamespace) {
           namespaceUpdated = updateExistingUseTranslation(
             ast,
             correctNamespace,
-            code,
+            code
           );
         }
       }
@@ -74,7 +75,7 @@ export async function wrapTranslations(
               path,
               code,
               modifiedComponentPaths,
-              fullConfig,
+              fullConfig
             )
           ) {
             isFileModified = true;
@@ -90,7 +91,7 @@ export async function wrapTranslations(
                 path,
                 code,
                 modifiedComponentPaths,
-                fullConfig,
+                fullConfig
               )
             ) {
               isFileModified = true;
@@ -107,15 +108,25 @@ export async function wrapTranslations(
             modifiedComponentPaths,
             fullConfig,
             filePath,
-            code,
+            code
           );
         }
-        writeASTToFile(ast, filePath, fullConfig);
+        if (!fullConfig.dryRun) {
+          writeASTToFile(ast, filePath, fullConfig);
+        }
         processedFiles.push(filePath);
       }
     } catch (error) {
-      // 에러 발생 시 조용히 스킵
+      const message = error instanceof Error ? error.message : String(error);
+      failures.push(`${filePath}: ${message}`);
+      console.error(`❌ Failed to process ${filePath}: ${message}`);
     }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(
+      `Translation wrapper failed for ${failures.length} file(s): ${failures.join("; ")}`
+    );
   }
 
   const totalTime = Date.now() - startTime;

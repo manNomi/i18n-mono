@@ -29,6 +29,7 @@ const namespaceTranslations: NamespaceTranslations = {
       goodbye: "Goodbye",
       greeting: "Hello {{name}}",
       count: "You have {{count}} items",
+      blank: "",
     },
     ko: {
       welcome: "환영합니다",
@@ -95,7 +96,7 @@ describe("Namespace-based useTranslation", () => {
       render(
         <i18n.I18nProvider languageManagerOptions={{ defaultLanguage: "en" }}>
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
@@ -113,10 +114,25 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
+    });
+
+    it("should preserve an intentionally empty translation", () => {
+      function TestComponent() {
+        const { t } = i18n.useTranslation("common");
+        return <div data-testid="translation">{t("blank")}</div>;
+      }
+
+      render(
+        <i18n.I18nProvider languageManagerOptions={{ defaultLanguage: "en" }}>
+          <TestComponent />
+        </i18n.I18nProvider>
+      );
+
+      expect(screen.getByTestId("translation").textContent).toBe("");
     });
 
     it("should translate to Korean", () => {
@@ -135,7 +151,7 @@ describe("Namespace-based useTranslation", () => {
           }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("환영합니다");
@@ -162,13 +178,13 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("common")).toHaveTextContent("Welcome");
       expect(screen.getByTestId("menu")).toHaveTextContent("Home");
       expect(screen.getByTestId("error")).toHaveTextContent(
-        "404 - Page Not Found",
+        "404 - Page Not Found"
       );
     });
   });
@@ -188,7 +204,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("Hello John");
@@ -206,11 +222,11 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "You have 5 items",
+        "You have 5 items"
       );
     });
 
@@ -226,12 +242,12 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Should keep placeholder when variable is missing
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "Hello {{name}}",
+        "Hello {{name}}"
       );
     });
 
@@ -247,11 +263,11 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "You have 42 items",
+        "You have 42 items"
       );
     });
   });
@@ -265,7 +281,7 @@ describe("Namespace-based useTranslation", () => {
             {t(
               "greeting",
               { name: "Styled" },
-              { name: { color: "blue", fontWeight: "bold" } },
+              { name: { color: "blue", fontWeight: "bold" } }
             )}
           </div>
         );
@@ -277,7 +293,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       const container = screen.getByTestId("translation");
@@ -312,7 +328,7 @@ describe("Namespace-based useTranslation", () => {
               {
                 first: { color: "red" },
                 second: { color: "blue" },
-              },
+              }
             )}
           </div>
         );
@@ -324,7 +340,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       const container = screen.getByTestId("translation");
@@ -351,7 +367,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Since all namespaces are flattened, 'welcome' key from 'common' namespace is found
@@ -384,7 +400,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Should interpolate variables even when key is not found
@@ -415,16 +431,16 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       // Should keep placeholders when variables not provided
       expect(screen.getByTestId("no-vars")).toHaveTextContent("{{user}}입니다");
       expect(screen.getByTestId("empty-vars")).toHaveTextContent(
-        "Hello {{name}}!",
+        "Hello {{name}}!"
       );
       expect(screen.getByTestId("partial-vars")).toHaveTextContent(
-        "첫번째 and {{b}}",
+        "첫번째 and {{b}}"
       );
     });
 
@@ -440,11 +456,11 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent(
-        "nonexistent",
+        "nonexistent"
       );
     });
 
@@ -467,7 +483,7 @@ describe("Namespace-based useTranslation", () => {
           languageManagerOptions={{ defaultLanguage: "en" }}
         >
           <TestComponent />
-        </i18n.I18nProvider>,
+        </i18n.I18nProvider>
       );
 
       expect(screen.getByTestId("translation")).toHaveTextContent("anykey");

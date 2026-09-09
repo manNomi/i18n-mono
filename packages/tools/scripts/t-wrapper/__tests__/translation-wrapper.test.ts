@@ -29,7 +29,7 @@ describe("translation-wrapper", () => {
         testFile,
         `function Component() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       const result = await wrapTranslations({
@@ -38,13 +38,42 @@ describe("translation-wrapper", () => {
       expect(result.processedFiles.length).toBeGreaterThan(0);
     });
 
+    it("dry run에서는 변경 대상을 반환하지만 파일을 수정하지 않아야 함", async () => {
+      const testFile = path.join(tempDir, "dry-run.tsx");
+      const originalContent = `function Component() {
+  return <div>안녕하세요</div>;
+}`;
+      writeFile(testFile, originalContent);
+
+      const result = await wrapTranslations({
+        sourcePattern: testFile,
+        dryRun: true,
+      });
+
+      expect(result.processedFiles).toContain(testFile);
+      expect(readFile(testFile)).toBe(originalContent);
+    });
+
+    it("parse 오류를 파일 경로와 함께 reject해야 함", async () => {
+      const testFile = path.join(tempDir, "invalid.tsx");
+      const invalidContent = "function Invalid() { return <div>안녕하세요";
+      writeFile(testFile, invalidContent);
+
+      await expect(
+        wrapTranslations({ sourcePattern: testFile })
+      ).rejects.toThrow(
+        `Translation wrapper failed for 1 file(s): ${testFile}`
+      );
+      expect(readFile(testFile)).toBe(invalidContent);
+    });
+
     it("Next.js 환경에서 client 모드일 때만 'use client'를 추가해야 함", async () => {
       const testFile = path.join(tempDir, "client.tsx");
       writeFile(
         testFile,
         `function ClientComp() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       await wrapTranslations({
@@ -65,7 +94,7 @@ describe("translation-wrapper", () => {
         testFile,
         `function ClientComp() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       await wrapTranslations({
@@ -86,7 +115,7 @@ describe("translation-wrapper", () => {
         testFile,
         `function ClientComp() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       await wrapTranslations({
@@ -107,7 +136,7 @@ describe("translation-wrapper", () => {
         testFile,
         `function ServerComp() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       await wrapTranslations({
@@ -117,7 +146,7 @@ describe("translation-wrapper", () => {
 
       const content = readFile(testFile);
       expect(content).toContain(
-        'import { getTranslation } from "i18nexus/server"',
+        'import { getTranslation } from "i18nexus/server"'
       );
       expect(content).toContain("await getTranslation");
       expect(content).toContain("t(");
@@ -129,7 +158,7 @@ describe("translation-wrapper", () => {
         testFile,
         `function ServerComp() {
   return <div>안녕하세요</div>;
-}`,
+}`
       );
 
       await wrapTranslations({

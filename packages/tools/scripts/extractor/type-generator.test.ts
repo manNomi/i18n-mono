@@ -106,13 +106,13 @@ describe("Type Generator", () => {
 
       // Check that useTranslation includes fallback keys
       expect(content).toContain(
-        "UseTranslationReturn<TranslationKeys[NS] | CommonKeys>",
+        "UseTranslationReturn<TranslationKeys[NS] | CommonKeys>"
       );
       expect(content).toContain(
-        "Promise<GetTranslationReturn<NS, TranslationKeys[NS] | CommonKeys>>",
+        "Promise<GetTranslationReturn<NS, TranslationKeys[NS] | CommonKeys>>"
       );
       expect(content).toContain(
-        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys",
+        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys"
       );
     });
 
@@ -139,12 +139,12 @@ describe("Type Generator", () => {
       const content = readFileContent(outputPath);
 
       expect(content).toContain(
-        'declare type TranslationNamespace = "common" | "home";',
+        'declare type TranslationNamespace = "common" | "home";'
       );
       expect(content).toContain("declare type CommonKeys = never;");
       expect(content).toContain('readonly "common"');
       expect(content).toContain(
-        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys",
+        "I18nexusGeneratedTranslationKeys<\n  NS extends I18nexusGeneratedNamespace = I18nexusGeneratedNamespace\n> = TranslationKeys[NS] | CommonKeys"
       );
     });
 
@@ -329,7 +329,7 @@ describe("Type Generator", () => {
 
       // Check all namespaces are included
       expect(content).toContain(
-        'declare type TranslationNamespace = "common" | "dashboard" | "settings"',
+        'declare type TranslationNamespace = "common" | "dashboard" | "settings"'
       );
       expect(content).toContain("CommonKeys");
       expect(content).toContain("DashboardKeys");
@@ -347,7 +347,7 @@ describe("Type Generator", () => {
         "deep",
         "nested",
         "types",
-        "i18nexus.d.ts",
+        "i18nexus.d.ts"
       );
 
       const extractedData: ExtractedTranslations = {
@@ -464,7 +464,7 @@ declare module "i18nexus/server" {
     options?: GetTranslationOptions
   ): Promise<GetTranslationReturn<NS, K>>;
 }
-`,
+`
       );
 
       fs.writeFileSync(
@@ -509,7 +509,7 @@ async function run() {
 }
 
 void run();
-`,
+`
       );
 
       fs.writeFileSync(
@@ -526,14 +526,18 @@ void run();
             files: [shimPath, outputPath, usagePath],
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
-      execFileSync("npx", ["tsc", "-p", tsconfigPath], {
-        cwd: path.resolve(__dirname, "../.."),
-        stdio: "pipe",
-      });
+      execFileSync(
+        process.execPath,
+        [require.resolve("typescript/bin/tsc"), "-p", tsconfigPath],
+        {
+          cwd: path.resolve(__dirname, "../.."),
+          stdio: "pipe",
+        }
+      );
     });
 
     it("should handle custom translation import source", () => {
@@ -668,10 +672,10 @@ void run();
       if (namespaceMatch) {
         const namespaces = namespaceMatch[1];
         expect(namespaces.indexOf("alpha")).toBeLessThan(
-          namespaces.indexOf("beta"),
+          namespaces.indexOf("beta")
         );
         expect(namespaces.indexOf("beta")).toBeLessThan(
-          namespaces.indexOf("zebra"),
+          namespaces.indexOf("zebra")
         );
       }
     });
@@ -713,7 +717,7 @@ void run();
 
       expect(readExtractedTranslations(missingDir)).toEqual({});
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        `⚠️  Locales directory not found: ${missingDir}`,
+        `⚠️  Locales directory not found: ${missingDir}`
       );
     });
 
@@ -721,17 +725,17 @@ void run();
       fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
       fs.writeFileSync(
         path.join(tempDir, "locales", "en.json"),
-        JSON.stringify({ save: "Save" }),
+        JSON.stringify({ save: "Save" })
       );
       fs.writeFileSync(
         path.join(tempDir, "locales", "ko.json"),
-        JSON.stringify({ save: "저장" }),
+        JSON.stringify({ save: "저장" })
       );
 
       expect(
         readExtractedTranslations(path.join(tempDir, "locales"), {
           fallbackNamespace: "base",
-        }),
+        })
       ).toEqual({
         base: {
           en: { save: "Save" },
@@ -746,7 +750,7 @@ void run();
       fs.mkdirSync(path.join(localesDir, "types"), { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "home", "en.json"),
-        JSON.stringify({ title: "Home" }),
+        JSON.stringify({ title: "Home" })
       );
       fs.writeFileSync(path.join(localesDir, "types", "en.json"), "{}");
 
@@ -766,7 +770,7 @@ void run();
       expect(readExtractedTranslations(localesDir)).toEqual({});
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         `⚠️  Failed to read ${brokenFile}:`,
-        expect.any(SyntaxError),
+        expect.any(SyntaxError)
       );
     });
   });

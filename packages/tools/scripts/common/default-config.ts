@@ -53,6 +53,8 @@ export const WRAPPER_DEFAULTS = {
 export interface ScriptConfig {
   sourcePattern?: string;
   translationImportSource?: string;
+  /** Preview files that would change without writing them. */
+  dryRun?: boolean;
   /**
    * 원문 문자열 언어.
    * - "ko": 한국어 텍스트 감지 (기존 기본값)
@@ -106,6 +108,7 @@ export interface ScriptConfig {
 export const SCRIPT_CONFIG_DEFAULTS: Required<ScriptConfig> = {
   sourcePattern: COMMON_DEFAULTS.sourcePattern,
   translationImportSource: COMMON_DEFAULTS.translationImportSource,
+  dryRun: false,
   sourceLanguage: COMMON_DEFAULTS.defaultLanguage,
   serverTranslationFunction: "getTranslation",
   mode: undefined as unknown as "client" | "server",

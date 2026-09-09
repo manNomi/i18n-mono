@@ -6,6 +6,7 @@
 
 import { glob } from "glob";
 import { readFileSync } from "fs";
+import { availableParallelism } from "os";
 import {
   ScriptConfig,
   SCRIPT_CONFIG_DEFAULTS,
@@ -14,7 +15,7 @@ import { WorkerPool } from "./worker-pool";
 import { WorkerTask, WorkerResult } from "./types";
 
 export async function wrapTranslations(
-  config: Partial<ScriptConfig> = {},
+  config: Partial<ScriptConfig> = {}
 ): Promise<{
   processedFiles: string[];
   totalTime: number;
@@ -55,10 +56,12 @@ export async function wrapTranslations(
   }
 
   // 2. Worker Pool 초기화
-  const workerPool = new WorkerPool();
+  const workerPool = new WorkerPool(
+    Math.min(filePaths.length, availableParallelism())
+  );
   await workerPool.initialize();
   console.log(
-    `🔧 Worker pool initialized with ${workerPool.getStats().totalWorkers} workers`,
+    `🔧 Worker pool initialized with ${workerPool.getStats().totalWorkers} workers`
   );
 
   // 3. 파일 처리 (병렬)
@@ -91,7 +94,7 @@ export async function wrapTranslations(
         } else if (workerResult.type === "error") {
           errorCount++;
           console.error(
-            `❌ Error processing ${filePaths[index]}: ${workerResult.error}`,
+            `❌ Error processing ${filePaths[index]}: ${workerResult.error}`
           );
         } else {
           skippedCount++;
@@ -99,7 +102,7 @@ export async function wrapTranslations(
       } else {
         errorCount++;
         console.error(
-          `❌ Task failed for ${filePaths[index]}: ${result.reason}`,
+          `❌ Task failed for ${filePaths[index]}: ${result.reason}`
         );
       }
     });

@@ -36,29 +36,89 @@ interface CleanIssues {
   missingKeys: string[];
 }
 
+type LegacyCleanerFileSystem = Pick<
+  typeof fs,
+  | "copyFileSync"
+  | "existsSync"
+  | "mkdirSync"
+  | "readFileSync"
+  | "renameSync"
+  | "unlinkSync"
+  | "writeFileSync"
+>;
+
+interface PendingLocaleWrite {
+  filePath: string;
+  data: Record<string, string>;
+}
+
+interface StagedLocaleWrite extends PendingLocaleWrite {
+  stagedPath: string;
+  rollbackPath: string;
+  hadOriginal: boolean;
+  committed: boolean;
+}
+
 export class LegacyCleaner {
   private config: Required<CleanLegacyConfig>;
+  private fileSystem: LegacyCleanerFileSystem;
 
-  constructor(config: Partial<CleanLegacyConfig> = {}) {
+  constructor(
+    config: Partial<CleanLegacyConfig> = {},
+    fileSystem: LegacyCleanerFileSystem = fs
+  ) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.fileSystem = fileSystem;
   }
 
   /**
    * 백업 파일 생성
    */
-  private createBackup(filePath: string): void {
+  private createBackup(filePath: string): string | null {
     if (!this.config.backup) {
-      return;
+      return null;
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupPath = filePath.replace(/\.json$/, `.backup-${timestamp}.json`);
 
+    this.fileSystem.copyFileSync(
+      filePath,
+      backupPath,
+      fs.constants.COPYFILE_EXCL
+    );
+    console.log(`💾 Backup created: ${backupPath}`);
+    return backupPath;
+  }
+
+  private createBackups(filePaths: string[]): void {
+    const createdBackups: string[] = [];
+
     try {
-      fs.copyFileSync(filePath, backupPath);
-      console.log(`💾 Backup created: ${backupPath}`);
+      for (const filePath of filePaths) {
+        if (!this.fileSystem.existsSync(filePath)) {
+          continue;
+        }
+
+        const backupPath = this.createBackup(filePath);
+        if (backupPath) {
+          createdBackups.push(backupPath);
+        }
+      }
     } catch (error) {
-      console.warn(`⚠️  Failed to create backup for ${filePath}:`, error);
+      for (const backupPath of createdBackups.reverse()) {
+        try {
+          this.fileSystem.unlinkSync(backupPath);
+        } catch {
+          // Preserve the original backup failure as the actionable error.
+        }
+      }
+
+      throw new Error(
+        `Failed to create locale backups: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
   }
 
@@ -66,30 +126,130 @@ export class LegacyCleaner {
    * JSON 파일 읽기
    */
   private readJsonFile(filePath: string): Record<string, string> {
-    if (!fs.existsSync(filePath)) {
+    if (!this.fileSystem.existsSync(filePath)) {
       console.warn(`⚠️  File not found: ${filePath}, creating empty object`);
       return {};
     }
 
+    let content: string;
     try {
-      const content = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(content);
+      content = this.fileSystem.readFileSync(filePath, "utf-8");
     } catch (error) {
-      console.error(`❌ Failed to read ${filePath}:`, error);
-      return {};
+      throw new Error(
+        `Failed to read ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+
+    try {
+      const parsed = JSON.parse(content) as unknown;
+      if (
+        parsed === null ||
+        Array.isArray(parsed) ||
+        typeof parsed !== "object"
+      ) {
+        throw new Error("expected a JSON object");
+      }
+      return parsed as Record<string, string>;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
   }
 
-  /**
-   * JSON 파일 쓰기
-   */
-  private writeJsonFile(filePath: string, data: Record<string, string>): void {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  private removeFileIfPresent(filePath: string): void {
+    if (this.fileSystem.existsSync(filePath)) {
+      this.fileSystem.unlinkSync(filePath);
     }
+  }
 
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+  private writeJsonFilesAtomically(writes: PendingLocaleWrite[]): void {
+    const transactionId = `${process.pid}-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
+    const stagedWrites: StagedLocaleWrite[] = writes.map((write, index) => {
+      const dir = path.dirname(write.filePath);
+      if (!this.fileSystem.existsSync(dir)) {
+        this.fileSystem.mkdirSync(dir, { recursive: true });
+      }
+
+      const baseName = path.basename(write.filePath);
+      return {
+        ...write,
+        stagedPath: path.join(
+          dir,
+          `.${baseName}.${transactionId}-${index}.tmp`
+        ),
+        rollbackPath: path.join(
+          dir,
+          `.${baseName}.${transactionId}-${index}.rollback`
+        ),
+        hadOriginal: this.fileSystem.existsSync(write.filePath),
+        committed: false,
+      };
+    });
+
+    let completed = false;
+
+    try {
+      for (const write of stagedWrites) {
+        this.fileSystem.writeFileSync(
+          write.stagedPath,
+          JSON.stringify(write.data, null, 2),
+          "utf-8"
+        );
+      }
+
+      for (const write of stagedWrites) {
+        if (write.hadOriginal) {
+          this.fileSystem.renameSync(write.filePath, write.rollbackPath);
+        }
+
+        try {
+          this.fileSystem.renameSync(write.stagedPath, write.filePath);
+          write.committed = true;
+        } catch (error) {
+          if (
+            write.hadOriginal &&
+            this.fileSystem.existsSync(write.rollbackPath)
+          ) {
+            this.fileSystem.renameSync(write.rollbackPath, write.filePath);
+          }
+          throw error;
+        }
+      }
+
+      completed = true;
+    } catch (error) {
+      for (const write of [...stagedWrites].reverse()) {
+        if (write.committed && this.fileSystem.existsSync(write.filePath)) {
+          this.fileSystem.unlinkSync(write.filePath);
+        }
+        if (
+          write.hadOriginal &&
+          !this.fileSystem.existsSync(write.filePath) &&
+          this.fileSystem.existsSync(write.rollbackPath)
+        ) {
+          this.fileSystem.renameSync(write.rollbackPath, write.filePath);
+        }
+      }
+      throw error;
+    } finally {
+      for (const write of stagedWrites) {
+        try {
+          this.removeFileIfPresent(write.stagedPath);
+          if (completed) {
+            this.removeFileIfPresent(write.rollbackPath);
+          }
+        } catch (error) {
+          console.warn(`⚠️  Failed to remove transaction file:`, error);
+        }
+      }
+    }
   }
 
   /**
@@ -159,7 +319,7 @@ export class LegacyCleaner {
         .map((lang) => {
           const data = localeData.get(lang) || {};
           const validValueCount = Object.values(data).filter((value) =>
-            this.isValidValue(value as string),
+            this.isValidValue(value as string)
           ).length;
 
           return { lang, validValueCount, totalKeys: Object.keys(data).length };
@@ -173,7 +333,7 @@ export class LegacyCleaner {
     const primaryData = localeData.get(primaryLang) || {};
     stats.totalKeysPerLanguage.set(
       primaryLang,
-      Object.keys(primaryData).length,
+      Object.keys(primaryData).length
     );
 
     const cleanedData: Map<string, Record<string, string>> = new Map();
@@ -214,17 +374,15 @@ export class LegacyCleaner {
     // Step 4: 파일 쓰기
     if (!this.config.dryRun) {
       console.log("\n💾 Step 4: Writing cleaned files...");
+      const writes = this.config.languages.map((lang) => ({
+        filePath: path.join(this.config.localesDir, `${lang}.json`),
+        data: cleanedData.get(lang)!,
+      }));
+
+      this.createBackups(writes.map(({ filePath }) => filePath));
+      this.writeJsonFilesAtomically(writes);
 
       for (const lang of this.config.languages) {
-        const filePath = path.join(this.config.localesDir, `${lang}.json`);
-
-        // 백업 생성
-        if (fs.existsSync(filePath)) {
-          this.createBackup(filePath);
-        }
-
-        // 정리된 데이터 쓰기
-        this.writeJsonFile(filePath, cleanedData.get(lang)!);
         console.log(`  ✅ ${lang}.json updated`);
       }
     } else {
@@ -247,7 +405,7 @@ export class LegacyCleaner {
     console.log(`  • Keys kept: ${stats.keptKeys}`);
     console.log(`  • Keys removed (unused): ${stats.removedUnused}`);
     console.log(
-      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`,
+      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`
     );
     console.log(`  • Keys missing from locale: ${stats.missingKeys}`);
 
@@ -294,7 +452,7 @@ export class LegacyCleaner {
 }
 
 export async function runCleanLegacy(
-  config: Partial<CleanLegacyConfig> = {},
+  config: Partial<CleanLegacyConfig> = {}
 ): Promise<void> {
   const cleaner = new LegacyCleaner(config);
 

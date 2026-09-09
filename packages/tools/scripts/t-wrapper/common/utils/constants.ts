@@ -13,6 +13,7 @@ export const CONSOLE_MESSAGES = Object.freeze({
 export const CLI_OPTIONS = Object.freeze({
   PATTERN: "--pattern",
   PATTERN_SHORT: "-p",
+  DRY_RUN: "--dry-run",
   HELP: "--help",
   HELP_SHORT: "-h",
 } as const);
@@ -22,10 +23,12 @@ export const CLI_HELP = Object.freeze({
   USAGE: `Usage: t-wrapper [options]`,
   OPTIONS: `Options:
   -p, --pattern <pattern>    Source file pattern (default: "src/**/*.{js,jsx,ts,tsx}")
+  --dry-run                 Preview changes without writing files
   -h, --help                Show this help message`,
   EXAMPLES: `Examples:
   t-wrapper
-  t-wrapper -p "app/**/*.tsx"`,
+  t-wrapper -p "app/**/*.tsx"
+  t-wrapper --dry-run`,
 } as const);
 
 // 문자열 상수

@@ -1,21 +1,21 @@
 /** Next.js App Router 서버 컴포넌트용 유틸리티 */
-/** Accept-Language 헤더 파싱하여 가장 적합한 언어 반환 */
-export declare function parseAcceptLanguage(acceptLanguage: string, availableLanguages: string[]): string | null;
-/** 서버 컴포넌트에서 쿠키/헤더로 언어 감지 */
-export declare function getServerLanguage(headers: Headers, options?: {
-    cookieName?: string;
-    defaultLanguage?: string;
-    availableLanguages?: string[];
-}): string;
-/** 쿠키 헤더 문자열 파싱 */
-export declare function parseCookies(cookieHeader: string | null): Record<string, string>;
+import { type I18nFormatter } from "./formatter.js";
+import { getTranslationDictionary } from "./pure-translation.js";
+import type { MessageFormatter } from "./message-formatter.js";
+export { createFormatter } from "./formatter.js";
+export type { I18nFormatter } from "./formatter.js";
+export { getServerLanguage, parseAcceptLanguage, parseCookies, } from "./locale-negotiation.js";
+export type { LanguageNegotiationOptions } from "./locale-negotiation.js";
 /** 서버 번역에서 사용하는 변수 타입 */
 export type ServerTranslationVariables = Record<string, string | number>;
+export interface ServerTranslationOptions {
+    messageFormatter?: MessageFormatter;
+}
 /** 서버 컴포넌트용 번역 함수 생성 */
-export declare function createServerTranslation(language: string, translations: Record<string, unknown>): (key: string, variables?: ServerTranslationVariables | string, fallback?: string) => string;
+export declare function createServerTranslation(language: string, translations: Record<string, unknown>, options?: ServerTranslationOptions): (key: string, variables?: ServerTranslationVariables | string, fallback?: string) => string;
 /** 타입 안전한 서버 번역 객체 반환 */
-export declare function getServerTranslations<T extends Record<string, unknown>>(language: string, translations: T): Record<string, string>;
-/** 디렉토리에서 번역 파일 동적 로드 */
+export declare const getServerTranslations: typeof getTranslationDictionary;
+/** 디렉토리에서 번역 JSON 파일 로드 */
 export declare function loadTranslations(localesDir: string): Promise<Record<string, Record<string, string>>>;
 /** 서버 번역 컨텍스트 생성 (설정 자동 로드, 헤더 자동 감지) */
 export interface GetTranslationOptions {
@@ -31,10 +31,14 @@ export interface GetTranslationOptions {
     useFallbackOnError?: boolean;
     /** Disable caching (useful for development) */
     disableCache?: boolean;
+    /** Optional runtime-neutral formatter for ICU-capable translation catalogs */
+    messageFormatter?: MessageFormatter;
 }
-export interface GetTranslationReturn<NS extends string = string> {
+export interface GetTranslationReturn<NS extends string = string, K extends string = string> {
     /** Type-safe translation function */
-    t: (key: string, variables?: Record<string, string | number>, fallback?: string) => string;
+    t: (key: K, variables?: Record<string, string | number>, fallback?: string) => string;
+    /** Formatter bound to the resolved language */
+    format: I18nFormatter;
     /** Current language */
     language: string;
     /** Language alias (react-i18next compatibility) */
@@ -70,7 +74,7 @@ export interface GetTranslationReturn<NS extends string = string> {
  * }
  * ```
  */
-export declare function getTranslation<NS extends string = string>(namespace?: NS, options?: GetTranslationOptions): Promise<GetTranslationReturn<NS>>;
+export declare function getTranslation<NS extends string = string, K extends string = string>(namespace?: NS, options?: GetTranslationOptions): Promise<GetTranslationReturn<NS, K>>;
 /**
  * Invalidate translation cache
  * Useful for development or when translations are updated
@@ -81,8 +85,10 @@ export declare function createServerI18nWithTranslations(headers: Headers, trans
     cookieName?: string;
     defaultLanguage?: string;
     availableLanguages?: string[];
+    messageFormatter?: MessageFormatter;
 }): {
     t: (key: string, variables?: ServerTranslationVariables | string, fallback?: string) => string;
+    format: I18nFormatter;
     language: string;
     translations: Record<string, Record<string, string>>;
     dict: Record<string, string>;

@@ -12,7 +12,14 @@ export interface NamespacingConfig {
   enabled: boolean;
   basePath: string;
   defaultNamespace: string;
-  framework?: "nextjs-app" | "nextjs-pages" | "tanstack-file" | "tanstack-folder" | "react-router" | "remix" | "other";
+  framework?:
+    | "nextjs-app"
+    | "nextjs-pages"
+    | "tanstack-file"
+    | "tanstack-folder"
+    | "react-router"
+    | "remix"
+    | "other";
   ignorePatterns?: string[];
   /**
    * 네임스페이스 추론 전략
@@ -62,7 +69,7 @@ function removeFrameworkPatterns(
         .replace(/\[\.\.\.[^\]]+\]/g, ""); // [...catchall]
       break;
 
-    case "tanstack-file":
+    case "tanstack-file": {
       // TanStack Router 파일 기반: 파일명에서 네임스페이스 추출 (점으로 구분)
       // 예: dashboard.about.tsx -> dashboard
       const fileName = pathLib.basename(cleaned, pathLib.extname(cleaned));
@@ -71,6 +78,7 @@ function removeFrameworkPatterns(
         return firstPart;
       }
       break;
+    }
 
     case "tanstack-folder":
       // TanStack Router 폴더 기반: _layout, _index, $ 동적 세그먼트 제거
@@ -140,9 +148,11 @@ export function inferNamespaceFromPath(
 
   // 파일명 제거 (마지막 part가 파일인 경우)
   const lastPart = parts[parts.length - 1];
-  const isFile = lastPart.includes(".") || ["page", "layout", "template", "index"].includes(lastPart.toLowerCase());
+  const isFile =
+    lastPart.includes(".") ||
+    ["page", "layout", "template", "index"].includes(lastPart.toLowerCase());
   const pathWithoutFile = isFile ? parts.slice(0, -1) : parts;
-  
+
   // 빈 경로면 defaultNamespace
   if (pathWithoutFile.length === 0) {
     return config.defaultNamespace;
@@ -185,7 +195,7 @@ export function inferNamespaceFromPath(
 export function inferNamespaceFromFile(
   filePath: string,
   code: string,
-  config: NamespacingConfig,
+  config: NamespacingConfig
 ): string {
   if (!config.enabled) {
     return config.defaultNamespace;
@@ -254,7 +264,7 @@ export function findUseTranslationCalls(
         }
       },
     });
-  } catch (error) {
+  } catch {
     // 파싱 실패 시 빈 배열 반환
   }
 
@@ -294,4 +304,3 @@ export function validateNamespace(
 
   return { valid: true };
 }
-

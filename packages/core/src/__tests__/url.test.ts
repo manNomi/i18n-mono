@@ -78,4 +78,43 @@ describe("URL localization helpers", () => {
       })
     ).toBe("https://example.com/docs#top");
   });
+
+  it("returns the original input for an empty target language", () => {
+    const input = "/docs?tab=api#intro";
+    expect(localizeUrl(input, "   ", languageOptions)).toBe(input);
+  });
+
+  it("does not remove an unknown language-like prefix", () => {
+    expect(removeLanguageFromUrl("/fr/docs", languageOptions)).toBe("/fr/docs");
+    expect(getLanguageFromUrl("/fr/docs", languageOptions)).toBeUndefined();
+  });
+
+  it.each([
+    ["prefix", "/docs?tab=api#intro"],
+    ["query", "/docs?tab=api#intro"],
+  ] as const)("is idempotent for the %s strategy", (strategy, input) => {
+    const options = { ...languageOptions, strategy };
+    const once = localizeUrl(input, "en", options);
+    expect(localizeUrl(once, "en", options)).toBe(once);
+  });
+
+  it("preserves absolute URL origin, query, hash, and encoded path data", () => {
+    expect(
+      localizeUrl(
+        "https://example.com/%ED%95%9C%EA%B8%80?q=a%20b#top",
+        "en",
+        languageOptions
+      )
+    ).toBe("https://example.com/en/%ED%95%9C%EA%B8%80?q=a%20b#top");
+  });
+
+  it("throws TypeError for a malformed absolute URL", () => {
+    expect.assertions(2);
+    try {
+      localizeUrl("https://[", "en", languageOptions);
+    } catch (error) {
+      expect(error).toHaveProperty("name", "TypeError");
+      expect(error).toHaveProperty("message", "Invalid URL: https://[");
+    }
+  });
 });

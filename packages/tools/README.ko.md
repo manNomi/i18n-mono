@@ -20,6 +20,10 @@ npm install -g i18nexus-tools
 npm install -D i18nexus-tools
 ```
 
+## 패키지 경계
+
+`i18nexus-tools`는 CLI 전용 패키지입니다. 공개 기능은 아래 명령어들이며, `require("i18nexus-tools")`는 의도적으로 빈 모듈을 로드합니다. 지원되는 JavaScript programmatic API는 없습니다.
+
 ## 🚀 빠른 시작
 
 ### 1. 프로젝트 초기화

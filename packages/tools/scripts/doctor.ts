@@ -48,7 +48,7 @@ function stripJsonComments(content: string): string {
 
 function getPackageDependencyVersion(
   packageJson: Record<string, any> | null,
-  packageName: string,
+  packageName: string
 ): string | undefined {
   if (!packageJson) {
     return undefined;
@@ -122,7 +122,7 @@ const IGNORED_SCAN_DIRS = new Set([
 function hasSourceImport(
   projectRoot: string,
   importText: string,
-  maxFiles = 500,
+  maxFiles = 500
 ): boolean {
   let scannedFiles = 0;
 
@@ -173,7 +173,7 @@ function hasSourceImport(
 
 function shouldCheckServerResolution(
   config: I18nexusConfig,
-  projectRoot: string,
+  projectRoot: string
 ): boolean {
   return (
     config.mode === "server" ||
@@ -184,7 +184,7 @@ function shouldCheckServerResolution(
 
 function getPackageExportTarget(
   packageJson: Record<string, any>,
-  subpath: "." | "./server" | "./devtools",
+  subpath: "." | "./server" | "./devtools"
 ): string | undefined {
   const exportConfig = packageJson.exports?.[subpath];
 
@@ -211,7 +211,7 @@ function getInstalledCorePackage(projectRoot: string): {
     projectRoot,
     "node_modules",
     "i18nexus",
-    "package.json",
+    "package.json"
   );
 
   if (!fs.existsSync(packagePath)) {
@@ -230,7 +230,7 @@ function getInstalledCorePackage(projectRoot: string): {
 }
 
 function localeEntrypointImportsCreateI18n(
-  localeEntrypointPath: string,
+  localeEntrypointPath: string
 ): boolean {
   if (!fs.existsSync(localeEntrypointPath)) {
     return false;
@@ -247,7 +247,7 @@ function localeEntrypointImportsCreateI18n(
 
 function installedRootExportsCreateI18n(
   packageRoot: string,
-  packageJson: Record<string, any>,
+  packageJson: Record<string, any>
 ): boolean {
   const rootTarget = getPackageExportTarget(packageJson, ".");
   if (!rootTarget) {
@@ -258,7 +258,7 @@ function installedRootExportsCreateI18n(
     path.resolve(packageRoot, rootTarget),
     path.resolve(
       packageRoot,
-      rootTarget.replace(/\.js$/, ".d.ts").replace(/\.mjs$/, ".d.ts"),
+      rootTarget.replace(/\.js$/, ".d.ts").replace(/\.mjs$/, ".d.ts")
     ),
   ];
 
@@ -280,13 +280,14 @@ export function runDoctor(projectRoot: string = process.cwd()): DoctorReport {
   process.chdir(projectRoot);
 
   try {
+    const configPath = path.join(projectRoot, "i18nexus.config.json");
     const config = loadConfigSilently();
     const issues: DoctorIssue[] = [];
     const localesDir = resolveProjectPath(projectRoot, config.localesDir);
     const generatedTypesPath = resolveProjectPath(
       projectRoot,
       config.typesOutputPath ||
-        path.join(config.localesDir, "types", "i18nexus.d.ts"),
+        path.join(config.localesDir, "types", "i18nexus.d.ts")
     );
     const localeEntrypointPath = path.join(localesDir, "index.ts");
     const packageJsonPath = path.join(projectRoot, "package.json");
@@ -295,13 +296,29 @@ export function runDoctor(projectRoot: string = process.cwd()): DoctorReport {
       : null;
     const i18nexusVersion = getPackageDependencyVersion(
       packageJson,
-      "i18nexus",
+      "i18nexus"
     );
     const i18nexusMajor = getMajorVersion(i18nexusVersion);
     const tsconfig = readTsConfig(projectRoot);
     const moduleResolution =
       tsconfig?.compilerOptions?.moduleResolution?.toString();
     const installedCore = getInstalledCorePackage(projectRoot);
+
+    if (!fs.existsSync(configPath)) {
+      issues.push({
+        level: "error",
+        code: "CONFIG_MISSING",
+        message: "i18nexus.config.json을 찾을 수 없습니다.",
+        fix: "npx i18n-sheets init",
+      });
+    } else if (!readJsonFile(configPath)) {
+      issues.push({
+        level: "error",
+        code: "CONFIG_INVALID",
+        message: "i18nexus.config.json이 유효한 JSON이 아닙니다.",
+        fix: "Fix the JSON syntax, then run npx i18n-doctor again.",
+      });
+    }
 
     if (!packageJson) {
       issues.push({
@@ -362,8 +379,8 @@ export function runDoctor(projectRoot: string = process.cwd()): DoctorReport {
     const languages = [
       ...new Set(
         namespaces.flatMap((namespace) =>
-          Object.keys(translations[namespace] || {}),
-        ),
+          Object.keys(translations[namespace] || {})
+        )
       ),
     ].sort();
     const fallbackNamespace = config.fallbackNamespace || "common";
@@ -476,7 +493,7 @@ export function runDoctor(projectRoot: string = process.cwd()): DoctorReport {
         localeEntrypointImportsCreateI18n(localeEntrypointPath) &&
         !installedRootExportsCreateI18n(
           installedCore.packageRoot,
-          installedCore.packageJson,
+          installedCore.packageJson
         )
       ) {
         issues.push({
@@ -519,14 +536,14 @@ export function printDoctorReport(report: DoctorReport): void {
       report.summary.namespaces.length > 0
         ? report.summary.namespaces.join(", ")
         : "none"
-    }`,
+    }`
   );
   console.log(
     `Languages: ${
       report.summary.languages.length > 0
         ? report.summary.languages.join(", ")
         : "none"
-    }`,
+    }`
   );
   console.log(`Types: ${report.summary.generatedTypesPath}`);
   console.log(`Entrypoint: ${report.summary.localeEntrypointPath}`);
@@ -551,7 +568,7 @@ export function printDoctorReport(report: DoctorReport): void {
     console.log(
       report.status === "warning"
         ? "\n⚠️  No blocking errors found, but warnings need attention."
-        : "\n✅ No blocking errors found.",
+        : "\n✅ No blocking errors found."
     );
   } else {
     console.log("\n❌ Blocking errors found.");

@@ -601,15 +601,14 @@ The extractor reads from `i18nexus.config.json`:
 }
 ```
 
-**TypeScript Configuration:**
+**Another JSON configuration:**
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  languages: ["en", "ko", "ja"] as const,
-  localesDir: "./locales",
-  sourcePattern: "app/**/*.{ts,tsx}",
-});
+```json
+{
+  "languages": ["en", "ko", "ja"],
+  "localesDir": "./locales",
+  "sourcePattern": "app/**/*.{ts,tsx}"
+}
 ```
 
 ## Advanced Features

@@ -10,6 +10,8 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "verify:node-matrix": "node scripts/verify-node-matrix.mjs",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
@@ -33,10 +35,10 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": "22.x || 24.x || 26.x",
     "npm": ">=9.0.0"
   },
-  "packageManager": "npm@9.0.0",
+  "packageManager": "npm@10.9.2",
   "lint-staged": {
     "*.{ts,tsx}": [
       "prettier --write"

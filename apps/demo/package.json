@@ -2,8 +2,7 @@
   "name": "i18nexus-demo",
   "version": "1.0.0",
   "description": "i18nexus Demo Application - Complete React i18n toolkit demonstration",
-  "private": false,
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "prepare:local-packages": "node scripts/prepare-local-packages.mjs",
     "check:local-packages": "node scripts/check-local-packages.mjs",
@@ -11,12 +10,13 @@
     "assert:no-dev-server": "node scripts/assert-next-dev-stopped.mjs",
     "predev": "npm run prepare:local-packages && npm run check:local-packages",
     "dev": "next dev",
-    "prebuild": "npm run assert:no-dev-server && npm run prepare:local-packages && npm run check:local-packages",
+    "prebuild": "npm run assert:no-dev-server && npm run prepare:local-packages && npm run check:local-packages && npm run lint",
     "build": "next build",
     "build:safe": "npm run build",
+    "typecheck": "tsc --noEmit",
     "validate": "npm run prepare:local-packages && npm run check:local-packages && npm run lint && npm run build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "export": "next export",
     "i18n:pull": "i18nexus pull",
     "i18n:import": "i18nexus import ./lib/translations/ko.json",
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
-    "firebase": "^12.4.0",
+    "firebase": "^12.16.0",
     "i18next": "^25.5.2",
     "i18nexus": "file:../../packages/core",
-    "next": "^15.5.9",
+    "next": "^15.5.20",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-ga4": "^2.1.0",
@@ -58,8 +58,9 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "autoprefixer": "^10.4.16",
+    "baseline-browser-mapping": "^2.10.43",
     "eslint": "^9",
-    "eslint-config-next": "15.5.9",
+    "eslint-config-next": "15.5.20",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
@@ -89,11 +90,15 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/manNomi/i18nexus.git",
-    "directory": "packages/i18nexus-demo"
+    "url": "git+https://github.com/i18n-global/i18n-mono.git",
+    "directory": "apps/demo"
   },
   "bugs": {
-    "url": "https://github.com/manNomi/i18nexus/issues"
+    "url": "https://github.com/i18n-global/i18n-mono/issues"
   },
-  "homepage": "https://github.com/manNomi/i18nexus#readme"
+  "homepage": "https://github.com/i18n-global/i18n-mono/tree/main/apps/demo#readme",
+  "engines": {
+    "node": "22.x || 24.x || 26.x",
+    "npm": ">=9.0.0"
+  }
 }

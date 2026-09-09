@@ -33,6 +33,20 @@ i18nexus는 이 조각들이 같은 계약을 공유하도록 설계되었습니
 | `i18nexus-tools` | 텍스트 래핑, key 추출, 타입 생성, 레거시 정리, 번역 동기화를 위한 CLI companion              |
 | `apps/demo`      | 런타임과 CLI workflow를 검증하기 위한 예제 앱                                                |
 
+## 호환성
+
+| 구분              | 지원 및 검증 범위                                           |
+| ----------------- | ----------------------------------------------------------- |
+| Node.js           | 22.x, 24.x, 26.x                                            |
+| React / React DOM | 18.x, 19.x                                                  |
+| Core 모듈         | ESM (`i18nexus`, `i18nexus/server`, `i18nexus/devtools`)    |
+| Tools             | CommonJS CLI 실행 파일; package root는 의도적으로 비어 있음 |
+
+이전 manifest가 허용하던 Node 16/18/20과 React 16/17은 더 이상 지원하지
+않습니다. CommonJS consumer는 dynamic `import()`로 ESM core를 로드해야 합니다.
+server entrypoint는 Node filesystem API를 사용하며 Edge runtime용 entrypoint가
+아닙니다.
+
 ## Quick Start
 
 런타임과 CLI companion을 설치합니다.
@@ -57,17 +71,47 @@ npm install -D i18nexus-tools
 }
 ```
 
+첫 화면에서 사용할 리소스를 생성합니다.
+
+`locales/home/en.json`:
+
+```json
+{ "title": "Welcome" }
+```
+
+`locales/home/ko.json`:
+
+```json
+{ "title": "환영합니다" }
+```
+
 React에서 번역을 사용합니다.
 
 ```tsx
-import { useTranslation } from "i18nexus";
+// localized-home.tsx
+"use client";
 
-export function HomeTitle() {
+import { I18nProvider, useTranslation } from "i18nexus";
+
+import homeEn from "./locales/home/en.json";
+import homeKo from "./locales/home/ko.json";
+
+const translations = { home: { en: homeEn, ko: homeKo } };
+
+function HomeTitle() {
   const { t, isReady } = useTranslation("home");
 
   if (!isReady) return null;
 
   return <h1>{t("title")}</h1>;
+}
+
+export function LocalizedHome() {
+  return (
+    <I18nProvider initialLanguage="ko" translations={translations}>
+      <HomeTitle />
+    </I18nProvider>
+  );
 }
 ```
 

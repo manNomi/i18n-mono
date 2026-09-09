@@ -12,8 +12,7 @@ import {
   removeDir,
 } from "../common/utils/fs-utils";
 
-// Worker threads가 Jest에서 TypeScript를 로드하지 못하므로 스킵
-describe.skip("t-wrapper-swc-worker E2E", () => {
+describe("t-wrapper-swc-worker E2E", () => {
   let tempDir: string;
 
   beforeEach(() => {
@@ -73,7 +72,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
         testFile,
         `function Component${i}() {
   return <div>안녕하세요 ${i}</div>;
-}`,
+}`
       );
       files.push(testFile);
     }
@@ -92,7 +91,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
     const totalTime = endTime - startTime;
     console.log(`Processed ${fileCount} files in ${totalTime}ms`);
     console.log(
-      `Average time per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`,
+      `Average time per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`
     );
     console.log(`Worker stats:`, result.stats.workerStats);
 
@@ -170,7 +169,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
       validFile,
       `function Valid() {
   return <div>안녕하세요</div>;
-}`,
+}`
     );
 
     // 잘못된 구문의 파일
@@ -191,7 +190,7 @@ describe.skip("t-wrapper-swc-worker E2E", () => {
       testFile,
       `function Perf() {
   return <div>안녕하세요</div>;
-}`,
+}`
     );
 
     const result = await wrapTranslations({

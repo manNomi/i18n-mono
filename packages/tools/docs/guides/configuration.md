@@ -4,18 +4,17 @@ Complete reference for configuring i18nexus-tools for your project.
 
 ## 📁 Configuration Files
 
-i18nexus-tools supports multiple configuration formats with automatic detection:
+i18nexus-tools automatically discovers one configuration format:
 
-1. **TypeScript** (`i18nexus.config.ts`) - Recommended for TypeScript projects
-2. **JavaScript** (`i18nexus.config.js`) - For JavaScript projects
-3. **JSON** (`i18nexus.config.json`) - Universal format
+1. **JSON** (`i18nexus.config.json`) - Required for automatic discovery
 
 ### File Priority
 
-The tool automatically detects configuration files in this order:
+JavaScript and TypeScript config files are not executed or imported. This keeps
+CLI and `i18nexus/server` behavior aligned and avoids runtime-loader ambiguity.
 
 ```
-i18nexus.config.ts > i18nexus.config.js > i18nexus.config.json
+i18nexus.config.json
 ```
 
 ## 🔧 Configuration Options
@@ -41,7 +40,10 @@ i18nexus.config.ts > i18nexus.config.js > i18nexus.config.json
 }
 ```
 
-### TypeScript Configuration
+### Typed In-Code Configuration
+
+`defineConfig` can type an object imported directly by application code, but it
+does not make a `.ts` file discoverable by the CLI or server entrypoint.
 
 ```typescript
 import { defineConfig } from "i18nexus";
@@ -53,20 +55,6 @@ export const config = defineConfig({
   localesDir: "./locales",
   sourcePattern: "src/**/*.{ts,tsx,js,jsx}",
   translationImportSource: "i18nexus",
-  staticKeyExtraction: "safe",
-  staticKeyContainerPatterns: [
-    "^I18N_KEYS$",
-    "_I18N_KEYS$",
-    "^TRANSLATION_KEYS$",
-    "_TRANSLATION_KEYS$",
-    "^translationKeys$",
-    "TranslationKeys$",
-  ],
-  googleSheets: {
-    spreadsheetId: "your-spreadsheet-id",
-    credentialsPath: "./credentials.json",
-    sheetName: "Translations",
-  },
 });
 
 export type AppLanguages = (typeof config.languages)[number];
@@ -222,48 +210,49 @@ export type AppLanguages = (typeof config.languages)[number];
 
 ### Custom Import Sources
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  translationImportSource: "@/lib/i18n",
-  // ... other config
-});
+```json
+{
+  "translationImportSource": "@/lib/i18n"
+}
 ```
 
 ### Multiple Language Sets
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  languages: ["en", "ko", "ja", "zh", "es", "fr"] as const,
-  defaultLanguage: "en",
-  // ... other config
-});
+```json
+{
+  "languages": ["en", "ko", "ja", "zh", "es", "fr"],
+  "defaultLanguage": "en"
+}
 ```
 
 ### Custom File Patterns
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  sourcePattern: "src/{components,pages,hooks}/**/*.{ts,tsx}",
-  // ... other config
-});
+```json
+{
+  "sourcePattern": "src/{components,pages,hooks}/**/*.{ts,tsx}"
+}
 ```
 
 ### Environment-Specific Configurations
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  googleSheets: {
-    spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || "",
-    credentialsPath:
-      process.env.GOOGLE_CREDENTIALS_PATH || "./credentials.json",
-    sheetName: "Translations",
-  },
-  // ... other config
-});
+Keep non-secret defaults in JSON and override connection values in the shell.
+`i18n-sheets` Google Sheets subcommands and `i18n-upload` use the precedence
+CLI option > environment variable > JSON config > built-in default.
+
+```json
+{
+  "googleSheets": {
+    "spreadsheetId": "",
+    "credentialsPath": "./credentials.json",
+    "sheetName": "Translations"
+  }
+}
+```
+
+```bash
+GOOGLE_SPREADSHEET_ID=production-sheet-id \
+GOOGLE_CREDENTIALS_PATH=/run/secrets/google.json \
+npx i18n-sheets status
 ```
 
 ## 🚀 Initialization Commands
@@ -274,7 +263,7 @@ export const config = defineConfig({
 # JSON configuration
 npx i18n-sheets init
 
-# TypeScript configuration
+# Deprecated compatibility flag; warns and still creates JSON
 npx i18n-sheets init --typescript
 
 # Custom languages
@@ -292,7 +281,6 @@ npx i18n-sheets init -s <spreadsheet-id> -c ./credentials.json
 ```bash
 # Full configuration
 npx i18n-sheets init \
-  --typescript \
   --languages "en,ko,ja,zh" \
   --locales "./src/locales" \
   --spreadsheet <spreadsheet-id> \
@@ -304,8 +292,8 @@ npx i18n-sheets init \
 ### Check Configuration
 
 ```bash
-# Validate configuration
-npx i18n-sheets status
+# Validate local package/config/locale compatibility without network access
+npx i18n-doctor
 
 # Test with specific config
 npx i18n-wrapper --dry-run
@@ -317,13 +305,15 @@ npx i18n-wrapper --dry-run
 
 ```json
 {
-  "languages": ["english", "korean"] // ❌ Wrong
+  "languages": ["english", "korean"]
 }
 ```
 
+Invalid for this example because names, rather than language codes, are used.
+
 ```json
 {
-  "languages": ["en", "ko"] // ✅ Correct
+  "languages": ["en", "ko"]
 }
 ```
 
@@ -331,13 +321,15 @@ npx i18n-wrapper --dry-run
 
 ```json
 {
-  "sourcePattern": "src/*.ts" // ❌ Too restrictive
+  "sourcePattern": "src/*.ts"
 }
 ```
 
+This pattern scans only top-level TypeScript files.
+
 ```json
 {
-  "sourcePattern": "src/**/*.{ts,tsx}" // ✅ Correct
+  "sourcePattern": "src/**/*.{ts,tsx}"
 }
 ```
 
@@ -346,85 +338,72 @@ npx i18n-wrapper --dry-run
 ```json
 {
   "googleSheets": {
-    "spreadsheetId": "" // ❌ Empty ID
+    "spreadsheetId": ""
   }
 }
 ```
+
+An empty ID is valid for local-only workflows, but Google Sheets commands
+require an ID from a CLI option, environment variable, or this field.
 
 ## 🔄 Configuration Migration
 
 ### From v1.4.0 to v1.5.0+
 
-```bash
-# Old configuration
-{
-  "localesDir": "./locales/en/common.json"  // ❌ Old format
-}
+Old configuration:
 
-# New configuration
+```json
 {
-  "localesDir": "./locales"  // ✅ New format
+  "localesDir": "./locales/en/common.json"
 }
 ```
 
-### From JSON to TypeScript
+New configuration:
 
-1. **Rename file:**
+```json
+{
+  "localesDir": "./locales"
+}
+```
 
-   ```bash
-   mv i18nexus.config.json i18nexus.config.ts
-   ```
+### From JavaScript or TypeScript to JSON
 
-2. **Convert to TypeScript:**
-
-   ```typescript
-   import { defineConfig } from "i18nexus";
-
-   export const config = defineConfig({
-     // ... your existing config
-   });
-   ```
+Move serializable values into `i18nexus.config.json`. JavaScript expressions,
+imports, and environment reads are not evaluated during automatic discovery;
+use CLI options or the documented environment variables for runtime overrides.
 
 ## 🎨 Best Practices
 
 ### Configuration Organization
 
-```typescript
-// i18nexus.config.ts
-import { defineConfig } from "i18nexus";
-
-const isProduction = process.env.NODE_ENV === "production";
-
-export const config = defineConfig({
-  languages: ["en", "ko"] as const,
-  defaultLanguage: "ko",
-  localesDir: "./locales",
-  sourcePattern: "src/**/*.{ts,tsx}",
-  translationImportSource: "i18nexus",
-  staticKeyExtraction: "safe",
-  googleSheets: isProduction
-    ? {
-        spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,
-        credentialsPath: process.env.GOOGLE_CREDENTIALS_PATH!,
-        sheetName: "Translations",
-      }
-    : undefined,
-});
+```json
+{
+  "languages": ["en", "ko"],
+  "defaultLanguage": "ko",
+  "localesDir": "./locales",
+  "sourcePattern": "src/**/*.{ts,tsx}",
+  "translationImportSource": "i18nexus",
+  "staticKeyExtraction": "safe",
+  "googleSheets": {
+    "spreadsheetId": "",
+    "credentialsPath": "./credentials.json",
+    "sheetName": "Translations"
+  }
+}
 ```
 
 ### Environment Variables
 
 ```bash
-# .env.local
-GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
-GOOGLE_CREDENTIALS_PATH=./credentials.json
+# Export in the current shell or configure the variables in CI.
+export GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
+export GOOGLE_CREDENTIALS_PATH=./credentials.json
 ```
 
 ### Type Safety
 
 ```typescript
-// Use generated types
-import type { AppLanguages } from "./i18nexus.config";
+import type { AppLanguages } from "./types/i18n";
 
 const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
 ```
@@ -437,8 +416,8 @@ const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
 # Check current directory
 pwd
 
-# List configuration files
-ls -la i18nexus.config.*
+# Check the automatically discovered file
+ls -la i18nexus.config.json
 
 # Initialize if missing
 npx i18n-sheets init
@@ -450,8 +429,8 @@ npx i18n-sheets init
 # Validate JSON
 cat i18nexus.config.json | jq .
 
-# Check TypeScript
-npx tsc --noEmit i18nexus.config.ts
+# Run the package-aware diagnostic
+npx i18n-doctor
 ```
 
 ### Google Sheets Issues

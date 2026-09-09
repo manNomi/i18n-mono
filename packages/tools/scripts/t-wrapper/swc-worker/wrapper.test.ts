@@ -99,6 +99,7 @@ describe("SWC worker wrapper", () => {
 
     const result = await wrapTranslations({ sourcePattern: "src/**/*.tsx" });
 
+    expect(WorkerPool).toHaveBeenCalledWith(4);
     expect(mockPool.initialize).toHaveBeenCalled();
     expect(mockPool.terminate).toHaveBeenCalled();
     expect(mockPool.runTask).toHaveBeenCalledTimes(4);
@@ -115,10 +116,10 @@ describe("SWC worker wrapper", () => {
       },
     });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "❌ Error processing errored.tsx: parse failed",
+      "❌ Error processing errored.tsx: parse failed"
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "❌ Task failed for rejected.tsx: Error: worker crashed",
+      "❌ Task failed for rejected.tsx: Error: worker crashed"
     );
   });
 });

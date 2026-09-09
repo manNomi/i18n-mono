@@ -23,10 +23,11 @@ npx i18nexus-tools
 
 **A:**
 
-- Node.js >= 18.0.0
+- Node.js 22.x, 24.x, or 26.x
 - npm >= 9.0.0
-- React >= 16.8.0 (for hooks support)
-- TypeScript >= 4.0.0 (optional)
+- React is not required by the CLI package. Projects using `i18nexus` core must
+  use React/React DOM 18.x or 19.x.
+- The repository's installed TypeScript consumer fixture uses TypeScript 5.3.
 
 ### Q: How do I initialize a new project?
 
@@ -39,7 +40,7 @@ npx i18n-sheets init
 # With Google Sheets
 npx i18n-sheets init -s <spreadsheet-id>
 
-# TypeScript configuration
+# Deprecated compatibility flag; warns and still creates JSON
 npx i18n-sheets init --typescript
 ```
 
@@ -47,33 +48,27 @@ npx i18n-sheets init --typescript
 
 ### Q: What configuration files are supported?
 
-**A:** The tool supports multiple formats with automatic detection:
-
-1. `i18nexus.config.ts` (TypeScript - recommended)
-2. `i18nexus.config.js` (JavaScript)
-3. `i18nexus.config.json` (JSON - universal)
+**A:** Automatic discovery reads only `i18nexus.config.json`. JavaScript and
+TypeScript config files are not executed by the CLI or server entrypoint.
 
 ### Q: How do I configure for Next.js App Router?
 
 **A:** Update your configuration:
 
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  sourcePattern: "app/**/*.{ts,tsx}", // App Router pattern
-  // ... other config
-});
+```json
+{
+  "sourcePattern": "app/**/*.{ts,tsx}"
+}
 ```
 
 ### Q: Can I use custom import sources?
 
 **A:** Yes, configure `translationImportSource`:
 
-```typescript
-export const config = defineConfig({
-  translationImportSource: "@/lib/i18n", // Custom path
-  // ... other config
-});
+```json
+{
+  "translationImportSource": "@/lib/i18n"
+}
 ```
 
 ## 🔄 Workflow
@@ -142,6 +137,11 @@ const apiKey = "한글 API 키";
 - **Download**: Get translations from Google Sheets to local files
 - **Force modes**: Clear and re-upload/download everything
 
+The first worksheet column must be `Key`. Remaining headers identify locale
+files and may be names such as `English`/`Japanese` or exact codes such as
+`pt-BR`. A requested download language missing from a sheet aborts before local
+files are replaced.
+
 ### Q: How does auto-translation work?
 
 **A:**
@@ -185,7 +185,7 @@ npx i18n-clean-legacy
 
 **A:**
 
-- **Normal mode**: Preserves existing translations, only adds new keys
+- **Normal mode**: Preserves existing translations and appends only new keys
 - **Force mode**: Clears all data and re-uploads/downloads everything
 
 ## 🐛 Troubleshooting
@@ -307,8 +307,8 @@ See [Namespace Usage Guide](../guides/namespace-usage.md) for detailed examples.
 **A:**
 
 - 📖 [Full Documentation](../README.md)
-- 🐛 [Report Issues](https://github.com/manNomi/i18nexus/issues)
-- 💬 [Discussions](https://github.com/manNomi/i18nexus/discussions)
+- 🐛 [Report Issues](https://github.com/i18n-global/i18n-mono/issues)
+- 💬 [Discussions](https://github.com/i18n-global/i18n-mono/discussions)
 - 📧 Email: [support@i18nexus.com](mailto:support@i18nexus.com)
 
 ### Q: How do I contribute?

@@ -1,8 +1,9 @@
 # Configuration Guide
 
-i18nexus supports configuration files for managing your internationalization settings.
-
-> **⚠️ Important:** `i18nexus.config.json` is the **recommended** configuration format. TypeScript config files (`.ts`) are legacy and not recommended for new projects.
+i18nexus uses `i18nexus.config.json` for automatic configuration discovery.
+JavaScript and TypeScript files are not executed by the CLI or server entrypoint.
+`defineConfig` remains available for typed objects that application code imports
+directly.
 
 ---
 
@@ -48,15 +49,16 @@ import { useLanguageSwitcher } from "i18nexus";
 import type { AppLanguages } from "./types/i18n";
 
 function LanguageSwitcher() {
-  const { changeLanguage, currentLanguage } = useLanguageSwitcher();
+  const { changeLanguage, currentLanguage } =
+    useLanguageSwitcher<AppLanguages>();
 
   // ✅ Keep supported language values centralized:
   const switchToEnglish = () => changeLanguage("en"); // ✅ Works
   const switchToKorean = () => changeLanguage("ko"); // ✅ Works
   const switchToJapanese = () => changeLanguage("ja"); // ✅ Works
 
-  // ❌ Invalid languages should be prevented at your UI boundary:
-  // const switchToFrench = () => changeLanguage("fr"); // avoid rendering unsupported options
+  // TypeScript error: "fr" is not assignable to AppLanguages.
+  // const switchToFrench = () => changeLanguage("fr");
 
   return (
     <div>
@@ -113,7 +115,7 @@ import type { AppLanguages } from "./types/i18n";
 
 function MyComponent() {
   const { t } = useTranslation();
-  const { changeLanguage } = useLanguageSwitcher();
+  const { changeLanguage } = useLanguageSwitcher<AppLanguages>();
 
   return (
     <div>
@@ -133,25 +135,20 @@ function MyComponent() {
 
 ---
 
-## File Priority
+## Automatic Discovery
 
-i18nexus looks for config files in this order:
-
-1. `i18nexus.config.json` ✅ **Recommended**
-2. `i18nexus.config.js` (JavaScript module)
-3. `i18nexus.config.ts` ⚠️ **Legacy - Not recommended**
-
-The first file found will be used.
+Only `i18nexus.config.json` is automatically discovered. A `.js` or `.ts` file
+can still export an object for your own application imports, but i18nexus does
+not treat that module as CLI or server configuration.
 
 ---
 
-## Legacy: TypeScript Config (Not Recommended)
+## Typed In-Code Object
 
-> **⚠️ Deprecated:** TypeScript config files are legacy and not recommended for new projects. Use `i18nexus.config.json` instead.
-
-If you're maintaining a legacy project with `i18nexus.config.ts`:
+Use an ordinary application module when code needs an inferred language union:
 
 ```typescript
+// src/i18n-config.ts
 import { defineConfig } from "i18nexus";
 
 export const config = defineConfig({
@@ -165,9 +162,12 @@ export const config = defineConfig({
 export type AppLanguages = (typeof config.languages)[number];
 ```
 
-### Migration to JSON (Recommended)
+This object is not automatically discovered. Keep CLI and server settings in
+`i18nexus.config.json`, or pass server options explicitly.
 
-**Before (i18nexus.config.ts):**
+### Migrating an Old TypeScript Config
+
+**Before (application-imported TypeScript module):**
 
 ```typescript
 import { defineConfig } from "i18nexus";
@@ -202,7 +202,7 @@ export type AppLanguages = "en" | "ko";
 
 ```typescript
 // Before
-import { config, AppLanguages } from "./i18nexus.config";
+import { config, AppLanguages } from "./src/i18n-config";
 
 // After
 import type { AppLanguages } from "./types/i18n";
@@ -239,7 +239,7 @@ npx i18n-sheets download
 2. ✅ Define language types in a separate TypeScript file
 3. ✅ Install `i18nexus-tools` as a dev dependency
 4. ✅ Use type parameters with hooks for autocomplete
-5. ❌ Don't use TypeScript config files (`.ts`) for new projects
+5. ✅ Treat typed application modules and auto-discovered JSON as separate contracts
 
 ---
 
@@ -276,7 +276,8 @@ import { useLanguageSwitcher } from "i18nexus";
 import type { AppLanguages } from "@/types/i18n";
 
 export function LanguageSwitcher() {
-  const { currentLanguage, changeLanguage } = useLanguageSwitcher();
+  const { currentLanguage, changeLanguage } =
+    useLanguageSwitcher<AppLanguages>();
 
   return (
     <select value={currentLanguage} onChange={(e) => changeLanguage(e.target.value as AppLanguages)}>
@@ -292,7 +293,7 @@ export function LanguageSwitcher() {
 
 ## Summary
 
-- **Recommended:** `i18nexus.config.json` + manual type definitions
-- **Legacy:** `i18nexus.config.ts` (not recommended for new projects)
+- **Automatic discovery:** `i18nexus.config.json` only
+- **Typed application objects:** `defineConfig` in a module your code imports
 - **CLI Tools:** Install `i18nexus-tools` for automation
 - **Type Safety:** Define language types manually for full IDE support

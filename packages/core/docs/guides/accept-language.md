@@ -111,7 +111,7 @@ export default async function ServerPage() {
     {
       availableLanguages: ["en", "ko"],
       defaultLanguage: "en",
-    },
+    }
   );
 
   return <h1>{t("Welcome")}</h1>;
@@ -430,7 +430,7 @@ const { language } = await getTranslation("common", {
 ### 2. Config 파일에서 관리
 
 ```typescript
-// i18nexus.config.ts
+// src/i18n-config.ts (imported by application code; not auto-discovered)
 export const config = defineConfig({
   languages: ["en", "ko", "ja", "zh"] as const,
   defaultLanguage: "en",
@@ -443,7 +443,7 @@ export type AppLanguages = (typeof config.languages)[number];
 ```tsx
 // app/layout.tsx
 import { getTranslation } from "i18nexus/server";
-import { config } from "@/i18nexus.config";
+import { config } from "@/i18n-config";
 
 export default async function RootLayout({ children }) {
   const { language } = await getTranslation("common", {

@@ -54,7 +54,7 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 
 #### 🎯 Type Safety
 
-- **[Typed Config Guide](./guides/typed-config.md)** - TypeScript configuration
+- **[Typed Config Guide](./guides/typed-config.md)** - JSON discovery and typed in-code objects
   - Type-safe language codes
   - IDE autocomplete
   - Custom import sources
@@ -124,7 +124,7 @@ Complete documentation for i18nexus - Type-safe React i18n toolkit.
 
 - **[v2.5.2](./releases/v2.5.2.md)** - Developer Tools
   - Historical `I18NexusDevtools` release note
-  - TypeScript config support
+  - Historical TypeScript config announcement (not current auto-discovery behavior)
   - Type-safe hooks
 
 - **[v2.1.0](./releases/v2.1.0.md)** - Server Components Support

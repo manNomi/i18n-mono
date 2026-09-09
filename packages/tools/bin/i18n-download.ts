@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import * as fs from "fs";
-import * as path from "path";
-import { GoogleSheetsManager } from "../scripts/google-sheets";
+import {
+  GoogleSheetsManager,
+  validateGoogleSheetsLanguages,
+} from "../scripts/google-sheets";
 import { loadConfig } from "../scripts/config-loader";
 
 export interface DownloadConfig {
@@ -11,28 +13,6 @@ export interface DownloadConfig {
   localesDir?: string;
   sheetName?: string;
   languages?: string[];
-}
-
-function generateIndexFile(localesDir: string, languages: string[]): void {
-  const indexPath = path.join(localesDir, "index.ts");
-
-  // Import 문 생성
-  const imports = languages
-    .map((lang) => `import ${lang} from "./${lang}.json";`)
-    .join("\n");
-
-  // Export 객체 생성
-  const exportObj = languages.map((lang) => `  ${lang}: ${lang},`).join("\n");
-
-  const content = `${imports}
-
-export const translations = {
-${exportObj}
-};
-`;
-
-  fs.writeFileSync(indexPath, content, "utf-8");
-  console.log(`📝 Generated index file: ${indexPath}`);
 }
 
 const DEFAULT_CONFIG: Required<DownloadConfig> = {
@@ -45,7 +25,7 @@ const DEFAULT_CONFIG: Required<DownloadConfig> = {
 
 export async function downloadTranslations(
   config: Partial<DownloadConfig> = {},
-  options: { force?: boolean } = {},
+  options: { force?: boolean; dryRun?: boolean } = {}
 ) {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -54,15 +34,24 @@ export async function downloadTranslations(
 
     // 설정 유효성 검사
     if (!finalConfig.spreadsheetId) {
-      console.error("❌ Spreadsheet ID is required");
-      process.exit(1);
+      throw new Error("Spreadsheet ID is required");
+    }
+    validateGoogleSheetsLanguages(finalConfig.languages);
+
+    if (options.dryRun) {
+      console.log(
+        `🔍 Dry run: would ${options.force ? "force " : ""}download all sheets to ${finalConfig.localesDir} for ${finalConfig.languages.join(", ")}.`
+      );
+      console.log(
+        "🔒 No authentication, network requests, or local writes were performed."
+      );
+      return;
     }
 
     if (!fs.existsSync(finalConfig.credentialsPath)) {
-      console.error(
-        `❌ Credentials file not found: ${finalConfig.credentialsPath}`,
+      throw new Error(
+        `Credentials file not found: ${finalConfig.credentialsPath}`
       );
-      process.exit(1);
     }
 
     // Google Sheets Manager 초기화
@@ -70,6 +59,7 @@ export async function downloadTranslations(
       credentialsPath: finalConfig.credentialsPath,
       spreadsheetId: finalConfig.spreadsheetId,
       sheetName: finalConfig.sheetName,
+      languages: finalConfig.languages,
     });
 
     // 인증
@@ -80,18 +70,17 @@ export async function downloadTranslations(
     await sheetsManager.downloadAllSheets(
       finalConfig.localesDir,
       finalConfig.languages,
+      { force: options.force }
     );
 
     // Note: 이전에는 단일 시트만 다운로드했지만, 이제는 모든 시트를 자동으로 다운로드합니다.
     // force 옵션은 개별 시트 다운로드 시 적용되며, 각 시트는 locales/[namespace]/ 폴더에 저장됩니다.
 
     // index.tsx 생성 (선택사항)
-    // generateIndexFile(finalConfig.localesDir, finalConfig.languages);
-
     console.log("✅ Translation download completed successfully");
   } catch (error) {
     console.error("❌ Download failed:", error);
-    process.exit(1);
+    throw error;
   }
 }
 
@@ -109,6 +98,7 @@ if (require.main === module) {
     sheetName: userConfig.googleSheets?.sheetName,
     languages: userConfig.languages,
   };
+  let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
@@ -127,9 +117,18 @@ if (require.main === module) {
       case "--sheet-name":
       case "-n":
         config.sheetName = args[++i];
+        console.warn(
+          "⚠️  --sheet-name is ignored because download reads every sheet as a namespace."
+        );
         break;
       case "--languages":
-        config.languages = args[++i].split(",");
+        config.languages = args[++i]
+          .split(",")
+          .map((language) => language.trim())
+          .filter(Boolean);
+        break;
+      case "--dry-run":
+        dryRun = true;
         break;
       case "--help":
       case "-h":
@@ -144,12 +143,14 @@ Options:
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
   --languages <langs>          Comma-separated list of languages (default: "en,ko")
+  --dry-run                    Print target plan without authentication, network, or writes
   -h, --help                   Show this help message
 
 Examples:
   i18n-download -s "your-spreadsheet-id"
   i18n-download -c "./my-creds.json" -s "your-spreadsheet-id" -l "./translations"
   i18n-download -s "your-spreadsheet-id" --languages "en,ko,ja"
+  i18n-download -s "your-spreadsheet-id" --dry-run
 
 How it works:
   - Automatically detects all sheets in the spreadsheet
@@ -163,5 +164,7 @@ How it works:
     }
   }
 
-  downloadTranslations(config).catch(console.error);
+  downloadTranslations(config, { dryRun }).catch(() => {
+    process.exitCode = 1;
+  });
 }

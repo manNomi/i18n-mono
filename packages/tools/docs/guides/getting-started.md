@@ -34,8 +34,9 @@ npx i18n-sheets init -s <your-spreadsheet-id>
 This creates:
 
 - `i18nexus.config.json` - Configuration file
-- `locales/en.json` - English translations
-- `locales/ko.json` - Korean translations
+- `locales/common/en.json` - English translations
+- `locales/common/ko.json` - Korean translations
+- `locales/constant/{language}.json` - Dynamic label translations
 - `locales/index.ts` - TypeScript exports
 
 ### 3. Basic Workflow
@@ -62,8 +63,12 @@ After initialization, your project will look like this:
 your-project/
 ├── i18nexus.config.json    # Configuration
 ├── locales/
-│   ├── en.json            # English translations
-│   ├── ko.json            # Korean translations
+│   ├── common/
+│   │   ├── en.json        # English translations
+│   │   └── ko.json        # Korean translations
+│   ├── constant/
+│   │   ├── en.json        # Dynamic English labels
+│   │   └── ko.json        # Dynamic Korean labels
 │   └── index.ts           # TypeScript exports
 ├── src/                   # Your source code
 └── package.json
@@ -89,15 +94,10 @@ Edit `i18nexus.config.json`:
 }
 ```
 
-### TypeScript Configuration (Advanced)
+### Typed In-Code Configuration (Advanced)
 
-For type safety, use TypeScript config:
-
-```bash
-npx i18n-sheets init --typescript
-```
-
-This creates `i18nexus.config.ts`:
+For an object that your application imports directly, `defineConfig` provides
+language type inference. The CLI and server still read `i18nexus.config.json`.
 
 ```typescript
 import { defineConfig } from "i18nexus";
@@ -108,11 +108,6 @@ export const config = defineConfig({
   localesDir: "./locales",
   sourcePattern: "src/**/*.{ts,tsx,js,jsx}",
   translationImportSource: "i18nexus",
-  googleSheets: {
-    spreadsheetId: "your-spreadsheet-id",
-    credentialsPath: "./credentials.json",
-    sheetName: "Translations",
-  },
 });
 
 export type AppLanguages = (typeof config.languages)[number];

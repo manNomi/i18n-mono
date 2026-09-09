@@ -21,6 +21,7 @@ export class WorkerPool {
   private taskQueue: QueuedTask[] = [];
   private availableWorkers: Worker[] = [];
   private workerTasks: Map<Worker, QueuedTask> = new Map();
+  private terminating = false;
   private stats: WorkerPoolStats;
 
   constructor(private workerCount: number = os.cpus().length) {
@@ -38,11 +39,12 @@ export class WorkerPool {
    * Worker Pool 초기화
    */
   async initialize(): Promise<void> {
-    // 테스트 환경에서는 .ts를, 프로덕션에서는 .js를 사용
-    const workerScript = path.join(
-      __dirname,
-      __filename.endsWith(".ts") ? "worker.ts" : "worker.js",
-    );
+    const workerScript = __filename.endsWith(".ts")
+      ? path.resolve(
+          __dirname,
+          "../../../dist/scripts/t-wrapper/swc-worker/worker.js"
+        )
+      : path.join(__dirname, "worker.js");
 
     for (let i = 0; i < this.workerCount; i++) {
       const worker = new Worker(workerScript);
@@ -61,7 +63,7 @@ export class WorkerPool {
 
       // Worker 종료 리스너 설정
       worker.on("exit", (code) => {
-        if (code !== 0) {
+        if (code !== 0 && !this.terminating) {
           console.error(`Worker stopped with exit code ${code}`);
         }
       });
@@ -154,9 +156,14 @@ export class WorkerPool {
    * Worker Pool 종료
    */
   async terminate(): Promise<void> {
-    await Promise.all(this.workers.map((worker) => worker.terminate()));
-    this.workers = [];
-    this.availableWorkers = [];
-    this.workerTasks.clear();
+    this.terminating = true;
+    try {
+      await Promise.all(this.workers.map((worker) => worker.terminate()));
+    } finally {
+      this.workers = [];
+      this.availableWorkers = [];
+      this.workerTasks.clear();
+      this.terminating = false;
+    }
   }
 }

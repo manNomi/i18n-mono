@@ -15,7 +15,7 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { I18nProvider, useI18nContext } from "../components/I18nProvider";
-import { useTranslation } from "../hooks/useTranslation";
+import { useLanguageSwitcher, useTranslation } from "../hooks/useTranslation";
 
 // Mock react-i18next
 jest.mock("react-i18next", () => ({
@@ -74,6 +74,34 @@ const LazyTranslationComponent: React.FC<{
   );
 };
 
+const NamespaceRecoveryComponent: React.FC<{ namespace: string }> = ({
+  namespace,
+}) => {
+  const { ensureNamespaceLoaded, loadedNamespaces } = useI18nContext();
+  const [status, setStatus] = React.useState("idle");
+
+  return (
+    <div>
+      <button
+        data-testid="load-namespace"
+        onClick={() => {
+          setStatus("loading");
+          void ensureNamespaceLoaded(namespace).then(
+            () => setStatus("loaded"),
+            () => setStatus("error")
+          );
+        }}
+      >
+        Load
+      </button>
+      <div data-testid="load-status">{status}</div>
+      <div data-testid="loaded-title">
+        {loadedNamespaces.get(namespace)?.en?.title ?? "missing"}
+      </div>
+    </div>
+  );
+};
+
 type Deferred<T> = {
   promise: Promise<T>;
   resolve: (value: T) => void;
@@ -101,6 +129,7 @@ const staticTranslations = {
 describe("I18nProvider", () => {
   beforeEach(() => {
     document.cookie = "";
+    localStorage.clear();
   });
 
   it("should provide default language when no cookie exists", () => {
@@ -115,7 +144,7 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("current-language")).toHaveTextContent("en");
@@ -133,11 +162,11 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("available-languages")).toHaveTextContent(
-      "en,ko",
+      "en,ko"
     );
   });
 
@@ -153,7 +182,7 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const changeButton = screen.getByTestId("change-language");
@@ -162,6 +191,218 @@ describe("I18nProvider", () => {
     await waitFor(() => {
       expect(screen.getByTestId("current-language")).toHaveTextContent("ko");
     });
+  });
+
+  it("applies concurrent language changes in invocation order", async () => {
+    const ConcurrentChangeComponent = () => {
+      const { currentLanguage, changeLanguage } = useI18nContext();
+
+      return (
+        <button
+          data-testid="concurrent-change"
+          onClick={() => {
+            void Promise.all([changeLanguage("ko"), changeLanguage("ja")]);
+          }}
+        >
+          {currentLanguage}
+        </button>
+      );
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages: [
+            ...availableLanguages,
+            { code: "ja", name: "Japanese" },
+          ],
+        }}
+      >
+        <ConcurrentChangeComponent />
+      </I18nProvider>
+    );
+
+    fireEvent.click(screen.getByTestId("concurrent-change"));
+    await waitFor(() => {
+      expect(screen.getByTestId("concurrent-change")).toHaveTextContent("ja");
+    });
+  });
+
+  it("applies a language change from a child mount effect exactly once", async () => {
+    const onLanguageChange = jest.fn();
+    const MountChange = () => {
+      const { currentLanguage, changeLanguage } = useI18nContext();
+
+      React.useEffect(() => {
+        void changeLanguage("ko");
+      }, [changeLanguage]);
+
+      return <div data-testid="mount-language">{currentLanguage}</div>;
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        onLanguageChange={onLanguageChange}
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages,
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <MountChange />
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mount-language")).toHaveTextContent("ko");
+    });
+    expect(onLanguageChange).toHaveBeenCalledTimes(1);
+    expect(onLanguageChange).toHaveBeenCalledWith("ko");
+  });
+
+  it("synchronizes a direct manager reset from a child mount effect", async () => {
+    const onLanguageChange = jest.fn();
+    const MountReset = () => {
+      const { currentLanguage, languageManager } = useI18nContext();
+
+      React.useEffect(() => {
+        languageManager.reset();
+      }, [languageManager]);
+
+      return <div data-testid="mount-reset-language">{currentLanguage}</div>;
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="ko"
+        onLanguageChange={onLanguageChange}
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages,
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <MountReset />
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mount-reset-language")).toHaveTextContent(
+        "en"
+      );
+    });
+    expect(onLanguageChange).toHaveBeenCalledTimes(1);
+    expect(onLanguageChange).toHaveBeenCalledWith("en");
+  });
+
+  it("keeps reset and cyclic language controls synchronized with provider state", async () => {
+    const onLanguageChange = jest.fn();
+    const LanguageControls = () => {
+      const {
+        currentLanguage,
+        switchLng,
+        switchToNextLanguage,
+        switchToPreviousLanguage,
+        resetLanguage,
+      } = useLanguageSwitcher();
+
+      return (
+        <div>
+          <div data-testid="switcher-language">{currentLanguage}</div>
+          <button onClick={() => void switchLng("ko")}>Korean</button>
+          <button onClick={() => void switchToNextLanguage()}>Next</button>
+          <button onClick={() => void switchToPreviousLanguage()}>
+            Previous
+          </button>
+          <button onClick={resetLanguage}>Reset</button>
+        </div>
+      );
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        onLanguageChange={onLanguageChange}
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages,
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <LanguageControls />
+      </I18nProvider>
+    );
+
+    fireEvent.click(screen.getByText("Korean"));
+    await waitFor(() => {
+      expect(screen.getByTestId("switcher-language")).toHaveTextContent("ko");
+    });
+
+    fireEvent.click(screen.getByText("Reset"));
+    await waitFor(() => {
+      expect(screen.getByTestId("switcher-language")).toHaveTextContent("en");
+    });
+
+    fireEvent.click(screen.getByText("Previous"));
+    await waitFor(() => {
+      expect(screen.getByTestId("switcher-language")).toHaveTextContent("ko");
+    });
+    fireEvent.click(screen.getByText("Next"));
+    await waitFor(() => {
+      expect(screen.getByTestId("switcher-language")).toHaveTextContent("en");
+    });
+
+    expect(onLanguageChange.mock.calls.map(([language]) => language)).toEqual([
+      "ko",
+      "en",
+      "ko",
+      "en",
+    ]);
+  });
+
+  it("treats cyclic switching over an empty language list as a no-op", async () => {
+    const EmptyControls = () => {
+      const {
+        currentLanguage,
+        switchToNextLanguage,
+        switchToPreviousLanguage,
+      } = useLanguageSwitcher();
+
+      return (
+        <button
+          data-testid="empty-controls"
+          onClick={() => {
+            void switchToNextLanguage();
+            void switchToPreviousLanguage();
+          }}
+        >
+          {currentLanguage}
+        </button>
+      );
+    };
+
+    render(
+      <I18nProvider
+        initialLanguage="en"
+        languageManagerOptions={{
+          defaultLanguage: "en",
+          availableLanguages: [],
+          enableAutoDetection: false,
+          enableLocalStorage: false,
+        }}
+      >
+        <EmptyControls />
+      </I18nProvider>
+    );
+
+    fireEvent.click(screen.getByTestId("empty-controls"));
+    expect(screen.getByTestId("empty-controls")).toHaveTextContent("en");
   });
 
   it("should throw error when useI18nContext is used outside provider", () => {
@@ -183,6 +424,8 @@ describe("I18nProvider", () => {
       <I18nProvider
         languageManagerOptions={{
           defaultLanguage: "ko",
+          enableAutoDetection: false,
+          enableLocalStorage: false,
           availableLanguages: [
             { code: "en", name: "English" },
             { code: "ko", name: "Korean" },
@@ -191,7 +434,7 @@ describe("I18nProvider", () => {
         onLanguageChange={onLanguageChange}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("current-language")).toHaveTextContent("ko");
@@ -227,7 +470,7 @@ describe("I18nProvider", () => {
         }}
       >
         <StabilityComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const firstT = seenT[0];
@@ -267,7 +510,7 @@ describe("I18nProvider", () => {
         }}
       >
         <LanguageComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const firstT = seenT[0];
@@ -275,7 +518,7 @@ describe("I18nProvider", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByTestId("change-language-with-translation"),
+        screen.getByTestId("change-language-with-translation")
       ).toHaveTextContent("제목");
     });
     expect(seenT[seenT.length - 1]).not.toBe(firstT);
@@ -287,12 +530,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -305,7 +548,7 @@ describe("I18nProvider", () => {
           }}
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
@@ -325,7 +568,7 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("translation")).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
@@ -339,12 +582,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -358,7 +601,7 @@ describe("I18nProvider", () => {
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -376,7 +619,7 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getAllByTestId("translation")[0]).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         screen.getAllByTestId("ready").forEach((readyNode) => {
           expect(readyNode).toHaveTextContent("ready");
@@ -390,12 +633,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       const HomeComponent = () => {
@@ -421,7 +664,7 @@ describe("I18nProvider", () => {
           }}
         >
           <HomeComponent />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -456,12 +699,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       const HomeComponent = () => {
@@ -499,7 +742,7 @@ describe("I18nProvider", () => {
           }}
         >
           <HomeComponent />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -521,27 +764,27 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("title")).toHaveTextContent(
-          "Lazy home title",
+          "Lazy home title"
         );
         expect(screen.getByTestId("shared")).toHaveTextContent(
-          "Static shared label",
+          "Static shared label"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
     });
 
-    it("should fall back to default language data when a lazy language load fails", async () => {
+    it("should not commit partial language data when a lazy load fails", async () => {
       const warnSpy = jest.spyOn(console, "warn").mockImplementation();
       const loads = new Map<string, Deferred<Record<string, string>>>();
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -554,7 +797,7 @@ describe("I18nProvider", () => {
           }}
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -571,29 +814,27 @@ describe("I18nProvider", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("translation")).toHaveTextContent(
-          "Home title",
-        );
-        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+        expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
       });
+      expect(screen.getByTestId("translation")).toHaveTextContent("title");
       warnSpy.mockRestore();
     });
 
-    it("should avoid retry loops after a namespace load failure", async () => {
+    it("should reject a failed load and allow an explicit retry", async () => {
       const warnSpy = jest.spyOn(console, "warn").mockImplementation();
       const loads = new Map<string, Deferred<Record<string, string>>>();
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
-      const { rerender } = render(
+      render(
         <I18nProvider
           initialLanguage="en"
           loadNamespace={loadNamespace}
@@ -602,12 +843,11 @@ describe("I18nProvider", () => {
             availableLanguages,
           }}
         >
-          <LazyTranslationComponent
-            namespace="missing"
-            translationKey="title"
-          />
-        </I18nProvider>,
+          <NamespaceRecoveryComponent namespace="missing" />
+        </I18nProvider>
       );
+
+      fireEvent.click(screen.getByTestId("load-namespace"));
 
       await waitFor(() => {
         expect(loadNamespace).toHaveBeenCalledTimes(2);
@@ -623,27 +863,31 @@ describe("I18nProvider", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+        expect(screen.getByTestId("load-status")).toHaveTextContent("error");
       });
-      expect(screen.getByTestId("translation")).toHaveTextContent("title");
+      expect(screen.getByTestId("loaded-title")).toHaveTextContent("missing");
 
-      rerender(
-        <I18nProvider
-          initialLanguage="en"
-          loadNamespace={loadNamespace}
-          languageManagerOptions={{
-            defaultLanguage: "en",
-            availableLanguages,
-          }}
-        >
-          <LazyTranslationComponent
-            namespace="missing"
-            translationKey="title"
-          />
-        </I18nProvider>,
-      );
+      fireEvent.click(screen.getByTestId("load-namespace"));
 
-      expect(loadNamespace).toHaveBeenCalledTimes(2);
+      await waitFor(() => {
+        expect(loadNamespace).toHaveBeenCalledTimes(4);
+      });
+
+      await act(async () => {
+        loads.get("missing:en")?.resolve({ title: "Recovered title" });
+        loads.get("missing:ko")?.resolve({ title: "복구된 제목" });
+        await Promise.all([
+          loads.get("missing:en")!.promise,
+          loads.get("missing:ko")!.promise,
+        ]);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("load-status")).toHaveTextContent("loaded");
+        expect(screen.getByTestId("loaded-title")).toHaveTextContent(
+          "Recovered title"
+        );
+      });
       warnSpy.mockRestore();
     });
   });

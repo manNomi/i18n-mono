@@ -6,6 +6,7 @@ import {
   LanguageConfig,
   LanguageManagerOptions,
 } from "../utils/languageManager.js";
+import type { MessageFormatter } from "../utils/message-formatter.js";
 
 /** 번역 객체에서 키 추출 */
 export type ExtractI18nKeys<T extends Record<string, Record<string, string>>> =
@@ -23,7 +24,7 @@ export type NamespaceTranslations = Record<
 /** Lazy loading용 네임스페이스 로더 타입 */
 export type NamespaceLoader = (
   namespace: string,
-  language: string,
+  language: string
 ) => Promise<Record<string, string>>;
 
 /** 네임스페이스에서 키 추출 */
@@ -68,13 +69,15 @@ export interface I18nContextType<
   loadNamespace?: NamespaceLoader;
   /** Fallback 네임스페이스 */
   fallbackNamespace?: keyof TTranslations;
+  /** Optional runtime-neutral formatter for ICU-capable translation catalogs */
+  messageFormatter?: MessageFormatter;
   /** 타입 정보 (런타임에는 사용하지 않음) */
   _type?: TTranslations;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const I18nContext = React.createContext<I18nContextType<any> | null>(
-  null,
+  null
 );
 
 export const useI18nContext = <
@@ -103,6 +106,8 @@ export interface I18nProviderProps<
   fallbackNamespace?: keyof TTranslations;
   /** 추가로 미리 로드할 네임스페이스 목록 */
   preloadNamespaces?: Array<keyof TTranslations>;
+  /** ICU 등 확장 메시지 문법을 처리하는 선택적 formatter */
+  messageFormatter?: MessageFormatter;
 }
 
 export function I18nProvider<
@@ -116,13 +121,11 @@ export function I18nProvider<
   loadNamespace,
   fallbackNamespace,
   preloadNamespaces,
+  messageFormatter,
 }: I18nProviderProps<TTranslations>) {
   // Lazy mode is automatically enabled if loadNamespace is provided
   const lazy = !!loadNamespace;
   const defaultTranslations = translations;
-  const [languageManager] = React.useState(
-    () => new LanguageManager(languageManagerOptions),
-  );
 
   const getInitialLanguage = () => {
     if (initialLanguage) {
@@ -133,19 +136,39 @@ export function I18nProvider<
 
   const [currentLanguage, setCurrentLanguage] =
     React.useState<string>(getInitialLanguage());
+  const onLanguageChangeRef = React.useRef(onLanguageChange);
+  onLanguageChangeRef.current = onLanguageChange;
+  const [{ languageManager, removeLanguageChangeListener }] = React.useState(
+    () => {
+      const manager = new LanguageManager(languageManagerOptions);
+      const removeListener = manager.addLanguageChangeListener((language) => {
+        setCurrentLanguage(language);
+        onLanguageChangeRef.current?.(language);
+      });
+
+      return {
+        languageManager: manager,
+        removeLanguageChangeListener: removeListener,
+      };
+    }
+  );
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isHydrated, setIsHydrated] = React.useState(false);
+
+  React.useEffect(
+    () => removeLanguageChangeListener,
+    [removeLanguageChangeListener]
+  );
 
   // Lazy loading을 위한 로드된 네임스페이스 추적 (state로 변경하여 리렌더링 트리거)
   const [loadedNamespaces, setLoadedNamespaces] = React.useState<
     Map<string, Record<string, Record<string, string>>>
   >(() => new Map());
   const [loadingNamespaces, setLoadingNamespaces] = React.useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   );
   const loadedNamespacesRef = React.useRef(loadedNamespaces);
   const namespaceLoadPromisesRef = React.useRef<Map<string, Promise<void>>>(
-    new Map(),
+    new Map()
   );
 
   React.useEffect(() => {
@@ -161,17 +184,9 @@ export function I18nProvider<
       const languages = languageManager.getAvailableLanguageCodes();
       const results = await Promise.all(
         languages.map(async (lang) => {
-          try {
-            const data = await loadNamespace(namespaceKey, lang);
-            return { lang, data };
-          } catch (error) {
-            console.warn(
-              `Failed to load namespace "${namespaceKey}" for language "${lang}":`,
-              error,
-            );
-            return { lang, data: undefined };
-          }
-        }),
+          const data = await loadNamespace(namespaceKey, lang);
+          return { lang, data };
+        })
       );
 
       const namespaceData: Record<string, Record<string, string>> = {};
@@ -193,7 +208,7 @@ export function I18nProvider<
         return next;
       });
     },
-    [languageManager, loadNamespace],
+    [languageManager, loadNamespace]
   );
 
   const ensureNamespaceLoaded = React.useCallback(
@@ -226,26 +241,7 @@ export function I18nProvider<
       const loadPromise = loadNamespaceForAllLanguages(namespaceKey)
         .catch((error) => {
           console.warn(`Failed to load namespace "${namespaceKey}":`, error);
-
-          setLoadedNamespaces((prev) => {
-            if (prev.has(namespaceKey)) {
-              loadedNamespacesRef.current = prev;
-              return prev;
-            }
-
-            const emptyNamespaceData: Record<
-              string,
-              Record<string, string>
-            > = {};
-            languageManager.getAvailableLanguageCodes().forEach((lang) => {
-              emptyNamespaceData[lang] = {};
-            });
-
-            const next = new Map(prev);
-            next.set(namespaceKey, emptyNamespaceData);
-            loadedNamespacesRef.current = next;
-            return next;
-          });
+          throw error;
         })
         .finally(() => {
           namespaceLoadPromisesRef.current.delete(namespaceKey);
@@ -263,7 +259,7 @@ export function I18nProvider<
       namespaceLoadPromisesRef.current.set(namespaceKey, loadPromise);
       return loadPromise;
     },
-    [languageManager, lazy, loadNamespace, loadNamespaceForAllLanguages],
+    [lazy, loadNamespace, loadNamespaceForAllLanguages]
   );
 
   // Preload namespaces (fallback + additional preload namespaces)
@@ -282,7 +278,7 @@ export function I18nProvider<
 
     // Preload all namespaces
     namespacesToPreload.forEach((nsKey) => {
-      ensureNamespaceLoaded(nsKey);
+      void ensureNamespaceLoaded(nsKey).catch(() => undefined);
     });
   }, [
     lazy,
@@ -303,9 +299,6 @@ export function I18nProvider<
       if (!success) {
         throw new Error(`Failed to set language to ${lang}`);
       }
-
-      setCurrentLanguage(lang);
-      onLanguageChange?.(lang);
     } catch (error) {
       console.error("Failed to change language:", error);
       throw error;
@@ -315,8 +308,6 @@ export function I18nProvider<
   };
 
   React.useEffect(() => {
-    setIsHydrated(true);
-
     if (!initialLanguage) {
       const actualLanguage = languageManager.getCurrentLanguage();
       if (actualLanguage !== currentLanguage) {
@@ -325,19 +316,6 @@ export function I18nProvider<
       }
     }
   }, []);
-
-  React.useEffect(() => {
-    if (!isHydrated) return;
-
-    const removeListener = languageManager.addLanguageChangeListener((lang) => {
-      if (lang !== currentLanguage) {
-        setCurrentLanguage(lang);
-        onLanguageChange?.(lang);
-      }
-    });
-
-    return removeListener;
-  }, [languageManager, currentLanguage, onLanguageChange, isHydrated]);
 
   const contextValue: I18nContextType<TTranslations> = {
     currentLanguage,
@@ -352,11 +330,10 @@ export function I18nProvider<
     lazy,
     loadNamespace,
     fallbackNamespace,
+    messageFormatter,
   };
 
   return (
-    <I18nContext.Provider value={contextValue as I18nContextType<any>}>
-      {children}
-    </I18nContext.Provider>
+    <I18nContext.Provider value={contextValue}>{children}</I18nContext.Provider>
   );
 }

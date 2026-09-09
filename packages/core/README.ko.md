@@ -43,6 +43,46 @@ npm install i18nexus
 npm install -D i18nexus-tools  # CLI 도구를 위해 권장
 ```
 
+### 호환성
+
+- Node.js 22.x, 24.x 또는 26.x
+- React 및 React DOM 18.x 또는 19.x
+- ESM package entrypoint; CommonJS에서는 dynamic `import()` 사용
+- `i18nexus/server`는 Node filesystem API가 필요하며 Edge runtime 미지원
+
+기존 Node 16/18/20 및 React 16/17 범위를 제거하는 것은 breaking support
+change이므로 다음 major release에 포함해야 합니다.
+
+## ICU, 포맷터, Edge
+ICU는 plural 규칙, select 분기, rich tag를 표현하는 국제 메시지 문법입니다.
+
+```tsx
+"use client";
+import { IcuI18nProvider, useIcuTranslation } from "i18nexus/icu";
+const translations = { common: { en: { items: "{count, plural, one {# item} other {# items}}" } } };
+function Items() { const { t } = useIcuTranslation("common"); return <p>{t("items", { count: 2 })}</p>; }
+export function I18n() { return <IcuI18nProvider initialLanguage="en" translations={translations}><Items /></IcuI18nProvider>; }
+```
+
+`createFormatter(locale)`, `useTranslation().format`, `useFormatter()`는 현재 언어의 native `Intl`을 사용합니다.
+
+```tsx
+"use client";
+import { createFormatter, useFormatter, useTranslation } from "i18nexus";
+const korean = createFormatter("ko-KR");
+export function Price() { const { format } = useTranslation("common"); const local = useFormatter(); return <p>{format.currency(12000, "KRW")} {local.list(["A", "B"])} {korean.number(3)}</p>; }
+```
+
+`i18nexus/edge`는 동기 Web API context를 만들고 pure ICU formatter subpath를 받습니다.
+
+```ts
+import { getEdgeTranslation } from "i18nexus/edge";
+import { createIcuMessageFormatter } from "i18nexus/icu/formatter";
+export function handle(request: Request) { const { t, format } = getEdgeTranslation(request.headers, { en: { items: "{count, plural, one {# item} other {# items}}" } }, { availableLanguages: ["en"], messageFormatter: createIcuMessageFormatter() }); return new Response(`${t("items", { count: 2 })}: ${format.number(1200)}`); }
+```
+
+마이그레이션 참고: 기본 root와 server 경로의 `{{name}}` 보간은 그대로입니다.
+
 ### 1. 설정 초기화 (권장)
 
 ```bash
@@ -61,9 +101,29 @@ npx i18n-sheets init
 }
 ```
 
-**참고:** `i18nexus.config.json`이 권장되는 설정 형식입니다. JavaScript/TypeScript 설정 파일은 CLI 도구에서는 사용할 수 있지만, `i18nexus/server` 런타임은 Next.js 동적 import 경고를 피하기 위해 읽지 않습니다. JSON 설정 없이 JS/TS 설정만 있으면 경고를 출력하고 해당 파일을 무시합니다.
+**참고:** `i18nexus.config.json`만 core 서버 진입점과 CLI 도구에서 자동으로 탐색됩니다. JavaScript/TypeScript 설정 파일은 Next.js 동적 import 경고와 실행 환경 차이를 피하기 위해 읽지 않습니다. JSON 설정 없이 JS/TS 설정만 있으면 경고를 출력하고 해당 파일을 무시합니다.
 
-### 2. Provider 설정 (Next.js App Router)
+### 2. 번역 리소스 생성
+
+`locales/common/en.json`:
+
+```json
+{
+  "welcome": "Welcome",
+  "hello": "Hello, {{name}}"
+}
+```
+
+`locales/common/ko.json`:
+
+```json
+{
+  "welcome": "환영합니다",
+  "hello": "안녕하세요, {{name}}님"
+}
+```
+
+### 3. Provider 설정 (Next.js App Router)
 
 `I18nProvider`는 클라이언트 컴포넌트이므로 서버 `layout.tsx`에 직접 두지 말고 작은 클라이언트 래퍼로 감싸세요.
 
@@ -73,6 +133,11 @@ npx i18n-sheets init
 
 import { I18nProvider } from "i18nexus";
 
+import commonEn from "../locales/common/en.json";
+import commonKo from "../locales/common/ko.json";
+
+const translations = { common: { en: commonEn, ko: commonKo } };
+
 export function I18nClientProvider({
   children,
   initialLanguage,
@@ -81,7 +146,13 @@ export function I18nClientProvider({
   initialLanguage?: string;
 }) {
   return (
-    <I18nProvider initialLanguage={initialLanguage}>{children}</I18nProvider>
+    <I18nProvider
+      initialLanguage={initialLanguage}
+      translations={translations}
+      fallbackNamespace="common"
+    >
+      {children}
+    </I18nProvider>
   );
 }
 ```
@@ -111,7 +182,7 @@ export default async function RootLayout({ children }) {
 
 `i18nexus/server`를 사용하는 Next.js 프로젝트는 TypeScript가 package subpath exports를 해석할 수 있도록 `tsconfig.json`에 `"moduleResolution": "bundler"`를 권장합니다.
 
-### 3. 번역 사용
+### 4. 번역 사용
 
 **Server Component:**
 
@@ -126,7 +197,7 @@ export default async function Page() {
 
   return (
     <div>
-      <h1>{t("환영합니다 {{name}}", { name: "사용자" })}</h1>
+      <h1>{t("hello", { name: "사용자" })}</h1>
       <p>현재 언어: {language}</p>
     </div>
   );
@@ -140,12 +211,12 @@ export default async function Page() {
 import { useTranslation } from "i18nexus";
 
 export default function ClientComponent() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   return (
     <div>
-      <h1>{t("환영합니다")}</h1>
-      <p>{t("{{count}}개의 메시지가 있습니다", { count: 5 })}</p>
+      <h1>{t("welcome")}</h1>
+      <p>{t("hello", { name: "사용자" })}</p>
     </div>
   );
 }
@@ -338,7 +409,7 @@ t("{{count}}/{{total}} 완료", { count: 7, total: 10 });
 t(
   "가격: {{amount}}",
   { amount: 100 },
-  { amount: { color: "red", fontWeight: "bold" } },
+  { amount: { color: "red", fontWeight: "bold" } }
 );
 ```
 
@@ -365,7 +436,7 @@ const I18NexusDevtools =
     : dynamic(
         () =>
           import("i18nexus/devtools").then((module) => module.I18NexusDevtools),
-        { ssr: false },
+        { ssr: false }
       );
 
 export function ClientProvider({ children }: { children: React.ReactNode }) {

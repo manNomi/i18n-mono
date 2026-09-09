@@ -1,4 +1,4 @@
-import { getCookie, setCookie } from "../utils/cookie";
+import { getCookie, setCookie } from "../utils/cookie.js";
 export class LanguageManager {
     constructor(options = {}) {
         this.listeners = [];

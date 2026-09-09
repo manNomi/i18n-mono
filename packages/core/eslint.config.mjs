@@ -33,18 +33,25 @@ export default tseslint.config(
       "react/jsx-filename-extension": [
         1,
         {
-          extensions: [".tsx", ".ts"]
-        }
+          extensions: [".tsx", ".ts"],
+        },
       ],
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
-          argsIgnorePattern: "^_"
-        }
+          argsIgnorePattern: "^_",
+        },
       ],
       "@typescript-eslint/no-explicit-any": "warn",
-      "no-console": ["warn", { "allow": ["warn", "error"] }],
-      "@typescript-eslint/no-unused-expressions": "off"
-    }
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "@typescript-eslint/no-unused-expressions": "off",
+    },
+  },
+  {
+    files: ["src/**/*.test.{ts,tsx}", "src/**/__tests__/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
   }
 );

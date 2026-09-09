@@ -6,6 +6,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -17,6 +18,26 @@
       "import": "./dist/utils/server.js",
       "default": "./dist/utils/server.js"
     },
+    "./edge": {
+      "types": "./dist/utils/edge.d.ts",
+      "import": "./dist/utils/edge.js",
+      "default": "./dist/utils/edge.js"
+    },
+    "./icu": {
+      "types": "./dist/utils/icu.d.ts",
+      "import": "./dist/utils/icu.js",
+      "default": "./dist/utils/icu.js"
+    },
+    "./icu/server": {
+      "types": "./dist/utils/icu-server.d.ts",
+      "import": "./dist/utils/icu-server.js",
+      "default": "./dist/utils/icu-server.js"
+    },
+    "./icu/formatter": {
+      "types": "./dist/utils/icu-formatter.d.ts",
+      "import": "./dist/utils/icu-formatter.js",
+      "default": "./dist/utils/icu-formatter.js"
+    },
     "./devtools": {
       "types": "./dist/components/I18NexusDevtools.d.ts",
       "import": "./dist/components/I18NexusDevtools.js",
@@ -25,15 +46,22 @@
   },
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.build.json",
+    "check:dist": "node scripts/check-dist-parity.mjs",
     "clean": "rm -rf dist",
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.{ts,tsx} --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "lint": "eslint src/**/*.{ts,tsx} --max-warnings=0",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
     "prepack": "npm run build",
     "prepublishOnly": "npm run build",
     "smoke:pack": "node scripts/smoke-packed-package.mjs",
+    "smoke:bundle": "node scripts/smoke-browser-bundle.mjs",
+    "smoke:edge": "node scripts/smoke-edge-runtime.mjs",
+    "benchmark:translation": "node scripts/benchmark-translation.mjs",
+    "smoke:react-matrix": "node scripts/smoke-react-matrix.mjs",
     "version": "(npm run format || true) && git add -A src || true",
     "postversion": "echo '✅ Version updated successfully'",
     "validate": "npm run build && npm run test",
@@ -55,13 +83,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/manNomi/i18nexus.git",
+    "url": "git+https://github.com/i18n-global/i18n-mono.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/manNomi/i18nexus/issues"
+    "url": "https://github.com/i18n-global/i18n-mono/issues"
   },
-  "homepage": "https://github.com/manNomi/i18nexus/tree/main/packages/core#readme",
+  "homepage": "https://github.com/i18n-global/i18n-mono/tree/main/packages/core#readme",
   "files": [
     "dist",
     "README.md",
@@ -69,8 +97,11 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0"
+  },
+  "dependencies": {
+    "intl-messageformat": "11.2.13"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
@@ -79,16 +110,15 @@
     "@babel/preset-typescript": "^7.23.0",
     "@eslint/js": "^9.36.0",
     "@testing-library/jest-dom": "^6.1.0",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^14.3.1",
     "@types/babel__generator": "^7.6.0",
     "@types/babel__traverse": "^7.20.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.8.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^6.9.0",
-    "@typescript-eslint/parser": "^6.9.0",
-    "eslint": "^8.57.1",
+    "esbuild": "0.25.11",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.37.5",
@@ -106,7 +136,7 @@
     "typescript-eslint": "^8.44.1"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": "22.x || 24.x || 26.x",
+    "npm": ">=9.0.0"
   }
 }

@@ -42,6 +42,7 @@ i18nexus에 기여해주셔서 감사합니다! 🎉
 
 1. **GitHub에서 저장소를 Fork** 하세요
 2. **Fork한 저장소를 Clone**:
+
    ```bash
    git clone https://github.com/your-username/i18nexus.git
    cd i18nexus
@@ -91,6 +92,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 **브랜치 네이밍 컨벤션:**
+
 - `feature/` - 새로운 기능
 - `fix/` - 버그 수정
 - `docs/` - 문서 변경
@@ -185,10 +187,10 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  label, 
-  onClick, 
-  disabled = false 
+export const Button: React.FC<ButtonProps> = ({
+  label,
+  onClick,
+  disabled = false
 }) => {
   return (
     <button onClick={onClick} disabled={disabled}>
@@ -311,18 +313,22 @@ docs: TypeScript 설정 가이드 개선
 
 ```markdown
 ## 설명
+
 변경사항에 대한 간단한 설명.
 
 ## 변경 타입
+
 - [ ] 버그 수정 (기존 기능에 영향 없는 수정)
 - [ ] 새로운 기능 (기존 기능에 영향 없는 추가)
 - [ ] 주요 변경사항 (기존 기능에 영향을 주는 수정 또는 추가)
 - [ ] 문서 업데이트
 
 ## 테스트 방법
+
 실행한 테스트와 재현 방법을 설명해주세요.
 
 ## 체크리스트
+
 - [ ] 프로젝트의 스타일 가이드를 따름
 - [ ] 코드 자체 검토 완료
 - [ ] 이해하기 어려운 부분에 주석 추가
@@ -332,6 +338,7 @@ docs: TypeScript 설정 가이드 개선
 - [ ] 모든 테스트가 로컬에서 통과
 
 ## 스크린샷 (해당하는 경우)
+
 변경사항을 설명하는 스크린샷 추가.
 ```
 
@@ -354,30 +361,36 @@ docs: TypeScript 설정 가이드 개선
 
 ### 버그 리포트 템플릿
 
-```markdown
+````markdown
 ## 버그 설명
+
 버그에 대한 명확하고 간결한 설명.
 
 ## 환경
+
 - **i18nexus 버전**: 2.7.0
-- **Node.js 버전**: 18.0.0
+- **Node.js 버전**: 22.0.0
 - **npm 버전**: 9.0.0
 - **운영체제**: macOS 13.0
 - **프레임워크**: Next.js 14.0.0
 
 ## 재현 단계
+
 1. i18nexus 설치
 2. 다음과 같이 컴포넌트 생성...
 3. 애플리케이션 실행
 4. 에러 발생
 
 ## 예상 동작
+
 예상했던 동작.
 
 ## 실제 동작
+
 실제로 발생한 동작.
 
 ## 코드 샘플
+
 ```typescript
 // 최소한의 재현 코드
 import { useTranslation } from "i18nexus";
@@ -387,15 +400,19 @@ export default function Component() {
   return <div>{t("key")}</div>;
 }
 ```
+````
 
 ## 에러 메시지
+
 ```
 전체 에러 출력 또는 콘솔 로그
 ```
 
 ## 추가 정보
+
 도움이 될 만한 기타 정보.
-```
+
+````
 
 ---
 
@@ -423,18 +440,21 @@ export default function Component() {
 ```typescript
 // 이 기능을 어떻게 사용할 것으로 예상하시나요
 const { t } = useTranslation();
-t("key", { 
-  plural: true, 
-  count: 5 
+t("key", {
+  plural: true,
+  count: 5
 });
-```
+````
 
 ## 고려한 대안
+
 고려한 다른 솔루션이 있나요?
 
 ## 추가 정보
+
 기타 정보나 스크린샷.
-```
+
+````
 
 ---
 
@@ -471,13 +491,15 @@ t("key", {
 ```typescript
 // 주석이 포함된 코드 예시
 const example = "value";
-```
+````
 
 **출력:**
+
 ```
 예상 출력
 ```
-```
+
+````
 
 ---
 
@@ -509,7 +531,7 @@ describe("useTranslation", () => {
     expect(t("존재하지않는키")).toBe("존재하지않는키");
   });
 });
-```
+````
 
 ### 테스트 커버리지
 
@@ -558,6 +580,7 @@ npm test -- --coverage
 ### 기여자
 
 모든 기여자는 다음에서 인정받습니다:
+
 - README.md 기여자 섹션
 - 릴리즈 노트
 - Package.json 기여자 필드
@@ -577,4 +600,3 @@ i18nexus에 기여해주셔서 감사합니다! 작든 크든, 모든 기여가 
 ---
 
 **즐거운 코딩 되세요!** 🚀
-

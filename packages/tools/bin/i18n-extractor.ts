@@ -52,7 +52,7 @@ for (let i = 0; i < args.length; i++) {
       config.outputDir = args[++i];
       break;
     case "--format":
-    case "-f":
+    case "-f": {
       const format = args[++i];
       if (format !== "json" && format !== "csv") {
         console.error(`Invalid format: ${format}. Use 'json' or 'csv'`);
@@ -60,6 +60,7 @@ for (let i = 0; i < args.length; i++) {
       }
       config.outputFormat = format as "json" | "csv";
       break;
+    }
     case "--languages":
     case "-l":
       config.languages = args[++i].split(",").map((l) => l.trim());
@@ -90,7 +91,7 @@ for (let i = 0; i < args.length; i++) {
     case "--strict-types":
       config.strictTypeGeneration = true;
       break;
-    case "--static-key-extraction":
+    case "--static-key-extraction": {
       const mode = args[++i];
       if (mode !== "off" && mode !== "safe" && mode !== "aggressive") {
         console.error(
@@ -100,6 +101,7 @@ for (let i = 0; i < args.length; i++) {
       }
       config.staticKeyExtraction = mode;
       break;
+    }
     case "--help":
     case "-h":
       console.log(`

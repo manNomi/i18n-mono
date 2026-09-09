@@ -6,10 +6,11 @@ Complete reference for the `i18n-wrapper` command.
 
 The `i18n-wrapper` command automatically wraps hardcoded strings with `t()` translation functions and adds necessary import statements and hooks.
 
-**Two versions available:**
+**Available entrypoints:**
 
 - **`i18n-wrapper`** (Standard, Recommended) - Uses Babel parser (stable, well-tested, faster)
-- **`i18n-wrapper-swc`** (Experimental) - Uses SWC parser (currently slower due to AST conversion overhead)
+- **`i18n-wrapper-swc-worker`** - Explicit SWC worker-thread implementation
+- **`i18n-wrapper-swc`** (Deprecated) - Compatibility alias for the same adaptive engine as `i18n-wrapper`; it does not force SWC
 
 ## Basic Usage
 
@@ -17,8 +18,8 @@ The `i18n-wrapper` command automatically wraps hardcoded strings with `t()` tran
 # Standard version (Babel)
 npx i18n-wrapper [options]
 
-# High-performance version (SWC) - NEW!
-npx i18n-wrapper-swc [options]
+# Explicit SWC worker implementation
+npx i18n-wrapper-swc-worker [options]
 ```
 
 ## ⚠️ Performance Comparison
@@ -27,23 +28,17 @@ npx i18n-wrapper-swc [options]
 # Test with Babel (standard, recommended)
 I18N_PERF_MONITOR=true I18N_PERF_VERBOSE=true npx i18n-wrapper
 
-# Test with SWC (experimental)
-I18N_PERF_MONITOR=true I18N_PERF_VERBOSE=true npx i18n-wrapper-swc
+# Test with explicit SWC workers
+I18N_PERF_MONITOR=true I18N_PERF_VERBOSE=true npx i18n-wrapper-swc-worker
 ```
 
 **Current Test Results:**
 
-- **Babel is faster** than SWC in current implementation
-- SWC AST → Babel AST conversion overhead causes performance degradation
-- **Recommendation:** Use `i18n-wrapper` (Babel) for best performance
+- The adaptive engine uses Babel below 3,000 matched files and SWC workers at or above that threshold.
+- Use `i18n-wrapper-swc-worker` only when you intentionally want worker-thread execution.
+- `i18n-wrapper-swc` remains only to avoid breaking old scripts and reports the strategy it actually selected.
 
-**Why is SWC slower?**
-
-- SWC AST structure differs from Babel AST
-- Current implementation uses type casting instead of proper conversion
-- Babel traverse operations may be inefficient with SWC AST
-
-Both versions produce **identical output** - only parsing speed differs.
+Both supported engines target the same transformation contract, with separate executable fixtures.
 
 ## Options
 

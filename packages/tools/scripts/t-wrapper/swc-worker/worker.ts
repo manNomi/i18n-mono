@@ -6,10 +6,10 @@
  */
 
 import { parentPort } from "worker_threads";
+import { parse } from "@babel/parser";
 import { parseSync } from "@swc/core";
 import traverse, { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
-import generate from "@babel/generator";
 import { WorkerTask, WorkerResult } from "./types";
 import { tryTransformComponent } from "../common/ast/component-transformer";
 import {
@@ -31,7 +31,7 @@ if (!parentPort) {
 function parseWithSwc(code: string): t.File {
   try {
     // SWC로 빠르게 파싱 (문법 검증 및 트랜스파일)
-    const result = parseSync(code, {
+    parseSync(code, {
       syntax: "typescript",
       tsx: true,
       decorators: true,
@@ -41,8 +41,7 @@ function parseWithSwc(code: string): t.File {
     // SWC AST를 Babel AST로 변환하는 것은 복잡하므로,
     // 대신 Babel parser를 직접 사용 (하이브리드 접근)
     // SWC의 주된 이점은 병렬 처리에서 나옴
-    const babelParser = require("@babel/parser");
-    return babelParser.parse(code, {
+    return parse(code, {
       sourceType: "module",
       plugins: [
         "typescript",
@@ -95,7 +94,9 @@ function processFile(task: WorkerTask): WorkerResult {
     // 3. 변경사항 적용
     if (isFileModified) {
       applyTranslationsToAST(ast, modifiedComponentPaths, config);
-      writeASTToFile(ast, filePath, config);
+      if (!config.dryRun) {
+        writeASTToFile(ast, filePath, config);
+      }
 
       const processingTime = Date.now() - startTime;
       return {

@@ -161,7 +161,7 @@ const DEFAULT_CONFIG: I18nexusConfig = {
 
 function isHelpOrVersionCommand(): boolean {
   return process.argv.some((arg) =>
-    ["--help", "-h", "--version", "-v", "-V"].includes(arg),
+    ["--help", "-h", "--version", "-v", "-V"].includes(arg)
   );
 }
 
@@ -171,7 +171,7 @@ function isHelpOrVersionCommand(): boolean {
  */
 export function loadConfig(
   configPath: string = "i18nexus.config.json",
-  options?: { silent?: boolean },
+  options?: { silent?: boolean }
 ): I18nexusConfig {
   const absolutePath = pathLib.resolve(process.cwd(), configPath);
   const shouldLog = !options?.silent && !isHelpOrVersionCommand();
@@ -179,7 +179,7 @@ export function loadConfig(
   if (!fs.existsSync(absolutePath)) {
     if (shouldLog) {
       console.log(
-        "⚠️  i18nexus.config.json not found, using default configuration",
+        "⚠️  i18nexus.config.json not found, using default configuration"
       );
       console.log("💡 Run 'i18n-sheets init' to create a config file");
     }
@@ -192,7 +192,7 @@ export function loadConfig(
     const config = JSON.parse(fileContent);
 
     // namespaceLocation이 설정되어 있으면 namespacing.basePath로 변환
-    let finalConfig = { ...config };
+    const finalConfig = { ...config };
     if (config.namespaceLocation) {
       finalConfig.namespacing = {
         enabled: true,
@@ -223,7 +223,7 @@ export function loadConfig(
     if (shouldLog) {
       console.warn(
         `⚠️  Failed to load ${configPath}, using default configuration:`,
-        error,
+        error
       );
     }
     return DEFAULT_CONFIG;
@@ -235,7 +235,7 @@ export function loadConfig(
  * 서버 환경에서 사용하기 적합합니다.
  */
 export function loadConfigSilently(
-  configPath: string = "i18nexus.config.json",
+  configPath: string = "i18nexus.config.json"
 ): I18nexusConfig {
   return loadConfig(configPath, { silent: true });
 }

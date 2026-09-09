@@ -32,7 +32,7 @@ npx i18n-sheets init [options]
 - `-c, --credentials <path>` - Path to credentials file (default: `./credentials.json`)
 - `-l, --locales <dir>` - Locales directory (default: `./locales`)
 - `--languages <langs>` - Comma-separated languages (default: `en,ko`)
-- `--typescript` - Generate TypeScript config
+- `--typescript`, `--ts` - Deprecated compatibility flag; emits a warning and still generates the required JSON config
 
 **Examples:**
 
@@ -43,7 +43,7 @@ npx i18n-sheets init
 # With Google Sheets
 npx i18n-sheets init -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
 
-# TypeScript config
+# Deprecated flag (JSON is still generated)
 npx i18n-sheets init --typescript
 
 # Custom languages
@@ -274,7 +274,7 @@ npx i18n-extractor -l "en"
 
 ### Dry Run Mode
 
-All commands support `--dry-run` to preview changes:
+The mutating commands below support `--dry-run`. Wrapper/extractor/cleanup inspect local inputs; upload/download print a config-only plan without authentication or network requests:
 
 ```bash
 # Preview wrapper changes

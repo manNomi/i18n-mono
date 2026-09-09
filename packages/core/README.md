@@ -1,6 +1,6 @@
 # 🌐 i18nexus
 
-> Type-safe i18n for React with zero runtime overhead
+> Type-safe i18n for React with a small, tree-shakeable runtime
 
 [English](./README.md) | [한국어](./README.ko.md)
 
@@ -39,12 +39,12 @@
 - Comprehensive TypeScript types
 - Rich documentation and examples
 
-### 🔥 Performance Optimized
+### 🔥 Measured Performance Characteristics
 
-- Lightweight bundle size
-- Lazy loading support
-- Efficient memory usage
-- Hot Module Replacement support
+- Tree-shakeable ESM entrypoints (`sideEffects: false`)
+- Lazy namespace loading support
+- Reproducible browser-bundle and translation microbenchmark scripts
+- Published numbers and measurement limits in the adoption evidence
 
 ## 📦 Installation
 
@@ -55,6 +55,47 @@ yarn add i18nexus
 # or
 pnpm add i18nexus
 ```
+
+### Compatibility
+
+- Node.js 22.x, 24.x or 26.x
+- React and React DOM 18.x or 19.x
+- ESM package entrypoints; CommonJS callers must use dynamic `import()`
+- `i18nexus/server` requires Node filesystem APIs and does not support Edge runtimes
+
+Dropping the older Node 16/18/20 and React 16/17 ranges is a breaking support
+change and requires a new major release.
+
+## ICU, Formatting, and Edge
+ICU is a standard message syntax for plural rules, select branches, and rich tags.
+The ICU, formatting, and Edge examples in this branch are release-candidate APIs verified from a local tarball. They are not part of the published npm `i18nexus` 4.0.1 release; publication needs a separate versioned release.
+
+```tsx
+"use client";
+import { IcuI18nProvider, useIcuTranslation } from "i18nexus/icu";
+const translations = { common: { en: { items: "{count, plural, one {# item} other {# items}}" } } };
+function Items() { const { t } = useIcuTranslation("common"); return <p>{t("items", { count: 2 })}</p>; }
+export function I18n() { return <IcuI18nProvider initialLanguage="en" translations={translations}><Items /></IcuI18nProvider>; }
+```
+
+`createFormatter(locale)`, `useTranslation().format`, and `useFormatter()` use native `Intl` for the active locale.
+
+```tsx
+"use client";
+import { createFormatter, useFormatter, useTranslation } from "i18nexus";
+const korean = createFormatter("ko-KR");
+export function Price() { const { format } = useTranslation("common"); const local = useFormatter(); return <p>{format.currency(12000, "KRW")} {local.list(["A", "B"])} {korean.number(3)}</p>; }
+```
+
+`i18nexus/edge` creates a synchronous Web API context and accepts the pure ICU formatter subpath.
+
+```ts
+import { getEdgeTranslation } from "i18nexus/edge";
+import { createIcuMessageFormatter } from "i18nexus/icu/formatter";
+export function handle(request: Request) { const { t, format } = getEdgeTranslation(request.headers, { en: { items: "{count, plural, one {# item} other {# items}}" } }, { availableLanguages: ["en"], messageFormatter: createIcuMessageFormatter() }); return new Response(`${t("items", { count: 2 })}: ${format.number(1200)}`); }
+```
+
+Migration note: default root and server paths still use `{{name}}`; existing catalogs change only when opting into ICU.
 
 ## 🚀 Quick Start
 
@@ -72,16 +113,18 @@ locales/
     └── ko.json
 ```
 
+`locales/common/en.json`:
+
 ```json
-// locales/common/en.json
 {
   "welcome": "Welcome",
   "hello": "Hello, {{name}}"
 }
 ```
 
+`locales/common/ko.json`:
+
 ```json
-// locales/common/ko.json
 {
   "welcome": "환영합니다",
   "hello": "안녕하세요, {{name}}님"
@@ -99,12 +142,25 @@ wrapper:
 
 import { I18nProvider } from "i18nexus";
 
+import commonEn from "../locales/common/en.json";
+import commonKo from "../locales/common/ko.json";
+
+const translations = { common: { en: commonEn, ko: commonKo } };
+
 export function I18nClientProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <I18nProvider initialLanguage="en">{children}</I18nProvider>;
+  return (
+    <I18nProvider
+      initialLanguage="en"
+      translations={translations}
+      fallbackNamespace="common"
+    >
+      {children}
+    </I18nProvider>
+  );
 }
 ```
 
@@ -557,11 +613,11 @@ Create a configuration file in your project root:
 - `localesDir` - Directory for translation files
 - `fallbackNamespace` - Default namespace used for fallback keys
 
-For `i18nexus/server`, `i18nexus.config.json` is the runtime-supported config
-format. JavaScript/TypeScript config files are supported by the CLI tools, but
-the server runtime avoids importing them so Next.js builds do not emit dynamic
-import warnings. If `i18nexus/server` finds a JS/TS config without a JSON
-config, it logs a warning and ignores that file.
+`i18nexus.config.json` is the only automatically discovered config format for
+the core server entry and CLI tools. JavaScript/TypeScript config files are not
+auto-discovered; the server runtime avoids importing them so Next.js builds do
+not emit dynamic import warnings. If `i18nexus/server` finds a JS/TS config
+without a JSON config, it logs a warning and ignores that file.
 
 If TypeScript cannot resolve `i18nexus/server`, set modern package export
 resolution:

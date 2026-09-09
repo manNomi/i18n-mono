@@ -42,6 +42,7 @@ Before you begin, ensure you have the following installed:
 
 1. **Fork the repository** on GitHub
 2. **Clone your fork**:
+
    ```bash
    git clone https://github.com/your-username/i18nexus.git
    cd i18nexus
@@ -91,6 +92,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 **Branch Naming Convention:**
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation changes
@@ -185,10 +187,10 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  label, 
-  onClick, 
-  disabled = false 
+export const Button: React.FC<ButtonProps> = ({
+  label,
+  onClick,
+  disabled = false
 }) => {
   return (
     <button onClick={onClick} disabled={disabled}>
@@ -311,18 +313,22 @@ docs: improve TypeScript configuration guide
 
 ```markdown
 ## Description
+
 Brief description of your changes.
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 
 ## How Has This Been Tested?
+
 Describe the tests you ran and how to reproduce them.
 
 ## Checklist
+
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -332,6 +338,7 @@ Describe the tests you ran and how to reproduce them.
 - [ ] New and existing unit tests pass locally with my changes
 
 ## Screenshots (if applicable)
+
 Add screenshots to help explain your changes.
 ```
 
@@ -354,30 +361,36 @@ Add screenshots to help explain your changes.
 
 ### Bug Report Template
 
-```markdown
+````markdown
 ## Bug Description
+
 A clear and concise description of the bug.
 
 ## Environment
+
 - **i18nexus version**: 2.7.0
-- **Node.js version**: 18.0.0
+- **Node.js version**: 22.0.0
 - **npm version**: 9.0.0
 - **OS**: macOS 13.0
 - **Framework**: Next.js 14.0.0
 
 ## Steps to Reproduce
+
 1. Install i18nexus
 2. Create a component with...
 3. Run the application
 4. See error
 
 ## Expected Behavior
+
 What you expected to happen.
 
 ## Actual Behavior
+
 What actually happened.
 
 ## Code Sample
+
 ```typescript
 // Minimal reproduction code
 import { useTranslation } from "i18nexus";
@@ -387,15 +400,19 @@ export default function Component() {
   return <div>{t("key")}</div>;
 }
 ```
+````
 
 ## Error Messages
+
 ```
 Full error output or console logs
 ```
 
 ## Additional Context
+
 Any other information that might be helpful.
-```
+
+````
 
 ---
 
@@ -423,18 +440,21 @@ How should this feature work?
 ```typescript
 // How you envision using this feature
 const { t } = useTranslation();
-t("key", { 
-  plural: true, 
-  count: 5 
+t("key", {
+  plural: true,
+  count: 5
 });
-```
+````
 
 ## Alternatives Considered
+
 What other solutions did you consider?
 
 ## Additional Context
+
 Any other information or screenshots.
-```
+
+````
 
 ---
 
@@ -471,13 +491,15 @@ Brief introduction.
 ```typescript
 // Code example with comments
 const example = "value";
-```
+````
 
 **Output:**
+
 ```
 Expected output
 ```
-```
+
+````
 
 ---
 
@@ -509,7 +531,7 @@ describe("useTranslation", () => {
     expect(t("nonexistent")).toBe("nonexistent");
   });
 });
-```
+````
 
 ### Test Coverage
 
@@ -558,6 +580,7 @@ We follow [Semantic Versioning](https://semver.org/):
 ### Contributors
 
 All contributors are recognized in:
+
 - README.md contributors section
 - Release notes
 - Package.json contributors field

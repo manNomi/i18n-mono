@@ -6,13 +6,14 @@ This guide covers all installation methods and requirements for i18nexus-tools.
 
 ### System Requirements
 
-- **Node.js**: >= 18.0.0
+- **Node.js**: 22.x, 24.x, or 26.x
 - **npm**: >= 9.0.0
 - **Operating System**: Windows, macOS, Linux
 
 ### Project Requirements
 
-- **React**: >= 16.8.0 (for hooks support)
+- **React**: not required by the CLI; `i18nexus` core supports React/React DOM
+  18.x and 19.x
 - **TypeScript**: >= 4.0.0 (optional, for TypeScript projects)
 
 ## 🚀 Installation Methods

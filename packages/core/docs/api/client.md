@@ -266,20 +266,22 @@ export const useAppTranslation = i18n.useTranslation;
 Hook for language switching functionality.
 
 ```typescript
-function useLanguageSwitcher(): UseLanguageSwitcherReturn;
+function useLanguageSwitcher<
+  TLanguage extends string = string,
+>(): UseLanguageSwitcherReturn<TLanguage>;
 ```
 
 **Returns:**
 
 ```typescript
-interface UseLanguageSwitcherReturn {
+interface UseLanguageSwitcherReturn<TLanguage extends string = string> {
   currentLanguage: string;
   availableLanguages: LanguageConfig[];
-  changeLanguage: (lang: string) => Promise<void>;
-  switchLng: (lang: string) => Promise<void>; // Alias
+  changeLanguage: (lang: TLanguage) => Promise<void>;
+  switchLng: (lang: TLanguage) => Promise<void>; // Alias
   switchToNextLanguage: () => Promise<void>;
   switchToPreviousLanguage: () => Promise<void>;
-  getLanguageConfig: (code?: string) => LanguageConfig | undefined;
+  getLanguageConfig: (code?: TLanguage) => LanguageConfig | undefined;
   detectBrowserLanguage: () => string | null;
   resetLanguage: () => void;
   isLoading: boolean;
@@ -573,7 +575,7 @@ function TranslatedContent() {
 ### 1. Keep Supported Languages Centralized
 
 ```typescript
-// i18nexus.config.ts
+// src/i18n-config.ts (imported by application code; not auto-discovered)
 export const config = defineConfig({
   languages: ["en", "ko", "ja"] as const,
   defaultLanguage: "en",

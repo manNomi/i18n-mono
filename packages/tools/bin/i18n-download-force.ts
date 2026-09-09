@@ -15,6 +15,7 @@ const config: Partial<DownloadConfig> = {
   sheetName: userConfig.googleSheets?.sheetName,
   languages: userConfig.languages,
 };
+let dryRun = false;
 
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
@@ -33,9 +34,18 @@ for (let i = 0; i < args.length; i++) {
     case "--sheet-name":
     case "-n":
       config.sheetName = args[++i];
+      console.warn(
+        "⚠️  --sheet-name is ignored because force download reads every sheet as a namespace."
+      );
       break;
     case "--languages":
-      config.languages = args[++i].split(",");
+      config.languages = args[++i]
+        .split(",")
+        .map((language) => language.trim())
+        .filter(Boolean);
+      break;
+    case "--dry-run":
+      dryRun = true;
       break;
     case "--help":
     case "-h":
@@ -48,14 +58,16 @@ Options:
   -c, --credentials <path>     Path to Google Sheets credentials file (default: "./credentials.json")
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
-  -n, --sheet-name <name>      Sheet name (default: "Translations")
+  -n, --sheet-name <name>      Deprecated and ignored; all sheets are downloaded
   --languages <langs>          Comma-separated list of languages (default: "en,ko")
+  --dry-run                    Print target plan without authentication, network, or writes
   -h, --help                   Show this help message
 
 Examples:
   i18n-download-force -s "your-spreadsheet-id"
   i18n-download-force -c "./my-creds.json" -s "your-spreadsheet-id" -l "./translations"
   i18n-download-force -s "your-spreadsheet-id" --languages "en,ko,ja"
+  i18n-download-force -s "your-spreadsheet-id" --dry-run
       `);
       process.exit(0);
       break;
@@ -63,4 +75,6 @@ Examples:
 }
 
 // force 옵션을 true로 설정하여 다운로드
-downloadTranslations(config, { force: true }).catch(console.error);
+downloadTranslations(config, { force: true, dryRun }).catch(() => {
+  process.exitCode = 1;
+});

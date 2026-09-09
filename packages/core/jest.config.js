@@ -8,7 +8,16 @@ export default {
   ],
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.js$": [
+      "babel-jest",
+      {
+        presets: [["@babel/preset-env", { targets: { node: "current" } }]],
+      },
+    ],
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(intl-messageformat|@formatjs)/)",
+  ],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },

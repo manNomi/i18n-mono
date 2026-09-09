@@ -151,7 +151,7 @@ interface TranslationFunction {
   (
     key: string,
     variables: TranslationVariables,
-    styles: TranslationStyles,
+    styles: TranslationStyles
   ): React.ReactElement;
 
   // Without styles - returns string
@@ -171,7 +171,7 @@ const text: string = t("Hello {{name}}", { name: "World" });
 const element: React.ReactElement = t(
   "Price: {{amount}}",
   { amount: 100 },
-  { amount: { color: "red" } },
+  { amount: { color: "red" } }
 );
 ```
 
@@ -207,14 +207,14 @@ const translationResult: UseTranslationReturn = useTranslation();
 Return type of `useLanguageSwitcher()` hook.
 
 ```typescript
-interface UseLanguageSwitcherReturn {
+interface UseLanguageSwitcherReturn<TLanguage extends string = string> {
   currentLanguage: string;
   availableLanguages: LanguageConfig[];
-  changeLanguage: (lang: string) => Promise<void>;
-  switchLng: (lang: string) => Promise<void>;
+  changeLanguage: (lang: TLanguage) => Promise<void>;
+  switchLng: (lang: TLanguage) => Promise<void>;
   switchToNextLanguage: () => Promise<void>;
   switchToPreviousLanguage: () => Promise<void>;
-  getLanguageConfig: (code?: string) => LanguageConfig | undefined;
+  getLanguageConfig: (code?: TLanguage) => LanguageConfig | undefined;
   detectBrowserLanguage: () => string | null;
   resetLanguage: () => void;
   isLoading: boolean;
@@ -245,7 +245,7 @@ Lazy namespace loader function.
 ```typescript
 type NamespaceLoader = (
   namespace: string,
-  language: string,
+  language: string
 ) => Promise<Record<string, string>>;
 ```
 
@@ -326,7 +326,7 @@ interface CreateI18nInstance<
   useTranslation: {
     (): CreateI18nUseTranslationReturn<string>;
     <NS extends keyof TTranslations & string>(
-      namespace: NS,
+      namespace: NS
     ): CreateI18nUseTranslationReturn<string>;
   };
   translations: TTranslations;
@@ -562,7 +562,7 @@ function getDirection(lang: string): LanguageDirection {
 Complete type-safe setup:
 
 ```typescript
-// i18nexus.config.ts
+// src/i18n-config.ts (imported by application code; not auto-discovered)
 import { defineConfig } from "i18nexus";
 import type { ExtractLanguages } from "i18nexus";
 
@@ -577,7 +577,7 @@ export const config = defineConfig({
 export type AppLanguages = ExtractLanguages<typeof config>;
 
 // App.tsx
-import type { AppLanguages } from "./i18nexus.config";
+import type { AppLanguages } from "./src/i18n-config";
 import type {
   UseTranslationReturn,
   UseLanguageSwitcherReturn,
@@ -587,7 +587,8 @@ import type {
 function App() {
   const { t, currentLanguage }: UseTranslationReturn = useTranslation();
 
-  const { changeLanguage }: UseLanguageSwitcherReturn = useLanguageSwitcher();
+  const { changeLanguage }: UseLanguageSwitcherReturn<AppLanguages> =
+    useLanguageSwitcher<AppLanguages>();
 
   const variables: TranslationVariables = {
     user: "John",

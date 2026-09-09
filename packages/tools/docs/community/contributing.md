@@ -27,7 +27,7 @@ We welcome various types of contributions:
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js 22.x, 24.x, or 26.x
 - npm >= 9.0.0
 - Git
 
@@ -227,7 +227,7 @@ What actually happens
 ## Environment
 
 - OS: [e.g., macOS, Windows, Linux]
-- Node.js version: [e.g., 18.0.0]
+- Node.js version: [e.g., 22.0.0]
 - i18nexus-tools version: [e.g., 1.5.7]
 
 ## Additional Context

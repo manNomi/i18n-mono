@@ -27,7 +27,7 @@ i18nexus-tools에 기여해주셔서 감사합니다! 이 가이드는 프로젝
 
 ### 사전 요구사항
 
-- Node.js >= 18.0.0
+- Node.js 22.x, 24.x, 26.x 중 하나
 - npm >= 9.0.0
 - Git
 
@@ -227,7 +227,7 @@ describe("기능 이름", () => {
 ## 환경
 
 - OS: [예: macOS, Windows, Linux]
-- Node.js 버전: [예: 18.0.0]
+- Node.js 버전: [예: 22.0.0]
 - i18nexus-tools 버전: [예: 1.5.7]
 
 ## 추가 컨텍스트

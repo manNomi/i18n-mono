@@ -13,7 +13,7 @@ function writeInstalledCorePackage(
   options: {
     exports?: Record<string, unknown>;
     rootSource?: string;
-  } = {},
+  } = {}
 ): void {
   const packageRoot = path.join(projectRoot, "node_modules", "i18nexus");
   const exportsMap = options.exports ?? {
@@ -43,7 +43,7 @@ function writeInstalledCorePackage(
   fs.mkdirSync(path.join(packageRoot, "dist"), { recursive: true });
   fs.writeFileSync(
     path.join(packageRoot, "dist", "index.js"),
-    options.rootSource ?? "export function createI18n() {}",
+    options.rootSource ?? "export function createI18n() {}"
   );
 }
 
@@ -82,7 +82,7 @@ describe("i18n-doctor", () => {
     fs.mkdirSync(path.join(tempDir, "locales", "types"), { recursive: true });
     fs.writeFileSync(
       path.join(tempDir, "locales", "types", "i18nexus.d.ts"),
-      "",
+      ""
     );
 
     const report = runDoctor(tempDir);
@@ -107,7 +107,23 @@ describe("i18n-doctor", () => {
 
     expect(report.ok).toBe(false);
     expect(report.issues.map((issue) => issue.code)).toEqual(
-      expect.arrayContaining(["CORE_VERSION_OUTDATED", "LOCALES_DIR_MISSING"]),
+      expect.arrayContaining(["CORE_VERSION_OUTDATED", "LOCALES_DIR_MISSING"])
+    );
+  });
+
+  it("reports a missing or malformed JSON config as blocking", () => {
+    writeJson(path.join(tempDir, "package.json"), {
+      dependencies: { i18nexus: "^4.0.0" },
+    });
+
+    expect(runDoctor(tempDir).issues.map((issue) => issue.code)).toContain(
+      "CONFIG_MISSING"
+    );
+
+    fs.writeFileSync(path.join(tempDir, "i18nexus.config.json"), "{invalid");
+
+    expect(runDoctor(tempDir).issues.map((issue) => issue.code)).toContain(
+      "CONFIG_INVALID"
     );
   });
 
@@ -133,7 +149,7 @@ describe("i18n-doctor", () => {
       expect.arrayContaining([
         "LOCALE_ENTRYPOINT_MISSING",
         "GENERATED_TYPES_MISSING",
-      ]),
+      ])
     );
   });
 
@@ -159,7 +175,7 @@ describe("i18n-doctor", () => {
     fs.mkdirSync(path.join(tempDir, "locales", "types"), { recursive: true });
     fs.writeFileSync(
       path.join(tempDir, "locales", "types", "i18nexus.d.ts"),
-      "",
+      ""
     );
 
     const report = runDoctor(tempDir);
@@ -168,7 +184,7 @@ describe("i18n-doctor", () => {
     expect(report.status).toBe("warning");
     expect(report.summary.typescriptModuleResolution).toBe("node");
     expect(report.issues.map((issue) => issue.code)).toContain(
-      "TSCONFIG_MODULE_RESOLUTION_LEGACY",
+      "TSCONFIG_MODULE_RESOLUTION_LEGACY"
     );
   });
 
@@ -193,12 +209,12 @@ describe("i18n-doctor", () => {
     });
     fs.writeFileSync(
       path.join(tempDir, "locales", "index.ts"),
-      'import { createI18n } from "i18nexus";',
+      'import { createI18n } from "i18nexus";'
     );
     fs.mkdirSync(path.join(tempDir, "locales", "types"), { recursive: true });
     fs.writeFileSync(
       path.join(tempDir, "locales", "types", "i18nexus.d.ts"),
-      "",
+      ""
     );
 
     const report = runDoctor(tempDir);
@@ -209,7 +225,7 @@ describe("i18n-doctor", () => {
       expect.arrayContaining([
         "CORE_PACKAGE_EXPORT_MISSING",
         "CORE_CREATE_I18N_EXPORT_MISSING",
-      ]),
+      ])
     );
   });
 
@@ -227,8 +243,8 @@ describe("i18n-doctor", () => {
     expect(consoleLogSpy).toHaveBeenCalledWith("🩺 i18nexus doctor");
     expect(
       consoleLogSpy.mock.calls.some((call) =>
-        String(call[0]).includes("LOCALES_DIR_MISSING"),
-      ),
+        String(call[0]).includes("LOCALES_DIR_MISSING")
+      )
     ).toBe(true);
   });
 });

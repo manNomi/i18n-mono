@@ -32,7 +32,7 @@ npx i18n-download-force [options]
 
 ### `--dry-run`
 
-Preview download without modifying local files.
+Print the configured languages and local target directory without modifying files. This is a config-only preview: it does not authenticate, make network requests, fetch sheets, or calculate a local diff.
 
 **Usage:**
 
@@ -63,6 +63,16 @@ Path to Google service account credentials file.
 npx i18n-download -c "./config/google-credentials.json"
 ```
 
+### `--languages <langs>`
+
+Comma-separated locale files to update. Every sheet must contain each requested
+language header. Headers may be recognized language names or exact codes such
+as `pt-BR`. Missing columns fail before local replacement.
+
+### `-n, --sheet-name <name>`
+
+Deprecated and ignored. Download treats every worksheet as a namespace.
+
 ### `-h, --help`
 
 Display help information.
@@ -79,6 +89,10 @@ npx i18n-download-force --help
 ### Incremental Mode (i18n-download)
 
 Adds new keys without overwriting existing translations.
+
+All sheets are fetched and parsed before one locale-root transaction commits.
+Commit failures roll back exact prior bytes, and transaction targets reject
+traversal and symbolic links.
 
 **Use When:**
 

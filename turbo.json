@@ -34,6 +34,12 @@
       "outputs": [],
       "cache": true
     },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig*.json"],
+      "outputs": [],
+      "cache": true
+    },
     "lint": {
       "inputs": [
         "$TURBO_DEFAULT$",

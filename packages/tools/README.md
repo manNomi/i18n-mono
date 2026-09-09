@@ -59,6 +59,10 @@ npm install -g i18nexus-tools
 npm install --save-dev i18nexus-tools
 ```
 
+## Package Boundary
+
+`i18nexus-tools` is a CLI-only package. Its public surface is the commands listed below; `require("i18nexus-tools")` intentionally loads an empty module and no programmatic JavaScript API is supported.
+
 ## 🚀 Quick Start
 
 ### 1. Create Configuration File
@@ -318,6 +322,7 @@ Options:
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory (default: "./locales")
   -n, --sheet-name <name>      Sheet name (auto-detected from namespaces)
+  --languages <langs>          Comma-separated language columns (default: "en,ko")
   -a, --auto-translate         Enable auto-translation (GOOGLETRANSLATE formula)
   -f, --force                  Force mode: Clear and re-upload all
   -h, --help                   Display help
@@ -348,7 +353,8 @@ npx i18n-upload -s "your-spreadsheet-id" --auto-translate
 - Namespace = Sheet name (automatic detection)
 - Formula escaping for special characters: `+`, `-`, `=`, `@`, `()`, dates, times
 - Creates separate sheet for each namespace
-- Preserves existing translations
+- Appends new keys after existing remote rows in normal mode
+- Uses configured language columns, including locale codes such as `pt-BR`
 
 **Example Output:**
 
@@ -378,7 +384,7 @@ Options:
   -c, --credentials <path>     Path to credentials file
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory
-  -n, --sheet-name <name>      Sheet name
+  -n, --sheet-name <name>      Deprecated and ignored; all sheets are downloaded
   --languages <langs>          Comma-separated languages (default: "en,ko")
   -h, --help                   Display help
 ```
@@ -406,12 +412,14 @@ Options:
   -c, --credentials <path>     Path to credentials file
   -s, --spreadsheet-id <id>    Google Spreadsheet ID (required)
   -l, --locales-dir <path>     Path to locales directory
-  -n, --sheet-name <name>      Sheet name
+  -n, --sheet-name <name>      Deprecated and ignored; all sheets are downloaded
   --languages <langs>          Comma-separated languages
   -h, --help                   Display help
 ```
 
-**⚠️ Warning:** This overwrites all local translations.
+**⚠️ Warning:** This overwrites all local translations for requested languages.
+Every sheet must contain those language columns; otherwise the command fails
+before replacing local files.
 
 **Example:**
 

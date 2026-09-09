@@ -58,7 +58,9 @@ describe("GoogleSheetsManager - CSV 기능", () => {
     // Mock Sheets API
     const mockSheets = {
       spreadsheets: {
-        get: jest.fn() as jest.MockedFunction<any>,
+        get: jest.fn().mockResolvedValue({
+          data: { sheets: [{ properties: { title: "TestSheet" } }] },
+        }) as jest.MockedFunction<any>,
         values: {
           get: jest.fn() as jest.MockedFunction<any>,
           update: jest.fn() as jest.MockedFunction<any>,
@@ -148,17 +150,16 @@ test,"Hello ""World""","안녕 ""세상"""`;
       expect(translations[0].ko).toBe('안녕 "세상"');
     });
 
-    it("헤더 형식이 잘못되어도 경고만 출력하고 계속 진행해야 함", async () => {
+    it("잘못된 헤더 형식은 쓰기 전에 거부해야 함", async () => {
       const csvPath = path.join(tempDir, "translations.csv");
       const csvContent = `Wrong,Header,Format
 key,value1,value2`;
 
       fs.writeFileSync(csvPath, csvContent, "utf-8");
 
-      // 에러가 발생하지 않아야 함
       await expect(
-        manager.readTranslationsFromCSV(csvPath),
-      ).resolves.not.toThrow();
+        manager.readTranslationsFromCSV(csvPath)
+      ).rejects.toThrow("Invalid CSV header");
     });
   });
 
@@ -242,6 +243,28 @@ button.save,Save,저장`;
 
       expect(enData["welcome.title"]).toBe("Welcome");
       expect(koData["welcome.title"]).toBe("환영합니다");
+    });
+
+    it("빈 번역 셀의 키를 빈 문자열로 보존해야 함", async () => {
+      const csvPath = path.join(tempDir, "translations.csv");
+      const localesDir = path.join(tempDir, "locales");
+      fs.writeFileSync(
+        csvPath,
+        "Key,English,Korean\nintentional.empty,,\n",
+        "utf-8"
+      );
+
+      await manager.convertCSVToLocalTranslations(csvPath, localesDir, [
+        "en",
+        "ko",
+      ]);
+
+      expect(readJsonFile(path.join(localesDir, "en.json"))).toEqual({
+        "intentional.empty": "",
+      });
+      expect(readJsonFile(path.join(localesDir, "ko.json"))).toEqual({
+        "intentional.empty": "",
+      });
     });
 
     it("네임스페이스가 설정되어 있으면 해당 디렉토리에 저장해야 함", async () => {

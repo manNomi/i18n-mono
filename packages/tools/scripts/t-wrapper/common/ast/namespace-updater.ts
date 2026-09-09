@@ -7,7 +7,7 @@ import * as t from "@babel/types";
 export function updateExistingUseTranslation(
   ast: t.File,
   correctNamespace: string,
-  sourceCode?: string,
+  _sourceCode?: string
 ): boolean {
   let updated = false;
 
@@ -21,7 +21,9 @@ export function updateExistingUseTranslation(
         if (args.length === 0) {
           path.node.arguments = [t.stringLiteral(correctNamespace)];
           updated = true;
-          console.log(`  ✓ Added namespace "${correctNamespace}" to useTranslation()`);
+          console.log(
+            `  ✓ Added namespace "${correctNamespace}" to useTranslation()`
+          );
         }
         // 빈 문자열인 경우: useTranslation("") → useTranslation("namespace")
         else if (
