@@ -53,7 +53,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
               "unused.key": "사용 안 됨",
             },
             null,
-            2,
+            2
           ),
           "en.json": JSON.stringify(
             {
@@ -61,7 +61,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
               "unused.key": "Unused",
             },
             null,
-            2,
+            2
           ),
         },
       });
@@ -98,7 +98,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
               "invalid.key": "N/A",
             },
             null,
-            2,
+            2
           ),
         },
       });
@@ -111,6 +111,53 @@ describe("i18n-clean-legacy CLI E2E", () => {
       const koData = readJsonFile(path.join(projectDir, "locales", "ko.json"));
       expect(getValueByDotOrLiteral(koData, "valid.key")).toBeDefined();
       expect(getValueByDotOrLiteral(koData, "invalid.key")).toBeUndefined();
+    });
+
+    it("네임스페이스 locale 구조에서는 파일을 수정하지 않고 실패해야 함", async () => {
+      const namespacedKo = {
+        "used.key": "사용됨",
+        "unused.key": "사용 안 됨",
+      };
+      const projectDir = createTestProject(tempDir, {
+        src: {
+          "Component.tsx": `
+            import { useTranslation } from "i18nexus";
+
+            export default function Component() {
+              const { t } = useTranslation("common");
+              return <div>{t("used.key")}</div>;
+            }
+          `,
+        },
+        locales: {
+          common: {
+            "ko.json": JSON.stringify(namespacedKo, null, 2),
+          },
+        },
+      });
+
+      createTestConfig(projectDir, {
+        sourcePattern: "src/**/*.{ts,tsx}",
+        localesDir: "./locales",
+        namespacing: {
+          enabled: true,
+          basePath: "src",
+          defaultNamespace: "common",
+        },
+      });
+
+      const result = await runCLICommand("i18n-clean-legacy", [], projectDir);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr + result.stdout).toMatch(
+        /only supports legacy flat locale files/
+      );
+      expect(
+        readJsonFile(path.join(projectDir, "locales", "common", "ko.json"))
+      ).toEqual(namespacedKo);
+      expect(fileExists(path.join(projectDir, "locales", "ko.json"))).toBe(
+        false
+      );
     });
   });
 
@@ -131,7 +178,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { used: "사용됨", unused: "사용 안 됨" },
             null,
-            2,
+            2
           ),
         },
       });
@@ -139,18 +186,18 @@ describe("i18n-clean-legacy CLI E2E", () => {
       createTestConfig(projectDir);
 
       const originalContent = readJsonFile(
-        path.join(projectDir, "locales", "ko.json"),
+        path.join(projectDir, "locales", "ko.json")
       );
 
       const result = await runCLICommand(
         "i18n-clean-legacy",
         ["--dry-run"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
       const afterContent = readJsonFile(
-        path.join(projectDir, "locales", "ko.json"),
+        path.join(projectDir, "locales", "ko.json")
       );
       expect(afterContent).toEqual(originalContent);
       // 리포트는 출력되어야 함
@@ -173,7 +220,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { used: "사용됨", unused: "사용 안 됨" },
             null,
-            2,
+            2
           ),
         },
       });
@@ -183,13 +230,13 @@ describe("i18n-clean-legacy CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-clean-legacy",
         ["--no-backup"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
       // 백업 파일이 생성되지 않아야 함
       const backupFiles = listFiles(projectDir, true).filter((f) =>
-        f.includes(".backup"),
+        f.includes(".backup")
       );
       expect(backupFiles.length).toBe(0);
     });
@@ -210,7 +257,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { used: "사용됨", unused: "사용 안 됨" },
             null,
-            2,
+            2
           ),
         },
       });
@@ -222,7 +269,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
       expect(result.exitCode).toBe(0);
       // 백업 파일이 생성되어야 함
       const backupFiles = listFiles(projectDir, true).filter((f) =>
-        f.includes(".backup"),
+        f.includes(".backup")
       );
       expect(backupFiles.length).toBeGreaterThan(0);
     });
@@ -253,7 +300,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { "app.key": "앱", "src.key": "소스", unused: "사용 안 됨" },
             null,
-            2,
+            2
           ),
         },
       });
@@ -263,7 +310,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
       const result = await runCLICommand(
         "i18n-clean-legacy",
         ["--pattern", "app/**/*.tsx"],
-        projectDir,
+        projectDir
       );
 
       expect(result.exitCode).toBe(0);
@@ -292,7 +339,7 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { used: "사용됨", unused1: "사용 안 됨1", unused2: "사용 안 됨2" },
             null,
-            2,
+            2
           ),
         },
       });
@@ -350,17 +397,17 @@ describe("i18n-clean-legacy CLI E2E", () => {
           "ko.json": JSON.stringify(
             { used: "사용됨", unused: "사용 안 됨" },
             null,
-            2,
+            2
           ),
           "en.json": JSON.stringify(
             { used: "Used", unused: "Unused" },
             null,
-            2,
+            2
           ),
           "ja.json": JSON.stringify(
             { used: "使用", unused: "未使用" },
             null,
-            2,
+            2
           ),
         },
       });

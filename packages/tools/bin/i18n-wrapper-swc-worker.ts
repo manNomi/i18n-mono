@@ -6,5 +6,6 @@
  * High-performance translation wrapper using SWC + Worker Threads
  */
 
-// Re-export from the main implementation
-import "../scripts/t-wrapper-swc-worker/index";
+import { runSwcWorkerCli } from "../scripts/t-wrapper/swc-worker";
+
+runSwcWorkerCli();

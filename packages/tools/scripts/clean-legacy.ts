@@ -43,6 +43,39 @@ export class LegacyCleaner {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
+  private findNamespacedLocaleDirs(): string[] {
+    if (!fs.existsSync(this.config.localesDir)) {
+      return [];
+    }
+
+    return fs
+      .readdirSync(this.config.localesDir)
+      .filter((entry) => entry !== "types")
+      .filter((entry) => {
+        const entryPath = path.join(this.config.localesDir, entry);
+        if (!fs.statSync(entryPath).isDirectory()) {
+          return false;
+        }
+
+        return fs.readdirSync(entryPath).some((file) => file.endsWith(".json"));
+      });
+  }
+
+  private assertLegacyFlatLocales(): void {
+    const namespacedDirs = this.findNamespacedLocaleDirs();
+    if (namespacedDirs.length === 0) {
+      return;
+    }
+
+    throw new Error(
+      [
+        "i18n-clean-legacy only supports legacy flat locale files like locales/en.json.",
+        `Detected namespaced locale directories: ${namespacedDirs.join(", ")}.`,
+        "Refusing to modify files because namespaced cleanup needs namespace-aware extraction.",
+      ].join(" ")
+    );
+  }
+
   /**
    * 백업 파일 생성
    */
@@ -112,6 +145,8 @@ export class LegacyCleaner {
     console.log(`📂 Locales directory: ${this.config.localesDir}`);
     console.log(`🌍 Languages: ${this.config.languages.join(", ")}`);
 
+    this.assertLegacyFlatLocales();
+
     // Step 1: 코드에서 실제 사용중인 키 추출
     console.log("\n📥 Step 1: Extracting keys from source code...");
     const extractor = new TranslationExtractor({
@@ -159,7 +194,7 @@ export class LegacyCleaner {
         .map((lang) => {
           const data = localeData.get(lang) || {};
           const validValueCount = Object.values(data).filter((value) =>
-            this.isValidValue(value as string),
+            this.isValidValue(value as string)
           ).length;
 
           return { lang, validValueCount, totalKeys: Object.keys(data).length };
@@ -173,7 +208,7 @@ export class LegacyCleaner {
     const primaryData = localeData.get(primaryLang) || {};
     stats.totalKeysPerLanguage.set(
       primaryLang,
-      Object.keys(primaryData).length,
+      Object.keys(primaryData).length
     );
 
     const cleanedData: Map<string, Record<string, string>> = new Map();
@@ -247,7 +282,7 @@ export class LegacyCleaner {
     console.log(`  • Keys kept: ${stats.keptKeys}`);
     console.log(`  • Keys removed (unused): ${stats.removedUnused}`);
     console.log(
-      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`,
+      `  • Keys removed (invalid value): ${stats.removedInvalidValue}`
     );
     console.log(`  • Keys missing from locale: ${stats.missingKeys}`);
 
@@ -294,7 +329,7 @@ export class LegacyCleaner {
 }
 
 export async function runCleanLegacy(
-  config: Partial<CleanLegacyConfig> = {},
+  config: Partial<CleanLegacyConfig> = {}
 ): Promise<void> {
   const cleaner = new LegacyCleaner(config);
 

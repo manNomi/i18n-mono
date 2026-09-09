@@ -12,9 +12,7 @@ import { ScriptConfig } from "../../common/default-config";
 import { wrapTranslations } from "./wrapper";
 import { CLI_OPTIONS, CLI_HELP } from "../common/utils/constants";
 
-// CLI 실행 부분
-if (require.main === module) {
-  const args = process.argv.slice(2);
+export function runSwcWorkerCli(args: string[] = process.argv.slice(2)): void {
   const config: Partial<ScriptConfig> = {};
 
   for (let i = 0; i < args.length; i++) {
@@ -60,17 +58,22 @@ Note: This version uses Worker Threads and may consume more memory.
       console.log(`⏭️  Skipped: ${result.stats.skippedFiles}`);
       console.log(`❌ Errors: ${result.stats.errorFiles}`);
       console.log(
-        `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`,
+        `⚡ Average per file: ${result.stats.averageTimePerFile.toFixed(2)}ms`
       );
       console.log("═══════════════════════════════════════");
       console.log(
-        `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`,
+        `\n🔧 Workers: ${result.stats.workerStats.totalWorkers} | Completed: ${result.stats.workerStats.completedTasks} | Failed: ${result.stats.workerStats.failedTasks}`
       );
     })
     .catch((error) => {
       console.error("❌ Fatal error:", error);
       process.exit(1);
     });
+}
+
+// CLI 실행 부분
+if (require.main === module) {
+  runSwcWorkerCli();
 }
 
 export { wrapTranslations };

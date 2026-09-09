@@ -57,8 +57,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused", // This should be removed
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -69,8 +69,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함", // This should be removed
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -98,8 +98,8 @@ describe("LegacyCleaner", () => {
             "empty.key": "", // Empty string
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -111,8 +111,8 @@ describe("LegacyCleaner", () => {
             "empty.key": "", // Empty string
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -138,8 +138,8 @@ describe("LegacyCleaner", () => {
             "button.save": "Save",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -149,8 +149,8 @@ describe("LegacyCleaner", () => {
             "button.save": "저장",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -179,8 +179,8 @@ describe("LegacyCleaner", () => {
             // "button.save" is missing but used in code
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -190,8 +190,8 @@ describe("LegacyCleaner", () => {
             // "button.save" is missing but used in code
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats, issues } = await cleaner.clean();
@@ -210,8 +210,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -221,8 +221,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await cleaner.clean();
@@ -256,8 +256,8 @@ describe("LegacyCleaner", () => {
             "welcome.title": "Welcome",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -266,8 +266,8 @@ describe("LegacyCleaner", () => {
             "welcome.title": "환영합니다",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await noBackupCleaner.clean();
@@ -297,7 +297,7 @@ describe("LegacyCleaner", () => {
       fs.mkdirSync(localesDir, { recursive: true });
       fs.writeFileSync(
         path.join(localesDir, "en.json"),
-        JSON.stringify(originalEnData, null, 2),
+        JSON.stringify(originalEnData, null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -307,8 +307,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       await dryRunCleaner.clean();
@@ -316,6 +316,28 @@ describe("LegacyCleaner", () => {
       // Check that files were not modified
       const enData = readJsonFile(path.join(localesDir, "en.json"));
       expect(enData).toEqual(originalEnData);
+    });
+
+    it("should refuse namespaced locale directories without modifying files", async () => {
+      const commonDir = path.join(localesDir, "common");
+      fs.mkdirSync(commonDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(commonDir, "en.json"),
+        JSON.stringify({ "welcome.title": "Welcome" }, null, 2)
+      );
+      fs.writeFileSync(
+        path.join(commonDir, "ko.json"),
+        JSON.stringify({ "welcome.title": "환영합니다" }, null, 2)
+      );
+
+      await expect(cleaner.clean()).rejects.toThrow(
+        /only supports legacy flat locale files/
+      );
+
+      expect(readJsonFile(path.join(commonDir, "en.json"))).toEqual({
+        "welcome.title": "Welcome",
+      });
+      expect(fileExists(path.join(localesDir, "en.json"))).toBe(false);
     });
 
     it("should handle multiple languages", async () => {
@@ -336,8 +358,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "Unused",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ko.json"),
@@ -347,8 +369,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "사용 안 함",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
       fs.writeFileSync(
         path.join(localesDir, "ja.json"),
@@ -358,8 +380,8 @@ describe("LegacyCleaner", () => {
             "unused.key": "未使用",
           },
           null,
-          2,
-        ),
+          2
+        )
       );
 
       const { stats } = await multiLangCleaner.clean();

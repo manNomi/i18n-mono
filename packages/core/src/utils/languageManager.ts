@@ -63,9 +63,13 @@ export class LanguageManager {
       this.options.enableLocalStorage &&
       typeof localStorage !== "undefined"
     ) {
-      const storageLanguage = localStorage.getItem(this.options.storageKey);
-      if (storageLanguage && this.isValidLanguage(storageLanguage)) {
-        return storageLanguage;
+      try {
+        const storageLanguage = localStorage.getItem(this.options.storageKey);
+        if (storageLanguage && this.isValidLanguage(storageLanguage)) {
+          return storageLanguage;
+        }
+      } catch {
+        // Storage can be unavailable in private/locked-down browser contexts.
       }
     }
 
@@ -91,8 +95,8 @@ export class LanguageManager {
     if (!this.isValidLanguage(languageCode)) {
       console.warn(
         `Language "${languageCode}" is not available. Available languages: ${this.getAvailableLanguageCodes().join(
-          ", ",
-        )}`,
+          ", "
+        )}`
       );
       return false;
     }
@@ -102,7 +106,7 @@ export class LanguageManager {
       setCookie(
         this.options.cookieName,
         languageCode,
-        this.options.cookieOptions,
+        this.options.cookieOptions
       );
 
       // localStorage에 저장 (활성화된 경우)
@@ -182,7 +186,7 @@ export class LanguageManager {
    */
   getLanguageConfig(languageCode: string): LanguageConfig | undefined {
     return this.options.availableLanguages.find(
-      (lang) => lang.code === languageCode,
+      (lang) => lang.code === languageCode
     );
   }
 
