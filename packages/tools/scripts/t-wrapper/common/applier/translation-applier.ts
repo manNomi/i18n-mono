@@ -100,6 +100,11 @@ export function applyTranslationsToAST(
   const isClientMode = config.mode === "client";
   const isNextjsFramework = config.framework === "nextjs";
 
+  // 서버 모드에서는 translationImportSource를 "i18nexus/server"로 강제
+  const effectiveImportSource = isServerMode
+    ? "i18nexus/server"
+    : config.translationImportSource;
+
   if (isNextjsFramework && isClientMode) {
     ensureUseClientDirective(ast);
   }
@@ -138,8 +143,42 @@ export function applyTranslationsToAST(
     }
   }
 
-  // 1단계: 기존 useTranslation() 호출이 있으면 네임스페이스 추가/수정
-  if (correctNamespace && sourceCode) {
+  // 1단계: 서버 모드에서는 기존 useTranslation 제거
+  if (isServerMode && sourceCode) {
+    // 기존 useTranslation import 제거
+    ast.program.body = ast.program.body.filter((node) => {
+      if (t.isImportDeclaration(node)) {
+        // useTranslation을 import하는 경우 제거하거나 필터링
+        if (node.specifiers.length > 0) {
+          node.specifiers = node.specifiers.filter((spec) => {
+            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+              return spec.imported.name !== "useTranslation";
+            }
+            return true;
+          });
+          // 모든 specifier가 제거되면 import 문 자체 제거
+          return node.specifiers.length > 0;
+        }
+      }
+      return true;
+    });
+
+    // 기존 useTranslation 호출 제거
+    traverse(ast, {
+      VariableDeclarator(path) {
+        if (
+          t.isCallExpression(path.node.init) &&
+          t.isIdentifier(path.node.init.callee, { name: "useTranslation" })
+        ) {
+          // useTranslation 호출을 찾아서 제거
+          path.parentPath.remove();
+        }
+      },
+    });
+  }
+
+  // 2단계: 클라이언트 모드에서는 기존 useTranslation() 호출이 있으면 네임스페이스 추가/수정
+  if (!isServerMode && correctNamespace && sourceCode) {
     const updated = updateExistingUseTranslation(
       ast,
       correctNamespace,
@@ -149,14 +188,35 @@ export function applyTranslationsToAST(
       // useTranslation이 이미 있고 업데이트되었으면 import만 확인
       ensureNamedImport(
         ast,
-        config.translationImportSource,
+        effectiveImportSource,
         STRING_CONSTANTS.USE_TRANSLATION,
       );
       return; // 이미 useTranslation이 있으므로 새로 추가하지 않음
     }
   }
 
-  // 2단계: useTranslation()이 없는 경우에만 새로 추가
+  // 2-1단계: async 함수 감지하여 서버 모드로 전환
+  // modifiedComponentPaths를 순회하면서 async 함수가 있으면 서버 모드로 처리
+  modifiedComponentPaths.forEach((componentPath) => {
+    const isAsync = (componentPath.node as any).async === true;
+    
+    // async 함수이고 서버 모드가 아니면, 이 컴포넌트만 서버 모드로 처리
+    if (isAsync && !isServerMode) {
+      // 기존 useTranslation 호출이 있으면 제거
+      componentPath.traverse({
+        VariableDeclarator(path) {
+          if (
+            t.isCallExpression(path.node.init) &&
+            t.isIdentifier(path.node.init.callee, { name: "useTranslation" })
+          ) {
+            path.parentPath.remove();
+          }
+        },
+      });
+    }
+  });
+
+  // 3단계: useTranslation()이 없는 경우에만 새로 추가
   const translationFunctionName = isServerMode
     ? config.serverTranslationFunction
     : STRING_CONSTANTS.USE_TRANSLATION;
@@ -169,11 +229,21 @@ export function applyTranslationsToAST(
 
     const body = componentPath.get("body");
 
-    if (hasTranslationFunctionCall(body, translationFunctionName)) {
+    // async 함수인지 확인
+    const isAsync = (componentPath.node as any).async === true;
+    
+    // async 함수이거나 서버 모드면 서버 함수 사용
+    const shouldUseServerFunction = isAsync || isServerMode;
+    const currentTranslationFunctionName = shouldUseServerFunction
+      ? config.serverTranslationFunction
+      : STRING_CONSTANTS.USE_TRANSLATION;
+
+    if (hasTranslationFunctionCall(body, currentTranslationFunctionName)) {
       return;
     }
 
-    if (isServerMode) {
+    // async 함수이거나 서버 모드면 async로 설정
+    if (shouldUseServerFunction) {
       (componentPath.node as any).async = true;
     }
 
@@ -198,8 +268,8 @@ export function applyTranslationsToAST(
     }
 
     const decl = createTranslationBinding(
-      isServerMode ? "server" : "client",
-      isServerMode ? config.serverTranslationFunction : undefined,
+      shouldUseServerFunction ? "server" : "client",
+      shouldUseServerFunction ? config.serverTranslationFunction : undefined,
       namespace, // 네임스페이스 전달
     );
 
@@ -218,12 +288,12 @@ export function applyTranslationsToAST(
     }
 
     // 사용된 번역 함수 추가
-    usedTranslationFunctions.add(translationFunctionName);
+    usedTranslationFunctions.add(currentTranslationFunctionName);
   });
 
   // 사용된 번역 함수 가져와서 임포트 구문 추가
   usedTranslationFunctions.forEach((functionName) => {
-    ensureNamedImport(ast, config.translationImportSource, functionName);
+    ensureNamedImport(ast, effectiveImportSource, functionName);
   });
 }
 
