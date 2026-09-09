@@ -1,8 +1,25 @@
 /** Next.js App Router 서버 컴포넌트용 유틸리티 */
 import * as fs from "fs";
 import * as path from "path";
-import { inferNamespaceFromCallSite } from "./callsite-inference";
-import { getCachedTranslations, cacheTranslations, invalidateCache as invalidateTranslationCache, } from "./translation-cache";
+import { inferNamespaceFromCallSite } from "./callsite-inference.js";
+import { getCachedTranslations, cacheTranslations, invalidateCache as invalidateTranslationCache, } from "./translation-cache.js";
+import { createFormatter } from "./formatter.js";
+import { createTranslation } from "./pure-translation.js";
+export { createFormatter } from "./formatter.js";
+const UNSUPPORTED_SERVER_CONFIG_FILES = [
+    "i18nexus.config.js",
+    "i18nexus.config.mjs",
+    "i18nexus.config.cjs",
+    "i18nexus.config.ts",
+];
+let hasWarnedUnsupportedServerConfig = false;
+function warnUnsupportedServerConfig(configPath) {
+    if (hasWarnedUnsupportedServerConfig) {
+        return;
+    }
+    hasWarnedUnsupportedServerConfig = true;
+    console.warn(`[i18nexus] ${path.basename(configPath)} is ignored by i18nexus/server to avoid Next.js dynamic import warnings. Use i18nexus.config.json or pass getTranslation() options instead.`);
+}
 /** 프로젝트 루트에서 i18nexus 설정 파일 로드 (조용히) - config 디렉토리 경로도 반환 */
 async function loadConfigSilently() {
     try {
@@ -17,20 +34,11 @@ async function loadConfigSilently() {
                 return { config: null, configDir: process.cwd() };
             }
         }
-        const altPath = path.resolve(process.cwd(), "i18nexus.config.js");
-        if (fs.existsSync(altPath)) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const mod = await import(altPath);
-                const config = mod && mod.default
-                    ? mod.default
-                    : mod;
-                return { config, configDir: path.dirname(altPath) };
-            }
-            catch {
-                return { config: null, configDir: process.cwd() };
-            }
+        // Server utilities intentionally avoid importing JS/TS config files.
+        // Expression-based dynamic imports trigger Next.js bundler warnings.
+        const unsupportedConfigPath = UNSUPPORTED_SERVER_CONFIG_FILES.map((fileName) => path.resolve(process.cwd(), fileName)).find((candidate) => fs.existsSync(candidate));
+        if (unsupportedConfigPath) {
+            warnUnsupportedServerConfig(unsupportedConfigPath);
         }
         return { config: null, configDir: process.cwd() };
     }
@@ -78,7 +86,11 @@ export function getServerLanguage(headers, options) {
         for (const cookie of cookies) {
             const [name, value] = cookie.trim().split("=");
             if (decodeURIComponent(name) === cookieName) {
-                return decodeURIComponent(value);
+                const cookieLanguage = decodeURIComponent(value);
+                if (availableLanguages.length === 0 ||
+                    availableLanguages.includes(cookieLanguage)) {
+                    return cookieLanguage;
+                }
             }
         }
     }
@@ -108,16 +120,6 @@ export function parseCookies(cookieHeader) {
     }
     return cookies;
 }
-/** 서버 번역 문자열의 변수 치환 */
-function interpolateServer(text, variables) {
-    if (!variables) {
-        return text;
-    }
-    return text.replace(/\{\{(\w+)\}\}/g, (match, variableName) => {
-        const value = variables[variableName];
-        return value !== undefined ? String(value) : match;
-    });
-}
 function isStringRecord(value) {
     if (!value || typeof value !== "object") {
         return false;
@@ -139,20 +141,15 @@ function getFirstStringRecord(value) {
     return undefined;
 }
 /** 서버 컴포넌트용 번역 함수 생성 */
-export function createServerTranslation(language, translations) {
-    const dict = getServerTranslations(language, translations);
-    return function translate(key, variables, fallback) {
-        // 디버깅: 번역 키가 없을 때 경고
-        if (!dict[key] && process.env.NODE_ENV === "development") {
-            console.warn(`[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(dict).slice(0, 5).join(", ")}...`);
-        }
-        if (typeof variables === "string") {
-            // 두 번째 인자가 문자열이면 fallback으로 사용
-            return dict[key] || variables || key;
-        }
-        const translatedText = dict[key] || fallback || key;
-        return interpolateServer(translatedText, variables);
-    };
+export function createServerTranslation(language, translations, options = {}) {
+    return createTranslation(language, translations, {
+        ...options,
+        onMissingKey: (key, dictionary) => {
+            if (process.env.NODE_ENV === "development") {
+                console.warn(`[i18nexus] Translation key not found: "${key}". Available keys: ${Object.keys(dictionary).slice(0, 5).join(", ")}...`);
+            }
+        },
+    });
 }
 /** 타입 안전한 서버 번역 객체 반환 */
 export function getServerTranslations(language, translations) {
@@ -207,17 +204,68 @@ export function getServerTranslations(language, translations) {
     }
     return mergedFlat;
 }
-/** 디렉토리에서 번역 파일 동적 로드 */
-export async function loadTranslations(localesDir) {
+async function readJsonFile(filePath) {
     try {
-        const indexPath = path.resolve(process.cwd(), localesDir, "index");
-        const module = await import(indexPath);
-        return module.translations || {};
+        const fileContent = await fs.promises.readFile(filePath, "utf8");
+        return JSON.parse(fileContent);
     }
     catch (error) {
-        console.warn(`Failed to load translations from ${localesDir}/index:`, error);
+        console.warn(`Failed to load translation file ${filePath}:`, error);
+        return null;
+    }
+}
+/** 디렉토리에서 번역 JSON 파일 로드 */
+export async function loadTranslations(localesDir) {
+    const resolvedLocalesDir = localesDir.startsWith("/")
+        ? localesDir
+        : path.resolve(process.cwd(), localesDir);
+    if (!fs.existsSync(resolvedLocalesDir)) {
         return {};
     }
+    const translations = {};
+    const entries = await fs.promises.readdir(resolvedLocalesDir, {
+        withFileTypes: true,
+    });
+    for (const entry of entries) {
+        const entryPath = path.join(resolvedLocalesDir, entry.name);
+        if (entry.isFile() && entry.name.endsWith(".json")) {
+            const language = path.basename(entry.name, ".json");
+            const data = await readJsonFile(entryPath);
+            if (data) {
+                translations[language] = data;
+            }
+            continue;
+        }
+        if (!entry.isDirectory()) {
+            continue;
+        }
+        const languageFiles = await fs.promises.readdir(entryPath, {
+            withFileTypes: true,
+        });
+        const namespaceTranslations = {};
+        for (const languageFile of languageFiles) {
+            if (!languageFile.isFile() || !languageFile.name.endsWith(".json")) {
+                continue;
+            }
+            const language = path.basename(languageFile.name, ".json");
+            const data = await readJsonFile(path.join(entryPath, languageFile.name));
+            if (data) {
+                namespaceTranslations[language] = data;
+            }
+        }
+        if (Object.keys(namespaceTranslations).length > 0) {
+            translations[entry.name] = namespaceTranslations;
+        }
+    }
+    return translations;
+}
+async function readNamespaceTranslationFile(resolvedLocalesDir, namespace, language) {
+    const translationFilePath = path.join(resolvedLocalesDir, namespace, `${language}.json`);
+    if (!fs.existsSync(translationFilePath)) {
+        throw new Error(`File not found: ${translationFilePath}`);
+    }
+    const fileContent = await fs.promises.readFile(translationFilePath, "utf8");
+    return JSON.parse(fileContent);
 }
 /**
  * Get server-side translation function with namespace support
@@ -315,10 +363,13 @@ export async function getTranslation(namespace, options) {
     if (!options?.disableCache) {
         const cached = getCachedTranslations(resolvedNamespace, language);
         if (cached) {
-            const t = createServerTranslation(language, cached);
+            const t = createServerTranslation(language, cached, {
+                messageFormatter: options?.messageFormatter,
+            });
             const dict = getServerTranslations(language, cached);
             return {
                 t,
+                format: createFormatter(language),
                 language,
                 lng: language,
                 namespace: resolvedNamespace,
@@ -329,23 +380,26 @@ export async function getTranslation(namespace, options) {
     }
     // 5. Load translations
     let translations;
-    // 서버 환경에서는 fs를 사용하여 파일 직접 읽기 (동적 import 경로 문제 해결)
-    const translationFilePath = path.join(resolvedLocalesDir, resolvedNamespace, `${language}.json`);
     try {
-        // 파일이 존재하는지 확인
-        if (!fs.existsSync(translationFilePath)) {
-            throw new Error(`File not found: ${translationFilePath}`);
+        const translationData = await readNamespaceTranslationFile(resolvedLocalesDir, resolvedNamespace, language);
+        translations = {};
+        if (config?.fallbackNamespace &&
+            config.fallbackNamespace !== resolvedNamespace) {
+            try {
+                const fallbackData = await readNamespaceTranslationFile(resolvedLocalesDir, config.fallbackNamespace, language);
+                translations[config.fallbackNamespace] = fallbackData;
+            }
+            catch (fallbackError) {
+                if (process.env.NODE_ENV === "development") {
+                    console.warn(`[i18nexus] Failed to load fallback namespace '${config.fallbackNamespace}':`, fallbackError);
+                }
+            }
         }
-        // 파일 읽기
-        const fileContent = await fs.promises.readFile(translationFilePath, "utf8");
-        const translationData = JSON.parse(fileContent);
-        // translationData는 { "key": "value" } 형태
-        // translations는 { [namespace]: { "key": "value" } } 형태로 저장
-        translations = { [resolvedNamespace]: translationData };
+        translations[resolvedNamespace] = translationData;
         // 디버깅: 개발 환경에서 번역 파일 로드 확인
         if (process.env.NODE_ENV === "development") {
             const keyCount = Object.keys(translationData).length;
-            console.log(`[i18nexus] Loaded ${keyCount} translations from ${translationFilePath}`);
+            console.log(`[i18nexus] Loaded ${keyCount} translations for namespace '${resolvedNamespace}'`);
         }
     }
     catch (error) {
@@ -355,12 +409,7 @@ export async function getTranslation(namespace, options) {
             config.fallbackNamespace !== resolvedNamespace) {
             console.warn(`⚠️  Namespace '${resolvedNamespace}' not found, using fallback '${config.fallbackNamespace}'`);
             try {
-                const fallbackFilePath = path.join(resolvedLocalesDir, config.fallbackNamespace, `${language}.json`);
-                if (!fs.existsSync(fallbackFilePath)) {
-                    throw new Error(`File not found: ${fallbackFilePath}`);
-                }
-                const fallbackContent = await fs.promises.readFile(fallbackFilePath, "utf8");
-                const fallbackData = JSON.parse(fallbackContent);
+                const fallbackData = await readNamespaceTranslationFile(resolvedLocalesDir, config.fallbackNamespace, language);
                 translations = {
                     [config.fallbackNamespace]: fallbackData,
                 };
@@ -391,10 +440,13 @@ export async function getTranslation(namespace, options) {
         cacheTranslations(resolvedNamespace, language, translations);
     }
     // 7. Create translation function
-    const t = createServerTranslation(language, translations);
+    const t = createServerTranslation(language, translations, {
+        messageFormatter: options?.messageFormatter,
+    });
     const dict = getServerTranslations(language, translations);
     return {
         t,
+        format: createFormatter(language),
         language,
         lng: language,
         namespace: resolvedNamespace,
@@ -412,10 +464,13 @@ export function invalidateCache(namespace, language) {
 /** 미리 로드된 번역으로 서버 i18n 컨텍스트 생성 */
 export function createServerI18nWithTranslations(headers, translations, options) {
     const language = getServerLanguage(headers, options);
-    const t = createServerTranslation(language, translations);
+    const t = createServerTranslation(language, translations, {
+        messageFormatter: options?.messageFormatter,
+    });
     const dict = getServerTranslations(language, translations);
     return {
         t,
+        format: createFormatter(language),
         language,
         translations,
         dict,

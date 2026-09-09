@@ -1,7 +1,7 @@
 "use client";
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React from "react";
-import { useI18nContext } from "./I18nProvider";
+import { useI18nContext } from "./I18nProvider.js";
 export function I18NexusDevtools({ initialIsOpen = false, position = "bottom-left", panelStyles = {}, buttonStyles = {}, }) {
     const { currentLanguage, changeLanguage, availableLanguages, languageManager, isLoading, namespaceTranslations, } = useI18nContext();
     const [isOpen, setIsOpen] = React.useState(initialIsOpen);
@@ -101,7 +101,7 @@ export function I18NexusDevtools({ initialIsOpen = false, position = "bottom-lef
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                     ...panelStyles,
                 }, children: [_jsxs("div", { style: {
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background: "#4f46e5",
                             color: "white",
                             padding: "16px",
                             display: "flex",

@@ -4,6 +4,10 @@ import { I18nProvider } from "i18nexus";
 import dynamic from "next/dynamic";
 
 import { loadNamespace } from "@/locales";
+import commonEn from "@/locales/common/en.json";
+import commonKo from "@/locales/common/ko.json";
+import homeEn from "@/locales/home/en.json";
+import homeKo from "@/locales/home/ko.json";
 import {
   Analytics,
   FirebaseStatus,
@@ -24,6 +28,17 @@ const I18NexusDevtools =
     ? DisabledI18NexusDevtools
     : dynamic<DevtoolsProps>(loadI18NexusDevtools, { ssr: false });
 
+const initialTranslations = {
+  common: {
+    ko: commonKo,
+    en: commonEn,
+  },
+  home: {
+    ko: homeKo,
+    en: homeEn,
+  },
+};
+
 export function ClientProvider({
   children,
   language,
@@ -35,8 +50,8 @@ export function ClientProvider({
     <I18nProvider
       loadNamespace={loadNamespace}
       initialLanguage={language}
+      translations={initialTranslations}
       fallbackNamespace="common"
-      preloadNamespaces={["common", "home"]}
       languageManagerOptions={{
         defaultLanguage: "ko",
         availableLanguages: [

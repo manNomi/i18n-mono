@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
-import { LanguageManager, LanguageConfig, LanguageManagerOptions } from "../utils/languageManager";
+import { LanguageManager, LanguageConfig, LanguageManagerOptions } from "../utils/languageManager.js";
+import type { MessageFormatter } from "../utils/message-formatter.js";
 /** 번역 객체에서 키 추출 */
 export type ExtractI18nKeys<T extends Record<string, Record<string, string>>> = keyof T[keyof T] & string;
 /** 네임스페이스별 번역 구조 */
@@ -22,12 +23,18 @@ export interface I18nContextType<TTranslations extends NamespaceTranslations = N
     namespaceTranslations: TTranslations;
     /** 로드된 네임스페이스 (런타임 데이터) */
     loadedNamespaces: Map<string, Record<string, Record<string, string>>>;
+    /** 현재 로드 중인 네임스페이스 */
+    loadingNamespaces: Set<string>;
+    /** Lazy loading용 네임스페이스 로드 보장 함수 */
+    ensureNamespaceLoaded: (namespace: string) => Promise<void>;
     /** Lazy loading 활성화 여부 */
     lazy?: boolean;
     /** 네임스페이스 로더 함수 */
     loadNamespace?: NamespaceLoader;
     /** Fallback 네임스페이스 */
     fallbackNamespace?: keyof TTranslations;
+    /** Optional runtime-neutral formatter for ICU-capable translation catalogs */
+    messageFormatter?: MessageFormatter;
     /** 타입 정보 (런타임에는 사용하지 않음) */
     _type?: TTranslations;
 }
@@ -47,6 +54,8 @@ export interface I18nProviderProps<TTranslations extends NamespaceTranslations =
     fallbackNamespace?: keyof TTranslations;
     /** 추가로 미리 로드할 네임스페이스 목록 */
     preloadNamespaces?: Array<keyof TTranslations>;
+    /** ICU 등 확장 메시지 문법을 처리하는 선택적 formatter */
+    messageFormatter?: MessageFormatter;
 }
-export declare function I18nProvider<TTranslations extends NamespaceTranslations = NamespaceTranslations>({ children, languageManagerOptions, translations, onLanguageChange, initialLanguage, loadNamespace, fallbackNamespace, preloadNamespaces, }: I18nProviderProps<TTranslations>): import("react/jsx-runtime").JSX.Element;
+export declare function I18nProvider<TTranslations extends NamespaceTranslations = NamespaceTranslations>({ children, languageManagerOptions, translations, onLanguageChange, initialLanguage, loadNamespace, fallbackNamespace, preloadNamespaces, messageFormatter, }: I18nProviderProps<TTranslations>): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=I18nProvider.d.ts.map

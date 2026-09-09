@@ -3,6 +3,7 @@
 export interface I18nexusConfig<TLanguages extends readonly string[] = readonly string[]> {
     languages: TLanguages;
     defaultLanguage: TLanguages[number];
+    sourceLanguage?: TLanguages[number];
     localesDir?: string;
     sourcePattern?: string;
     translationImportSource?: string;
