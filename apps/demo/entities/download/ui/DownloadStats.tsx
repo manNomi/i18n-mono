@@ -15,20 +15,26 @@ const colorClasses = {
   blue: {
     bg: "from-blue-500 to-blue-600",
     border: "border-blue-500/30",
+    borderHover: "hover:border-blue-500/50",
     text: "text-blue-400",
     shadow: "shadow-blue-500/20",
+    shadowHover: "hover:shadow-lg",
   },
   indigo: {
     bg: "from-indigo-500 to-indigo-600",
     border: "border-indigo-500/30",
+    borderHover: "hover:border-indigo-500/50",
     text: "text-indigo-400",
     shadow: "shadow-indigo-500/20",
+    shadowHover: "hover:shadow-lg",
   },
   purple: {
     bg: "from-purple-500 to-purple-600",
     border: "border-purple-500/30",
+    borderHover: "hover:border-purple-500/50",
     text: "text-purple-400",
     shadow: "shadow-purple-500/20",
+    shadowHover: "hover:shadow-lg",
   },
 };
 
@@ -105,7 +111,7 @@ export default function DownloadStats({
 
   return (
     <div
-      className={`bg-slate-900 rounded-xl border ${colors.border} p-6 hover:border-${color}-500/50 transition-colors ${colors.shadow} hover:shadow-lg`}
+      className={`bg-slate-900 rounded-xl border ${colors.border} ${colors.borderHover} p-6 transition-colors ${colors.shadow} ${colors.shadowHover}`}
     >
       <div className="flex items-center justify-between">
         <div>

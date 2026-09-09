@@ -138,4 +138,11 @@ export const i18n = createI18n(translations, {
   lazy: true,
   loadNamespace,
   preloadNamespaces: ["common"], // fallback namespace는 미리 로드
+  languageManager: {
+    defaultLanguage: "ko",
+    availableLanguages: [
+      { code: "ko", name: "한국어", flag: "🇰🇷" },
+      { code: "en", name: "English", flag: "🇺🇸" },
+    ],
+  },
 });
