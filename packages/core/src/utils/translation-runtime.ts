@@ -393,18 +393,7 @@ const resolveNamespaceStaticTranslations = ({
     fallbackLanguage
   );
 
-  if (Object.keys(requested).length > 0) {
-    return { ...result, ...requested };
-  }
-
-  return {
-    ...result,
-    ...flattenTranslationsForLanguage(
-      staticTranslations,
-      currentLanguage,
-      fallbackLanguage
-    ),
-  };
+  return { ...result, ...requested };
 };
 
 const resolveStaticTranslations = (
@@ -492,14 +481,7 @@ const resolveNamespaceTranslationSnapshot = (
     options.currentLanguage,
     options.fallbackLanguage
   );
-  const staticRequestedLayer =
-    Object.keys(staticRequested).length > 0
-      ? staticRequested
-      : flattenTranslationsForLanguage(
-          options.staticTranslations,
-          options.currentLanguage,
-          options.fallbackLanguage
-        );
+  const staticRequestedLayer = staticRequested;
 
   return {
     ...staticFallback,

@@ -31,8 +31,12 @@ function getCacheTTL(): number {
 /**
  * Generate cache key from namespace and language
  */
-function getCacheKey(namespace: string, language: string): string {
-  return `${namespace}:${language}`;
+function getCacheKey(
+  namespace: string,
+  language: string,
+  source: string
+): string {
+  return JSON.stringify([source, namespace, language]);
 }
 
 /**
@@ -41,8 +45,9 @@ function getCacheKey(namespace: string, language: string): string {
 export function getCachedTranslations(
   namespace: string,
   language: string,
+  source = ""
 ): Record<string, Record<string, string>> | null {
-  const key = getCacheKey(namespace, language);
+  const key = getCacheKey(namespace, language, source);
   const entry = translationCache.get(key);
 
   if (!entry) {
@@ -66,8 +71,9 @@ export function cacheTranslations(
   namespace: string,
   language: string,
   translations: Record<string, Record<string, string>>,
+  source = ""
 ): void {
-  const key = getCacheKey(namespace, language);
+  const key = getCacheKey(namespace, language, source);
 
   translationCache.set(key, {
     translations,
@@ -87,18 +93,11 @@ export function invalidateCache(namespace?: string, language?: string): void {
     return;
   }
 
-  if (namespace && language) {
-    // Remove specific namespace+language
-    const key = getCacheKey(namespace, language);
-    translationCache.delete(key);
-    return;
-  }
-
-  // Remove by namespace or language
+  // Invalidate matching entries from every translation source.
   for (const [key, entry] of translationCache.entries()) {
     if (
-      (namespace && entry.namespace === namespace) ||
-      (language && entry.language === language)
+      (!namespace || entry.namespace === namespace) &&
+      (!language || entry.language === language)
     ) {
       translationCache.delete(key);
     }

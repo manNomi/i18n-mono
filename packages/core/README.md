@@ -748,3 +748,18 @@ See [CHANGELOG.md](./CHANGELOG.md) for full version history.
 ---
 
 **Made with ❤️ by the i18nexus team**
+
+### Namespace loading failures
+
+`useTranslation(namespace)` and `createI18n(...).useTranslation(namespace)` both limit lookup to the requested namespace and the configured fallback namespace. Calls without a namespace retain the combined catalog behavior. Unknown namespaces do not search unrelated catalogs.
+
+When every language load fails, `isReady` remains `false` and `error` describes the failure. Call `retry()` to retry explicitly. Failed loads do not automatically loop. Partial failures keep usable fallback translations and also expose `error`.
+
+```tsx
+const { t, isReady, error, retry } = useTranslation("home");
+if (error && !isReady) {
+  return <button onClick={() => void retry()}>Retry translations</button>;
+}
+```
+
+The server cache separates translation directories and fallback namespace settings. `invalidateCache(namespace, language)` clears matching entries across directories.

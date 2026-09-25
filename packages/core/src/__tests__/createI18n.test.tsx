@@ -453,9 +453,7 @@ describe("createI18n", () => {
         </i18n.I18nProvider>
       );
 
-      // When namespace is invalid but key exists in flattened translations, it returns the translation value
-      // Since all namespaces are flattened, 'welcome' key from 'common' namespace is found
-      expect(screen.getByTestId("translation")).toHaveTextContent("Welcome");
+      expect(screen.getByTestId("translation")).toHaveTextContent("welcome");
 
       consoleWarnSpy.mockRestore();
     });
@@ -544,11 +542,8 @@ describe("createI18n", () => {
         </i18n.I18nProvider>
       );
 
-      // Since translations are flattened, keys from other namespaces are also accessible
-      // 'home' exists in 'menu' namespace, so it returns 'Home'
-      // 'welcome' exists in 'common' namespace, so it returns 'Welcome'
-      expect(screen.getByTestId("common-home")).toHaveTextContent("Home");
-      expect(screen.getByTestId("menu-welcome")).toHaveTextContent("Welcome");
+      expect(screen.getByTestId("common-home")).toHaveTextContent("home");
+      expect(screen.getByTestId("menu-welcome")).toHaveTextContent("welcome");
     });
   });
 
@@ -922,7 +917,7 @@ describe("createI18n", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+        expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
       });
       expect(screen.getByTestId("translation")).toHaveTextContent("title");
 
@@ -971,6 +966,8 @@ describe("createI18n", () => {
         format: createFormatter("en"),
         currentLanguage: "en",
         isReady: true,
+        error: null,
+        retry: async () => {},
       };
 
       const assertMenuReturn: MenuReturn = {
@@ -978,6 +975,8 @@ describe("createI18n", () => {
         format: createFormatter("en"),
         currentLanguage: "en",
         isReady: true,
+        error: null,
+        retry: async () => {},
       };
 
       expect(assertCommonReturn).toBeDefined();

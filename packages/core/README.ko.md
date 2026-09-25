@@ -475,3 +475,11 @@ MIT License - 자세한 내용은 [LICENSE](./LICENSE)를 참고하세요.
 [⭐ GitHub에서 Star 주기](https://github.com/manNomi/i18nexus) • [📦 npm에서 보기](https://www.npmjs.com/package/i18nexus)
 
 </div>
+
+### 번역 로딩 실패 처리
+
+일반 useTranslation과 createI18n이 반환하는 useTranslation은 요청한 네임스페이스와 설정한 fallback 네임스페이스만 조회합니다. 네임스페이스를 생략한 호출은 기존처럼 전체 번역을 합칩니다.
+
+모든 언어의 로딩이 실패하면 isReady는 false를 유지하고 error에 실패 정보가 담깁니다. retry 함수를 호출하면 다시 시도합니다. 자동 재시도는 반복되지 않습니다. 일부 언어만 실패하면 사용 가능한 fallback 번역을 유지하며 error로 실패를 확인할 수 있습니다.
+
+서버 캐시는 번역 폴더와 fallback 설정을 구분합니다. invalidateCache에 네임스페이스와 언어를 전달하면 모든 폴더에서 일치하는 항목을 무효화합니다.
