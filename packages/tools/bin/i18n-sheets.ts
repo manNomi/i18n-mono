@@ -37,22 +37,22 @@ const addCommonOptions = (cmd: Command) => {
     .option(
       "-c, --credentials <path>",
       "Path to Google service account credentials JSON file",
-      projectConfig?.googleSheets?.credentialsPath || "./credentials.json",
+      projectConfig?.googleSheets?.credentialsPath || "./credentials.json"
     )
     .option(
       "-s, --spreadsheet <id>",
       "Google Spreadsheet ID",
-      projectConfig?.googleSheets?.spreadsheetId,
+      projectConfig?.googleSheets?.spreadsheetId
     )
     .option(
       "-w, --worksheet <name>",
       "Worksheet name",
-      projectConfig?.googleSheets?.sheetName || "Translations",
+      projectConfig?.googleSheets?.sheetName || "Translations"
     )
     .option(
       "-l, --locales <dir>",
       "Locales directory",
-      projectConfig?.localesDir || "./locales",
+      projectConfig?.localesDir || "./locales"
     );
 };
 
@@ -67,7 +67,7 @@ const checkConfig = (options: any): GoogleSheetsConfig => {
 
   if (!spreadsheetId) {
     console.error(
-      "❌ Spreadsheet ID is required. Use -s option, set in i18nexus.config.js, or set GOOGLE_SPREADSHEET_ID environment variable.",
+      "❌ Spreadsheet ID is required. Use -s option, set in i18nexus.config.js, or set GOOGLE_SPREADSHEET_ID environment variable."
     );
     process.exit(1);
   }
@@ -75,7 +75,7 @@ const checkConfig = (options: any): GoogleSheetsConfig => {
   if (!fs.existsSync(credentialsPath)) {
     console.error(`❌ Credentials file not found: ${credentialsPath}`);
     console.error(
-      "Please download your Google Service Account key file and specify its path with -c option or in i18nexus.config.js.",
+      "Please download your Google Service Account key file and specify its path with -c option or in i18nexus.config.js."
     );
     process.exit(1);
   }
@@ -92,7 +92,7 @@ addCommonOptions(
   program
     .command("upload")
     .description("Upload local translation files to Google Sheets")
-    .option("-f, --force", "Force upload even if keys already exist"),
+    .option("-f, --force", "Force upload even if keys already exist")
 ).action(async (options) => {
   try {
     console.log("📤 Starting upload to Google Sheets...");
@@ -119,8 +119,8 @@ addCommonOptions(
     .option(
       "--languages <langs>",
       "Comma-separated list of languages",
-      projectConfig?.languages.join(",") || "en,ko",
-    ),
+      projectConfig?.languages.join(",") || "en,ko"
+    )
 ).action(async (options) => {
   try {
     console.log("📥 Starting download from Google Sheets...");
@@ -160,7 +160,7 @@ ${exportObj}
 addCommonOptions(
   program
     .command("sync")
-    .description("Bidirectional sync between local files and Google Sheets"),
+    .description("Bidirectional sync between local files and Google Sheets")
 ).action(async (options) => {
   try {
     console.log("🔄 Starting bidirectional sync...");
@@ -183,7 +183,7 @@ addCommonOptions(
 addCommonOptions(
   program
     .command("status")
-    .description("Show Google Sheets status and statistics"),
+    .description("Show Google Sheets status and statistics")
 ).action(async (options) => {
   try {
     console.log("📊 Checking Google Sheets status...");
@@ -204,7 +204,7 @@ addCommonOptions(
       const languages = fs
         .readdirSync(options.locales)
         .filter((item) =>
-          fs.statSync(path.join(options.locales, item)).isDirectory(),
+          fs.statSync(path.join(options.locales, item)).isDirectory()
         );
 
       console.log(`\n📁 Local Files Status:`);
@@ -220,7 +220,7 @@ addCommonOptions(
 
         files.forEach((file) => {
           const content = JSON.parse(
-            fs.readFileSync(path.join(langDir, file), "utf-8"),
+            fs.readFileSync(path.join(langDir, file), "utf-8")
           );
           totalKeys += Object.keys(content).length;
         });
@@ -245,17 +245,17 @@ program
   .option(
     "-c, --credentials <path>",
     "Path to credentials file",
-    "./credentials.json",
+    "./credentials.json"
   )
   .option("-l, --locales <dir>", "Locales directory", "./locales")
   .option("--languages <langs>", "Comma-separated list of languages")
   .option(
     "--typescript, --ts",
-    "Generate TypeScript config file (.ts) instead of JSON",
+    "Generate a TypeScript type companion alongside the runtime JSON config"
   )
   .option(
     "--namespace-location <path>",
-    "Namespace location path (e.g., 'page', 'src/pages')",
+    "Namespace location path (e.g., 'page', 'src/pages')"
   )
   .option("--fallback-namespace <name>", "Fallback namespace name", "common")
   .option("--non-interactive", "Skip interactive prompts and use defaults")
@@ -378,96 +378,59 @@ program
         serverTranslationFunction = "getTranslation";
       }
 
-      // 1. i18nexus.config 파일 생성 (.ts 또는 .json)
+      // JSON is the shared runtime configuration for the CLI and server.
+      // JSON config 파일 생성
+      const configData: any = {
+        languages: languages,
+        defaultLanguage: defaultLanguage,
+        localesDir: options.locales,
+        sourcePattern: sourcePattern,
+        translationImportSource: translationImportSource,
+        fallbackNamespace: options.fallbackNamespace || "common",
+        useNamespaceStructure,
+        googleSheets: {
+          spreadsheetId: options.spreadsheet || "",
+          credentialsPath: options.credentials,
+          sheetName: "Translations",
+        },
+      };
+
+      // Add mode-specific configuration
+      if (mode) {
+        configData.mode = mode;
+      }
+
+      if (serverTranslationFunction) {
+        configData.serverTranslationFunction = serverTranslationFunction;
+      }
+
+      if (mode === "client") {
+        configData.framework = framework;
+      }
+
+      // 네임스페이스 구조 사용 시에만 namespaceLocation 추가
+      if (useNamespaceStructure) {
+        configData.namespaceLocation = namespaceLocation;
+      }
+
+      fs.writeFileSync(
+        "i18nexus.config.json",
+        JSON.stringify(configData, null, 2)
+      );
+      console.log("✅ Created i18nexus.config.json");
       if (options.typescript || options.ts) {
-        // TypeScript config 파일 생성
-        const languagesArray = languages
-          .map((l: string) => `"${l}"`)
-          .join(", ");
-
-        const modeConfig = mode ? `\n  mode: "${mode}",` : "";
-        const serverFunctionConfig = serverTranslationFunction
-          ? `\n  serverTranslationFunction: "${serverTranslationFunction}",`
-          : "";
-        const frameworkConfig =
-          mode === "client" ? `\n  framework: "${framework}",` : "";
-
-        const tsContent = `import { defineConfig } from "i18nexus";
-
-export const config = defineConfig({
-  languages: [${languagesArray}] as const,
-  defaultLanguage: "${defaultLanguage}",
-  localesDir: "${options.locales}",
-  sourcePattern: "${sourcePattern}",
-  translationImportSource: "${translationImportSource}",${modeConfig}${serverFunctionConfig}${frameworkConfig}
-  fallbackNamespace: "${options.fallbackNamespace || "common"}",${
-    useNamespaceStructure
-      ? `\n  namespaceLocation: "${namespaceLocation}",`
-      : ""
-  }
-  useNamespaceStructure: ${useNamespaceStructure},${
-    options.spreadsheet
-      ? `
-  googleSheets: {
-    spreadsheetId: "${options.spreadsheet}",
-    credentialsPath: "${options.credentials}",
-    sheetName: "Translations",
-  },`
-      : ""
-  }
-});
-
-// Export the language union type for type safety
-export type AppLanguages = typeof config.languages[number];
+        const languageUnion = languages
+          .map((language: string) => JSON.stringify(language))
+          .join(" | ");
+        const tsContent = `// Edit i18nexus.config.json. Both CLI and server read that file.
+import config from "./i18nexus.config.json";
+export { config };
+export type AppLanguages = ${languageUnion};
 `;
         fs.writeFileSync("i18nexus.config.ts", tsContent);
-        console.log("✅ Created i18nexus.config.ts");
         console.log(
-          "💡 Use AppLanguages type for type-safe language switching:",
+          "✅ Created i18nexus.config.ts type companion. Edit i18nexus.config.json for runtime settings."
         );
-        console.log(
-          "   const { changeLanguage } = useLanguageSwitcher<AppLanguages>();",
-        );
-      } else {
-        // JSON config 파일 생성
-        const configData: any = {
-          languages: languages,
-          defaultLanguage: defaultLanguage,
-          localesDir: options.locales,
-          sourcePattern: sourcePattern,
-          translationImportSource: translationImportSource,
-          fallbackNamespace: options.fallbackNamespace || "common",
-          useNamespaceStructure,
-          googleSheets: {
-            spreadsheetId: options.spreadsheet || "",
-            credentialsPath: options.credentials,
-            sheetName: "Translations",
-          },
-        };
-
-        // Add mode-specific configuration
-        if (mode) {
-          configData.mode = mode;
-        }
-
-        if (serverTranslationFunction) {
-          configData.serverTranslationFunction = serverTranslationFunction;
-        }
-
-        if (mode === "client") {
-          configData.framework = framework;
-        }
-
-        // 네임스페이스 구조 사용 시에만 namespaceLocation 추가
-        if (useNamespaceStructure) {
-          configData.namespaceLocation = namespaceLocation;
-        }
-
-        fs.writeFileSync(
-          "i18nexus.config.json",
-          JSON.stringify(configData, null, 2),
-        );
-        console.log("✅ Created i18nexus.config.json");
       }
 
       // 2. locales 디렉토리 생성
@@ -526,7 +489,7 @@ export type AppLanguages = typeof config.languages[number];
             options.locales,
             fallbackNamespace,
             false, // dryRun
-            true, // useI18nexusLibrary (네임스페이스 구조면 항상 생성)
+            true // useI18nexusLibrary (네임스페이스 구조면 항상 생성)
           );
           console.log(`✅ Created ${indexPath} (loadNamespace function)`);
         } else {
@@ -546,7 +509,7 @@ export type AppLanguages = typeof config.languages[number];
 
         console.log("\n💡 Flat structure created (no namespaces)");
         console.log(
-          "   Use this with libraries like react-i18next, next-intl, etc.",
+          "   Use this with libraries like react-i18next, next-intl, etc."
         );
       }
 
@@ -556,7 +519,7 @@ export type AppLanguages = typeof config.languages[number];
         if (!fs.existsSync(options.credentials)) {
           console.log("\n📝 Google Service Account Setup:");
           console.log(
-            "1. Go to Google Cloud Console (https://console.cloud.google.com/)",
+            "1. Go to Google Cloud Console (https://console.cloud.google.com/)"
           );
           console.log("2. Create a new project or select existing one");
           console.log("3. Enable Google Sheets API");
@@ -569,7 +532,7 @@ export type AppLanguages = typeof config.languages[number];
           console.log("3. Copy the spreadsheet ID from the URL");
 
           console.log(
-            "\n⚠️  Please add the credentials file and try again for Google Sheets integration.",
+            "\n⚠️  Please add the credentials file and try again for Google Sheets integration."
           );
         } else {
           // 설정 테스트
@@ -587,7 +550,7 @@ export type AppLanguages = typeof config.languages[number];
             console.error("❌ Cannot access the spreadsheet. Please check:");
             console.error("   1. Spreadsheet ID is correct");
             console.error(
-              "   2. Service account has access to the spreadsheet",
+              "   2. Service account has access to the spreadsheet"
             );
           } else {
             await manager.ensureWorksheet();
@@ -627,7 +590,7 @@ export default async function ServerExample() {
 `;
         fs.writeFileSync(
           path.join(examplesDir, "server-component-example.tsx"),
-          serverExampleContent,
+          serverExampleContent
         );
         console.log("✅ Created examples/server-component-example.tsx");
       }
@@ -650,14 +613,14 @@ export default function ClientExample() {
 `;
         fs.writeFileSync(
           path.join(examplesDir, "client-component-example.tsx"),
-          clientExampleContent,
+          clientExampleContent
         );
         console.log("✅ Created examples/client-component-example.tsx");
       }
 
       console.log("\n✅ i18nexus project initialized successfully!");
       console.log(
-        `\n📦 Project Mode: ${projectMode === "both" ? "Mixed (Client + Server)" : projectMode === "server" ? "Server Components" : "Client Components"}`,
+        `\n📦 Project Mode: ${projectMode === "both" ? "Mixed (Client + Server)" : projectMode === "server" ? "Server Components" : "Client Components"}`
       );
 
       if (useNamespaceStructure) {
@@ -683,7 +646,7 @@ export default function ClientExample() {
 
       if (options.spreadsheet) {
         console.log(
-          "4. Run 'npx i18n-sheets upload' to sync with Google Sheets",
+          "4. Run 'npx i18n-sheets upload' to sync with Google Sheets"
         );
       }
     } catch (error) {
@@ -697,22 +660,22 @@ program.on("--help", () => {
   console.log("");
   console.log("Examples:");
   console.log(
-    "  $ i18n-sheets init                                          # Initialize project without Google Sheets",
+    "  $ i18n-sheets init                                          # Initialize project without Google Sheets"
   );
   console.log(
-    "  $ i18n-sheets init -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms  # Initialize with Google Sheets",
+    "  $ i18n-sheets init -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms  # Initialize with Google Sheets"
   );
   console.log(
-    "  $ i18n-sheets upload -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "  $ i18n-sheets upload -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
   );
   console.log(
-    "  $ i18n-sheets download -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "  $ i18n-sheets download -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
   );
   console.log(
-    "  $ i18n-sheets sync -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "  $ i18n-sheets sync -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
   );
   console.log(
-    "  $ i18n-sheets status -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "  $ i18n-sheets status -s 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
   );
   console.log("");
   console.log("Environment Variables:");
@@ -740,7 +703,7 @@ program
       await manager.convertCSVToLocalTranslations(
         options.csvFile,
         options.locales,
-        languages,
+        languages
       );
 
       console.log("✅ CSV to JSON conversion completed successfully");
