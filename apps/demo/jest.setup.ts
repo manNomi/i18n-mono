@@ -11,3 +11,5 @@ if (typeof AbortSignal !== "undefined" && !abortSignalWithTimeout.timeout) {
     return controller.signal;
   };
 }
+
+Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

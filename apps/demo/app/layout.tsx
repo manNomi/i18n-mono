@@ -6,6 +6,8 @@ import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import Script from "next/script";
 
+import { DEMO_LANGUAGE_COOKIE, resolveDemoLanguage } from "@/shared/lib/demo-language";
+
 import { ClientProvider } from "./ClientProvider";
 
 const geistSans = Geist({
@@ -50,12 +52,15 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   // 서버에서 쿠키 읽기
   const cookieStore = await cookies();
-  const language = cookieStore.get("i18n-language")?.value || "ko";
+  const language = resolveDemoLanguage(
+    cookieStore.get(DEMO_LANGUAGE_COOKIE)?.value
+  );
 
   return (
     <html lang={language}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansKR.variable} ${bmHannaPro.variable} antialiased`}>
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSansKR.variable} ${bmHannaPro.variable} antialiased`}
+      >
         {/* Google Analytics: gtag.js (GA4) - uses NEXT_PUBLIC_GA_ID */}
         {process.env.NEXT_PUBLIC_GA_ID ? (
           <>

@@ -4,6 +4,11 @@ import { I18nProvider } from "i18nexus";
 import dynamic from "next/dynamic";
 
 import { loadNamespace } from "@/locales";
+import commonEn from "@/locales/common/en.json";
+import commonKo from "@/locales/common/ko.json";
+import homeEn from "@/locales/home/en.json";
+import homeKo from "@/locales/home/ko.json";
+import { DEFAULT_DEMO_LANGUAGE, DEMO_LANGUAGE_COOKIE } from "@/shared/lib/demo-language";
 import {
   Analytics,
   FirebaseStatus,
@@ -11,6 +16,11 @@ import {
   ScrollRestorer,
 } from "@/shared/ui";
 import Navigation from "@/widgets/Navigation";
+
+const initialTranslations = {
+  common: { en: commonEn, ko: commonKo },
+  home: { en: homeEn, ko: homeKo },
+};
 
 type DevtoolsProps = {
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -34,17 +44,17 @@ export function ClientProvider({
   return (
     <I18nProvider
       loadNamespace={loadNamespace}
+      translations={initialTranslations}
       initialLanguage={language}
       fallbackNamespace="common"
-      preloadNamespaces={["common", "home"]}
       languageManagerOptions={{
-        defaultLanguage: "ko",
+        defaultLanguage: DEFAULT_DEMO_LANGUAGE,
         availableLanguages: [
           { code: "ko", name: "한국어", flag: "🇰🇷" },
           { code: "en", name: "English", flag: "🇺🇸" },
         ],
-        cookieName: "i18n-language",
-        enableAutoDetection: true,
+        cookieName: DEMO_LANGUAGE_COOKIE,
+        enableAutoDetection: false,
       }}
     >
       <GlobalErrorProvider>

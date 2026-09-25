@@ -1,6 +1,6 @@
 {
   "languages": ["en", "ko"],
-  "defaultLanguage": "ko",
+  "defaultLanguage": "en",
   "localesDir": "./locales",
   "sourcePattern": "{app,page,widgets,features,entities,shared}/**/*.{js,jsx,ts,tsx}",
   "translationImportSource": "i18nexus",
@@ -11,5 +11,6 @@
     "spreadsheetId": "1hF4-m_gwpYmfkHsRknfjyMhnbUvw5IuOhYAqy7VATxE",
     "credentialsPath": "./credentials.json",
     "sheetName": "translation"
-  }
+  },
+  "sourceLanguage": "ko"
 }

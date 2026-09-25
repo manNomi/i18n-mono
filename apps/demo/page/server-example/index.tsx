@@ -1,10 +1,11 @@
-import { createServerTranslation, getServerLanguage } from "i18nexus/server";
-import { headers } from "next/headers";
+import { createServerTranslation } from "i18nexus/server";
+import { cookies } from "next/headers";
 
 import commonEn from "@/locales/common/en.json";
 import commonKo from "@/locales/common/ko.json";
 import serverExampleEn from "@/locales/server-example/en.json";
 import serverExampleKo from "@/locales/server-example/ko.json";
+import { DEMO_LANGUAGE_COOKIE, resolveDemoLanguage } from "@/shared/lib/demo-language";
 import { CodeBlock, PageShell, Section } from "@/shared/ui";
 
 const serverExampleTranslations = {
@@ -47,10 +48,9 @@ export default async function Page() {
 }`;
 
 export default async function ServerExamplePage() {
-  const language = getServerLanguage(await headers(), {
-    defaultLanguage: "ko",
-    availableLanguages: ["en", "ko"],
-  });
+  const language = resolveDemoLanguage(
+    (await cookies()).get(DEMO_LANGUAGE_COOKIE)?.value
+  );
   const t = createServerTranslation(language, serverExampleTranslations);
 
   return (
