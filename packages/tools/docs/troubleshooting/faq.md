@@ -47,34 +47,17 @@ npx i18n-sheets init --typescript
 
 ### Q: What configuration files are supported?
 
-**A:** The tool supports multiple formats with automatic detection:
+**A:** The CLI and server read `i18nexus.config.json`. JavaScript and TypeScript files are not executed as runtime configuration.
 
-1. `i18nexus.config.ts` (TypeScript - recommended)
-2. `i18nexus.config.js` (JavaScript)
-3. `i18nexus.config.json` (JSON - universal)
+`i18n-sheets init --typescript` creates the JSON configuration and a TypeScript companion that imports it and exports `AppLanguages`. Edit the JSON file to change runtime settings. Regenerate the companion when the language list changes.
 
 ### Q: How do I configure for Next.js App Router?
 
-**A:** Update your configuration:
-
-```typescript
-// i18nexus.config.ts
-export const config = defineConfig({
-  sourcePattern: "app/**/*.{ts,tsx}", // App Router pattern
-  // ... other config
-});
-```
+Set `sourcePattern` to `app/**/*.{ts,tsx}` in `i18nexus.config.json`.
 
 ### Q: Can I use custom import sources?
 
-**A:** Yes, configure `translationImportSource`:
-
-```typescript
-export const config = defineConfig({
-  translationImportSource: "@/lib/i18n", // Custom path
-  // ... other config
-});
-```
+Set `translationImportSource` to your module path in `i18nexus.config.json`.
 
 ## 🔄 Workflow
 

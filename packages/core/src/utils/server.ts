@@ -495,9 +495,11 @@ export async function getTranslation<
   const localesDir = options?.localesDir || config?.localesDir || "./locales";
 
   // config 파일 위치를 기준으로 locales 경로 계산 (더 안정적)
-  const resolvedLocalesDir = localesDir.startsWith("/")
-    ? localesDir
-    : path.resolve(configDir, localesDir);
+  const resolvedLocalesDir = path.resolve(configDir, localesDir);
+  const cacheSource = JSON.stringify([
+    resolvedLocalesDir,
+    config?.fallbackNamespace ?? null,
+  ]);
 
   const defaultLanguage =
     options?.defaultLanguage || config?.defaultLanguage || "en";
@@ -557,7 +559,11 @@ export async function getTranslation<
 
   // 4. Check cache first
   if (!options?.disableCache) {
-    const cached = getCachedTranslations(resolvedNamespace, language);
+    const cached = getCachedTranslations(
+      resolvedNamespace,
+      language,
+      cacheSource
+    );
     if (cached) {
       const t = createServerTranslation(language, cached, {
         messageFormatter: options?.messageFormatter,
@@ -665,7 +671,7 @@ export async function getTranslation<
 
   // 6. Cache translations
   if (!options?.disableCache) {
-    cacheTranslations(resolvedNamespace, language, translations);
+    cacheTranslations(resolvedNamespace, language, translations, cacheSource);
   }
 
   // 7. Create translation function

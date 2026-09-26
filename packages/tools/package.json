@@ -27,7 +27,8 @@
     "test:coverage": "jest --coverage",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "smoke:pack": "node scripts/smoke-packed-package.cjs"
   },
   "keywords": [
     "i18n",
@@ -70,15 +71,16 @@
     "csv-writer": "^1.6.0",
     "glob": "^10.3.10",
     "google-auth-library": "^9.4.0",
-    "googleapis": "^129.0.0"
+    "googleapis": "^129.0.0",
+    "inquirer": "^8.2.6",
+    "@babel/parser": "^7.23.0"
   },
   "devDependencies": {
     "@types/babel__generator": "^7.6.7",
     "@types/babel__traverse": "^7.20.4",
-    "@types/inquirer": "^9.0.9",
+    "@types/inquirer": "^8.2.12",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.9.4",
-    "inquirer": "^13.0.2",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.5",
     "typescript": "^5.3.2"

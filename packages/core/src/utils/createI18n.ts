@@ -72,6 +72,8 @@ export interface LegacyUseTranslationReturn<K extends string = string> {
   format: I18nFormatter;
   currentLanguage: string;
   isReady: boolean;
+  error: Error | null;
+  retry: () => Promise<void>;
 }
 
 export type CreateI18nUseTranslationReturn<K extends string = string> =
@@ -204,8 +206,8 @@ export function createI18n<
             ? String(context.fallbackNamespace)
             : undefined,
           loadedNamespaces: context.loadedNamespaces,
-          staticResolutionMode: "flattened",
-          staticMergeMode: "before-loaded",
+          staticResolutionMode: "namespace",
+          staticMergeMode: "when-empty",
         }),
       [
         namespace,
@@ -257,6 +259,11 @@ export function createI18n<
       t,
       format,
       currentLanguage: context.currentLanguage,
+      error: namespace
+        ? (context.namespaceErrors.get(namespace) ?? null)
+        : null,
+      retry: () =>
+        namespace ? context.retryNamespace(namespace) : Promise.resolve(),
       isReady: resolveTranslationReady({
         isLoading: context.isLoading,
         isNamespaceLoading,

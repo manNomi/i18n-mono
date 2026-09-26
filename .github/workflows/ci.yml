@@ -130,6 +130,9 @@ jobs:
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
         continue-on-error: false
 
+      - name: Verify isolated CLI package
+        run: npm run smoke:pack --workspace i18nexus-tools
+
   demo:
     name: 🎨 Demo App
     needs: detect-changes

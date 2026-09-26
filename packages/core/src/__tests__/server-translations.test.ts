@@ -146,11 +146,11 @@ describe("loadTranslations", () => {
     fs.mkdirSync(path.join(tempDir, "locales"), { recursive: true });
     fs.writeFileSync(
       path.join(tempDir, "locales", "en.json"),
-      JSON.stringify({ welcome: "Welcome" }),
+      JSON.stringify({ welcome: "Welcome" })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "ko.json"),
-      JSON.stringify({ welcome: "환영합니다" }),
+      JSON.stringify({ welcome: "환영합니다" })
     );
 
     const translations = await loadTranslations("./locales");
@@ -165,11 +165,11 @@ describe("loadTranslations", () => {
     });
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "en.json"),
-      JSON.stringify({ welcome: "Welcome" }),
+      JSON.stringify({ welcome: "Welcome" })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "ko.json"),
-      JSON.stringify({ welcome: "환영합니다" }),
+      JSON.stringify({ welcome: "환영합니다" })
     );
 
     const translations = await loadTranslations("./locales");
@@ -208,20 +208,20 @@ describe("getTranslation server namespace fallback", () => {
         localesDir: "./locales",
         defaultLanguage: "en",
         fallbackNamespace: "common",
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "common", "en.json"),
       JSON.stringify({
         save: "Save",
         title: "Common title",
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(tempDir, "locales", "dashboard", "en.json"),
       JSON.stringify({
         title: "Dashboard title",
-      }),
+      })
     );
 
     const { t, dict, translations, namespace } = await getTranslation(
@@ -229,7 +229,7 @@ describe("getTranslation server namespace fallback", () => {
       {
         language: "en",
         disableCache: true,
-      },
+      }
     );
 
     expect(namespace).toBe("dashboard");
@@ -246,7 +246,7 @@ describe("getTranslation server namespace fallback", () => {
 
     fs.writeFileSync(
       path.join(tempDir, "i18nexus.config.js"),
-      `export default { localesDir: "./messages" };`,
+      `export default { localesDir: "./messages" };`
     );
     fs.mkdirSync(path.join(tempDir, "locales", "common"), {
       recursive: true,
@@ -255,7 +255,7 @@ describe("getTranslation server namespace fallback", () => {
       path.join(tempDir, "locales", "common", "en.json"),
       JSON.stringify({
         title: "Common title",
-      }),
+      })
     );
 
     const { t } = await getTranslation("common", {
@@ -265,9 +265,44 @@ describe("getTranslation server namespace fallback", () => {
 
     expect(t("title")).toBe("Common title");
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("i18nexus.config.js is ignored"),
+      expect.stringContaining("i18nexus.config.js is ignored")
     );
 
     warnSpy.mockRestore();
+  });
+});
+
+describe("translation cache source isolation", () => {
+  it("isolates folders and invalidates matching namespace/language across folders", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-cache-sources-"));
+    const write = (source: string, title: string) => {
+      const namespaceDir = path.join(dir, source, "common");
+      fs.mkdirSync(namespaceDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(namespaceDir, "en.json"),
+        JSON.stringify({ title })
+      );
+    };
+    const read = (source: string) =>
+      getTranslation("common", {
+        language: "en",
+        localesDir: path.join(dir, source),
+      });
+    try {
+      invalidateCache();
+      write("A", "First");
+      write("B", "Second");
+      expect((await read("A")).t("title")).toBe("First");
+      expect((await read("B")).t("title")).toBe("Second");
+      write("A", "Updated A");
+      write("B", "Updated B");
+      expect((await read("A")).t("title")).toBe("First");
+      invalidateCache("common", "en");
+      expect((await read("A")).t("title")).toBe("Updated A");
+      expect((await read("B")).t("title")).toBe("Updated B");
+    } finally {
+      invalidateCache();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

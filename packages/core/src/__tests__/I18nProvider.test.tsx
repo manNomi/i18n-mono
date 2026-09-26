@@ -115,7 +115,7 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("current-language")).toHaveTextContent("en");
@@ -133,11 +133,11 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("available-languages")).toHaveTextContent(
-      "en,ko",
+      "en,ko"
     );
   });
 
@@ -153,7 +153,7 @@ describe("I18nProvider", () => {
         }}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const changeButton = screen.getByTestId("change-language");
@@ -191,7 +191,7 @@ describe("I18nProvider", () => {
         onLanguageChange={onLanguageChange}
       >
         <TestComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     expect(screen.getByTestId("current-language")).toHaveTextContent("ko");
@@ -227,7 +227,7 @@ describe("I18nProvider", () => {
         }}
       >
         <StabilityComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const firstT = seenT[0];
@@ -267,7 +267,7 @@ describe("I18nProvider", () => {
         }}
       >
         <LanguageComponent />
-      </I18nProvider>,
+      </I18nProvider>
     );
 
     const firstT = seenT[0];
@@ -275,7 +275,7 @@ describe("I18nProvider", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByTestId("change-language-with-translation"),
+        screen.getByTestId("change-language-with-translation")
       ).toHaveTextContent("제목");
     });
     expect(seenT[seenT.length - 1]).not.toBe(firstT);
@@ -287,12 +287,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -305,7 +305,7 @@ describe("I18nProvider", () => {
           }}
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
@@ -325,7 +325,7 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("translation")).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
@@ -339,12 +339,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -358,7 +358,7 @@ describe("I18nProvider", () => {
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -376,7 +376,7 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getAllByTestId("translation")[0]).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         screen.getAllByTestId("ready").forEach((readyNode) => {
           expect(readyNode).toHaveTextContent("ready");
@@ -390,12 +390,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       const HomeComponent = () => {
@@ -421,7 +421,7 @@ describe("I18nProvider", () => {
           }}
         >
           <HomeComponent />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -456,12 +456,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       const HomeComponent = () => {
@@ -499,21 +499,17 @@ describe("I18nProvider", () => {
           }}
         >
           <HomeComponent />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
-        expect(loadNamespace).toHaveBeenCalledTimes(4);
+        expect(loadNamespace).toHaveBeenCalledTimes(2);
       });
 
       await act(async () => {
-        loads.get("common:en")?.resolve({});
-        loads.get("common:ko")?.resolve({});
         loads.get("home:en")?.resolve({ title: "Lazy home title" });
         loads.get("home:ko")?.resolve({});
         await Promise.all([
-          loads.get("common:en")!.promise,
-          loads.get("common:ko")!.promise,
           loads.get("home:en")!.promise,
           loads.get("home:ko")!.promise,
         ]);
@@ -521,10 +517,10 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("title")).toHaveTextContent(
-          "Lazy home title",
+          "Lazy home title"
         );
         expect(screen.getByTestId("shared")).toHaveTextContent(
-          "Static shared label",
+          "Static shared label"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
@@ -536,12 +532,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       render(
@@ -554,7 +550,7 @@ describe("I18nProvider", () => {
           }}
         >
           <LazyTranslationComponent namespace="home" translationKey="title" />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -572,7 +568,7 @@ describe("I18nProvider", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("translation")).toHaveTextContent(
-          "Home title",
+          "Home title"
         );
         expect(screen.getByTestId("ready")).toHaveTextContent("ready");
       });
@@ -585,12 +581,12 @@ describe("I18nProvider", () => {
       const loadNamespace = jest.fn(
         (
           namespace: string,
-          language: string,
+          language: string
         ): Promise<Record<string, string>> => {
           const load = createDeferred<Record<string, string>>();
           loads.set(`${namespace}:${language}`, load);
           return load.promise;
-        },
+        }
       );
 
       const { rerender } = render(
@@ -606,7 +602,7 @@ describe("I18nProvider", () => {
             namespace="missing"
             translationKey="title"
           />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       await waitFor(() => {
@@ -623,7 +619,7 @@ describe("I18nProvider", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("ready")).toHaveTextContent("ready");
+        expect(screen.getByTestId("ready")).toHaveTextContent("not-ready");
       });
       expect(screen.getByTestId("translation")).toHaveTextContent("title");
 
@@ -640,7 +636,7 @@ describe("I18nProvider", () => {
             namespace="missing"
             translationKey="title"
           />
-        </I18nProvider>,
+        </I18nProvider>
       );
 
       expect(loadNamespace).toHaveBeenCalledTimes(2);

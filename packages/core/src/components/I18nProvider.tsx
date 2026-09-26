@@ -61,6 +61,9 @@ export interface I18nContextType<
   loadedNamespaces: Map<string, Record<string, Record<string, string>>>;
   /** 현재 로드 중인 네임스페이스 */
   loadingNamespaces: Set<string>;
+  /** Load failures are retained until an explicit retry succeeds. */
+  namespaceErrors: Map<string, Error>;
+  retryNamespace: (namespace: string) => Promise<void>;
   /** Lazy loading용 네임스페이스 로드 보장 함수 */
   ensureNamespaceLoaded: (namespace: string) => Promise<void>;
   /** Lazy loading 활성화 여부 */
@@ -110,12 +113,14 @@ export interface I18nProviderProps<
   messageFormatter?: MessageFormatter;
 }
 
+const EMPTY_TRANSLATIONS: NamespaceTranslations = {};
+
 export function I18nProvider<
   TTranslations extends NamespaceTranslations = NamespaceTranslations,
 >({
   children,
   languageManagerOptions,
-  translations = {} as TTranslations,
+  translations = EMPTY_TRANSLATIONS as TTranslations,
   onLanguageChange,
   initialLanguage,
   loadNamespace,
@@ -149,14 +154,21 @@ export function I18nProvider<
   const [loadingNamespaces, setLoadingNamespaces] = React.useState<Set<string>>(
     () => new Set()
   );
+  const [namespaceErrors, setNamespaceErrors] = React.useState<
+    Map<string, Error>
+  >(() => new Map());
+  const failedNamespacesRef = React.useRef(new Set<string>());
   const loadedNamespacesRef = React.useRef(loadedNamespaces);
   const namespaceLoadPromisesRef = React.useRef<Map<string, Promise<void>>>(
     new Map()
   );
 
-  React.useEffect(() => {
-    loadedNamespacesRef.current = loadedNamespaces;
-  }, [loadedNamespaces]);
+  React.useEffect(
+    function synchronizeLoadedNamespaces() {
+      loadedNamespacesRef.current = loadedNamespaces;
+    },
+    [loadedNamespaces]
+  );
 
   const loadNamespaceForAllLanguages = React.useCallback(
     async (namespaceKey: string): Promise<void> => {
@@ -175,7 +187,7 @@ export function I18nProvider<
               `Failed to load namespace "${namespaceKey}" for language "${lang}":`,
               error
             );
-            return { lang, data: undefined };
+            return { lang, data: undefined, error };
           }
         })
       );
@@ -187,14 +199,23 @@ export function I18nProvider<
         }
       });
 
-      setLoadedNamespaces((prev) => {
-        if (prev.has(namespaceKey)) {
-          loadedNamespacesRef.current = prev;
-          return prev;
-        }
+      const failures = results.filter((result) => result.data === undefined);
+      if (failures.length > 0) {
+        failedNamespacesRef.current.add(namespaceKey);
+        setNamespaceErrors((prev) =>
+          new Map(prev).set(
+            namespaceKey,
+            new Error(
+              `Failed to load namespace "${namespaceKey}" for: ${failures.map(({ lang }) => lang).join(", ")}`
+            )
+          )
+        );
+      }
+      if (Object.keys(namespaceData).length === 0) return;
 
+      setLoadedNamespaces((prev) => {
         const next = new Map(prev);
-        next.set(namespaceKey, namespaceData);
+        next.set(namespaceKey, { ...prev.get(namespaceKey), ...namespaceData });
         loadedNamespacesRef.current = next;
         return next;
       });
@@ -203,13 +224,15 @@ export function I18nProvider<
   );
 
   const ensureNamespaceLoaded = React.useCallback(
-    (namespace: string): Promise<void> => {
+    (namespace: string, retry = false): Promise<void> => {
       const namespaceKey = String(namespace);
 
       if (
         !lazy ||
         !loadNamespace ||
-        loadedNamespacesRef.current.has(namespaceKey)
+        (!retry &&
+          (loadedNamespacesRef.current.has(namespaceKey) ||
+            failedNamespacesRef.current.has(namespaceKey)))
       ) {
         return Promise.resolve();
       }
@@ -219,6 +242,12 @@ export function I18nProvider<
         return currentLoad;
       }
 
+      failedNamespacesRef.current.delete(namespaceKey);
+      setNamespaceErrors((prev) => {
+        const next = new Map(prev);
+        next.delete(namespaceKey);
+        return next;
+      });
       setLoadingNamespaces((prev) => {
         if (prev.has(namespaceKey)) {
           return prev;
@@ -233,25 +262,13 @@ export function I18nProvider<
         .catch((error) => {
           console.warn(`Failed to load namespace "${namespaceKey}":`, error);
 
-          setLoadedNamespaces((prev) => {
-            if (prev.has(namespaceKey)) {
-              loadedNamespacesRef.current = prev;
-              return prev;
-            }
-
-            const emptyNamespaceData: Record<
-              string,
-              Record<string, string>
-            > = {};
-            languageManager.getAvailableLanguageCodes().forEach((lang) => {
-              emptyNamespaceData[lang] = {};
-            });
-
-            const next = new Map(prev);
-            next.set(namespaceKey, emptyNamespaceData);
-            loadedNamespacesRef.current = next;
-            return next;
-          });
+          failedNamespacesRef.current.add(namespaceKey);
+          setNamespaceErrors((prev) =>
+            new Map(prev).set(
+              namespaceKey,
+              error instanceof Error ? error : new Error(String(error))
+            )
+          );
         })
         .finally(() => {
           namespaceLoadPromisesRef.current.delete(namespaceKey);
@@ -272,31 +289,42 @@ export function I18nProvider<
     [languageManager, lazy, loadNamespace, loadNamespaceForAllLanguages]
   );
 
+  const retryNamespace = React.useCallback(
+    (namespace: string) => ensureNamespaceLoaded(namespace, true),
+    [ensureNamespaceLoaded]
+  );
+
   // Preload namespaces (fallback + additional preload namespaces)
-  React.useEffect(() => {
-    if (!lazy || !loadNamespace) return;
+  React.useEffect(
+    function preloadTranslations() {
+      if (!lazy || !loadNamespace) return;
 
-    const namespacesToPreload = new Set<string>();
+      const namespacesToPreload = new Set<string>();
 
-    // Always preload fallback namespace
-    if (fallbackNamespace) {
-      namespacesToPreload.add(String(fallbackNamespace));
-    }
+      // Always preload fallback namespace
+      if (fallbackNamespace) {
+        namespacesToPreload.add(String(fallbackNamespace));
+      }
 
-    // Add additional preload namespaces
-    preloadNamespaces?.forEach((ns) => namespacesToPreload.add(String(ns)));
+      // Add additional preload namespaces
+      preloadNamespaces?.forEach((ns) => namespacesToPreload.add(String(ns)));
 
-    // Preload all namespaces
-    namespacesToPreload.forEach((nsKey) => {
-      ensureNamespaceLoaded(nsKey);
-    });
-  }, [
-    lazy,
-    loadNamespace,
-    fallbackNamespace,
-    preloadNamespaces,
-    ensureNamespaceLoaded,
-  ]);
+      // Preload all namespaces
+      namespacesToPreload.forEach((nsKey) => {
+        if (!Object.prototype.hasOwnProperty.call(defaultTranslations, nsKey)) {
+          void ensureNamespaceLoaded(nsKey);
+        }
+      });
+    },
+    [
+      lazy,
+      loadNamespace,
+      fallbackNamespace,
+      preloadNamespaces,
+      defaultTranslations,
+      ensureNamespaceLoaded,
+    ]
+  );
 
   const changeLanguage = async (lang: string): Promise<void> => {
     if (lang === currentLanguage) {
@@ -354,6 +382,8 @@ export function I18nProvider<
     namespaceTranslations: defaultTranslations,
     loadedNamespaces,
     loadingNamespaces,
+    namespaceErrors,
+    retryNamespace,
     ensureNamespaceLoaded,
     lazy,
     loadNamespace,

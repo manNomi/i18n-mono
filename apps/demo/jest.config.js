@@ -5,6 +5,8 @@ const customJestConfig = {
   testMatch: ["**/*.(test|spec).{ts,tsx,js,jsx}"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^i18nexus$": "<rootDir>/../../packages/core/src/index.ts",
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],

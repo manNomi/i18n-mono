@@ -61,6 +61,8 @@ export interface UseTranslationReturn<K extends string = string> {
   lng: string;
   /** 번역 준비 여부 */
   isReady: boolean;
+  error: Error | null;
+  retry: () => Promise<void>;
 }
 
 /** 번역 함수 및 현재 언어 접근 훅 (오버로드) */
@@ -200,6 +202,9 @@ export function useTranslation(namespace?: string): UseTranslationReturn<any> {
     format,
     currentLanguage,
     lng: currentLanguage, // Alias for react-i18next compatibility
+    error: namespace ? (context.namespaceErrors.get(namespace) ?? null) : null,
+    retry: () =>
+      namespace ? context.retryNamespace(namespace) : Promise.resolve(),
     isReady: resolveTranslationReady({
       isLoading,
       isNamespaceLoading,
